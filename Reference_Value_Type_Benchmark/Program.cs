@@ -2,7 +2,7 @@
 {
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Running;
-    using CustomCollections.BinaryList;
+    using BinaryCollections.BinaryList;
     using System.Runtime.CompilerServices;
 
     public enum PreSortScenario

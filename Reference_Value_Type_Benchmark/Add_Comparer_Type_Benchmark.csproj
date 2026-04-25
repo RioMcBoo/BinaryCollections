@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ArrayTest\CustomCollections.csproj" />
+    <ProjectReference Include="..\BinaryCollections\BinaryCollections.csproj" />
   </ItemGroup>
 
 </Project>

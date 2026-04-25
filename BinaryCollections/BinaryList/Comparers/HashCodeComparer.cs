@@ -1,6 +1,6 @@
-﻿namespace CustomCollections.BinaryList
+﻿namespace BinaryCollections.BinaryList
 {
-    public partial class BinaryList<TValue> : IReadOnlyList<TValue>, IReadOnlyCollection<TValue>, ICollection<TValue>
+    public partial class BinaryList<TValue>
     {
         private class ValueTypeHashCodeComparer : IComparer<TValue>
         {

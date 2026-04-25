@@ -1,8 +1,8 @@
-﻿namespace CustomCollections.BinaryList
+﻿namespace BinaryCollections.BinaryList
 {
-    public partial class BinaryList<TValue> : IReadOnlyList<TValue>, IReadOnlyCollection<TValue>, ICollection<TValue>
+    public partial class BinaryList<TValue>
     {
-        private bool FindIndexExtended(ref TValue item, out int vIndex)
+        private bool FindIndexExtended(ref readonly TValue item, out int vIndex)
         {
             if (_count == 0) { vIndex = ~_count; return false; }
 
@@ -12,7 +12,7 @@
 
             // Try find item in the very low edge
             currentIndex = lo = hi = startIndex++;
-            if (FindIndex(ref item, ref lo, ref hi, out vIndex))
+            if (FindIndex(in item, ref lo, ref hi, out vIndex))
                 return true;
 
             if (vIndex == ~currentIndex)
@@ -20,17 +20,17 @@
 
             // Try find item in the very high edge
             currentIndex = lo = hi = endIndex--;
-            if (FindIndex(ref item, ref lo, ref hi, out vIndex))
+            if (FindIndex(in item, ref lo, ref hi, out vIndex))
                 return true;
 
             if (vIndex == ~(currentIndex + 1))
                 return false;
 
             // Try find item in the remains
-            return FindIndex(ref item, ref startIndex, ref endIndex, out vIndex);
+            return FindIndex(in item, ref startIndex, ref endIndex, out vIndex);
         }
 
-        private bool FindIndexExtendedUnique(ref TValue item, out int vIndex)
+        private bool FindIndexExtendedUnique(ref readonly TValue item, out int vIndex)
         {
             if (_count == 0) { vIndex = ~_count; return false; }
 
@@ -40,9 +40,9 @@
 
             // Try find item in the very low edge
             currentIndex = lo = hi = startIndex++;
-            if (FindIndex(ref item, ref lo, ref hi, out vIndex))
+            if (FindIndex(in item, ref lo, ref hi, out vIndex))
             {
-                if (IsIdentical(ref _storage[ToRealIndex(vIndex)], ref item))
+                if (IsIdentical(ref _storage[ToRealIndex(vIndex)], in item))
                     return true;
 
                 vIndex = ~vIndex;
@@ -54,9 +54,9 @@
 
             // Try find item in the very high edge
             currentIndex = lo = hi = endIndex--;
-            if (FindIndex(ref item, ref lo, ref hi, out vIndex))
+            if (FindIndex(in item, ref lo, ref hi, out vIndex))
             {
-                if (IsIdentical(ref _storage[ToRealIndex(vIndex)], ref item))
+                if (IsIdentical(ref _storage[ToRealIndex(vIndex)], in item))
                     return true;
 
                 vIndex = ~vIndex;
@@ -67,7 +67,7 @@
                 return false;
 
             // Try find item in the remains
-            return FindIndexUnique(ref item, ref startIndex, ref endIndex, out vIndex);
+            return FindIndexExactly(in item, ref startIndex, ref endIndex, out vIndex);
         }
     }
 }

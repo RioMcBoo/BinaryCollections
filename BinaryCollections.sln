@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.4.11626.88
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomCollections", "ArrayTest\CustomCollections.csproj", "{C41B095C-6A56-490D-B2E6-2525B22B62D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryCollections", "BinaryCollections\BinaryCollections.csproj", "{C41B095C-6A56-490D-B2E6-2525B22B62D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{88085B28-794C-4CFB-8542-09D2E89C5959}"
 EndProject

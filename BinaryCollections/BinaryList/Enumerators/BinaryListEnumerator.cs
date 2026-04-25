@@ -1,20 +1,24 @@
 ﻿using System.Collections;
 using System.ComponentModel;
 
-namespace CustomCollections.BinaryList
+namespace BinaryCollections.BinaryList
 {
     [Flags]
     public enum BinaryListEnumeratorFlags
     {
         None =              0x0,
-        /// <summary>Elements are considered equal by the collection comparer.</summary>
+        /// <summary>The range contains only duplicate elements by the equality comparer.</summary>
         UniformRange =    0x1,
+        /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
+        MayContainCollisions = 0x2,
     }
 
-    public struct BinaryListEnumerator<TValue> : IEnumerable<TValue>, IEnumerator<TValue>
+    public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
         public readonly BinaryListEnumeratorFlags Flags { get; init; }
         public IComparer<TValue> Comparer => _binaryListInstance.Comparer;
+        public bool MayContainCollisions => _binaryListInstance.MayContainCollisions;
+        public int Version => _version;
         private readonly BinaryList<TValue> _binaryListInstance;
         private readonly TValue[] _sharedData;
         private readonly int _version;
@@ -28,7 +32,7 @@ namespace CustomCollections.BinaryList
             Flags = flags;
             _binaryListInstance = instance;
             _sharedData = sharedData;
-            _version = instance._version;
+            _version = instance.Version;
             _start = index;
             _current = _start - 1;
             _end = _start + count;
@@ -37,6 +41,21 @@ namespace CustomCollections.BinaryList
         public TValue Current => _sharedData[_current];
 
         object IEnumerator.Current => Current;
+
+        public TValue this[int index]
+        {
+            get
+            {
+                ValidateVersion();
+
+                if (CheckIndex(index))
+                {
+                    return _sharedData[_start + index];
+                }
+
+                throw new IndexOutOfRangeException($"Index {index} is out of range for enumerator with count {Count}.");
+            }
+        }
 
         public bool MoveNext()
         {
@@ -61,8 +80,6 @@ namespace CustomCollections.BinaryList
         IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        [Obsolete("This method is dangerous because it allows you to change the internal state of collection elements and use without version checking. Use it only if you understand the consequences..", false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
         public ReadOnlySpan<TValue> GetSpan()
         {
             ValidateVersion();
@@ -85,6 +102,16 @@ namespace CustomCollections.BinaryList
         private void ValidateVersion()
         {
             _binaryListInstance.CheckVersion(_version);
+        }
+
+        private bool CheckIndex(int vIndex)
+        {
+            if (vIndex < 0 || vIndex >= Count)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
