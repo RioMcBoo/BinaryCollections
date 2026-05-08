@@ -5,6 +5,13 @@ namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {
+        private ref struct BinarySearchState
+        {
+            public int lo;
+            public int hi;
+            public int i;
+        }
+
         private readonly ref struct ListRangeInfo
         {
             readonly public int RealIndex;
@@ -183,7 +190,6 @@ namespace BinaryCollections.BinaryList
             public SourceInfo Destination;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CheckAddRange(int rangeCount)
         {
             if (rangeCount <= 0)
@@ -251,7 +257,6 @@ namespace BinaryCollections.BinaryList
             return (capacity - count) / 2;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsIdentical(ref readonly TValue currentItem, ref readonly TValue item)
         {
             return _equalityComparer.Equals(currentItem, item);

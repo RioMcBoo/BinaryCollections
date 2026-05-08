@@ -1,0 +1,797 @@
+﻿using System.Buffers;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace BinaryCollections.BinaryList
+{
+    partial class BinaryList<TValue>
+    {
+        public bool UnionWith(ReadOnlySpan<TValue> range)
+        {
+            if (!CheckAddRange(range.Length))
+                return false;
+
+            TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
+            try
+            {
+                range.CopyTo(temp);
+                Array.Sort(temp, 0, range.Length, Comparer);
+                return UnionWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Length));
+            }
+            finally
+            {
+                ArrayPool<TValue>.Shared.Return(temp, true);
+            }
+        }
+
+        public bool UnionWith(IReadOnlyCollection<TValue> range)
+        {
+            if (!CheckAddRange(range.Count))
+                return false;
+
+            TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
+            try
+            {
+                int i = 0;
+                foreach (var item in range)
+                {
+                    temp[i++] = item;
+                }
+
+                Array.Sort(temp, 0, range.Count, Comparer);
+                return UnionWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Count));
+            }
+            finally
+            {
+                ArrayPool<TValue>.Shared.Return(temp, true);
+            }
+        }
+
+        public bool UnionWith(IEnumerable<TValue> range)
+        {
+            if (range is BinaryListEnumerator<TValue> binaryListEnumerator)
+            {
+                return UnionWith(binaryListEnumerator);
+            }
+
+            if (range is IReadOnlyCollection<TValue> collection)
+            {
+                return UnionWith(collection);
+            }
+
+            List<TValue> temp = new List<TValue>();
+
+            foreach (var item in range)
+            {
+                temp.Add(item);
+            }
+
+            if (!CheckAddRange(temp.Count))
+                return false;
+
+            var span = CollectionsMarshal.AsSpan(temp);
+            span.Sort(Comparer);
+            return UnionWithSortedRange(span);
+        }
+
+        public bool UnionWith(BinaryListEnumerator<TValue> range)
+        {
+            if (range.Comparer == Comparer)
+            {
+                if (!CheckAddRange(range.Count))
+                    return false;
+
+                return UnionWithSortedRange(range.GetSpan());
+            }
+
+            return UnionWith(range.GetSpan());
+        }
+
+        public bool UnionWith(BinaryList<TValue> range)
+        {
+            return UnionWith(range.GetEnumerator());
+        }
+
+        private bool UnionWithSortedRange(ReadOnlySpan<TValue> range)
+        {
+            if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
+            {
+                return UnionWithFromLeft(range);
+            }
+
+            if (RightBuffer >= LeftBuffer && RightBuffer >= range.Length)
+            {
+                return UnionWithFromRight(range);
+            }
+
+            return ResizeAndUnionWithSortedRange(range);
+        }
+
+        private bool ResizeAndUnionWithSortedRange(ReadOnlySpan<TValue> range)
+        {
+            PrepareForResize(range.Length, out var destination);
+
+            int newZeroRIndex = CalculateZeroIndex(destination.Length, _count + range.Length);
+
+            if (_storage == destination)
+            {
+                Array.Copy(destination, _zeroRIndex, destination, newZeroRIndex, _count);
+                _zeroRIndex = newZeroRIndex;
+                return UnionWithFromRight(range);
+            }
+
+            UnionWithFromLeft(range, destination, newZeroRIndex);
+
+            _storage = destination;
+            return true;
+        }
+
+        private bool UnionWithFromLeft(ReadOnlySpan<TValue> range)
+        {
+            int newZeroRIndex = _zeroRIndex - range.Length;
+            return UnionWithFromLeft(range, _storage, newZeroRIndex);
+        }
+
+        private bool UnionWithFromLeft(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        {
+            if (ReferenceEquals(_storage, destination))
+            {
+                Debug.Assert(_zeroRIndex - newZeroRIndex == range.Length, "In-place merge requires place for the new range.");
+            }
+
+            BinaryList<ItemBinaryCounter> tempList = null!; // for local function usage (for optimizations)
+            Dictionary<ItemHashCounter, ItemHashCounter> tempDictionary = null!; // for local function usage (for optimizations)            
+
+            if (MayContainCollisions)
+            {
+                if (DefaultComparerLeadsToCollisions)
+                    tempDictionary = new();
+                else
+                    tempList = new();
+            }
+
+            int incomingElementsSkipped = 0;
+            int rangeLength = range.Length;
+            int insertRIndex = newZeroRIndex;
+            int zeroIndexShift = 0;
+
+            Debug.Assert(insertRIndex > -1, "Left buffer is not long enough");
+
+            bool i_InRange(int i) => i < rangeLength;
+            bool c_InRange(int c) => c < _zeroRIndex + _count;
+
+            // remember - we do care only about duplicates among incomings
+
+            // General merge loop
+            int i = 0;
+            int c = _zeroRIndex;
+
+            while (i_InRange(i) && c_InRange(c))
+            {
+                ref readonly TValue incomingItem = ref range[i];
+                ref readonly TValue currentItem = ref _storage[c];
+
+                switch (Comparer.Compare(currentItem, incomingItem))
+                {
+                    case > 0:
+                        ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                        break;
+                    case < 0:
+                        ProcessMergingCurrent(ref insertRIndex, ref c);
+                        break;
+                    case 0:
+                        ProcessMergingDuplicates(ref insertRIndex, ref i, ref c, range);
+                        break;
+                }
+            }
+
+            // Manage remaining items
+            if (i_InRange(i))
+            {
+                do ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                while (i_InRange(i));
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, insertRIndex, incomingElementsSkipped);
+                }
+            }
+            else if (c_InRange(c))
+            {
+                int finishedPartLength = insertRIndex - newZeroRIndex;
+                int remainingPartLength = _count + range.Length - incomingElementsSkipped - finishedPartLength;
+
+                if (_storage != destination)
+                {
+                    // we just have to copy remaining items into new array
+                    Array.Copy(_storage, c, destination, insertRIndex, remainingPartLength);
+                }
+                else if (incomingElementsSkipped > 0)
+                {
+                    if (finishedPartLength >= remainingPartLength)
+                    {
+                        // Shift remaining items due to missing duplicates
+                        Array.Copy(_storage, c, _storage, insertRIndex, remainingPartLength);
+
+                        // Clear formed dirty free-spots from right side
+                        if (ContainsReferences)
+                        {
+                            Array.Clear(_storage, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
+                        }
+                    }
+                    else
+                    {
+                        // Shift finished items due to missing duplicates
+                        Array.Copy(_storage, newZeroRIndex, _storage, newZeroRIndex + incomingElementsSkipped, finishedPartLength);
+                        zeroIndexShift += incomingElementsSkipped;
+
+                        // Clear formed dirty free-spots from left side
+                        if (ContainsReferences)
+                        {
+                            Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                        }
+                    }
+                }
+            }
+
+            _zeroRIndex = newZeroRIndex + zeroIndexShift;
+            _count += range.Length - incomingElementsSkipped;
+            _version = unchecked(++_version);
+            return true;
+
+            void ProcessMergingDuplicates(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                if (_mayContainCollisions)
+                {
+                    if (DefaultComparerLeadsToCollisions)
+                        ProcessMergingDuplicatesDefault(ref insertRIndex, ref i, ref c, range);
+                    else
+                        ProcessMergingDuplicatesComparable(ref insertRIndex, ref i, ref c, range);
+                }
+                else
+                {
+                    ProcessMergingDuplicatesPure(ref insertRIndex, ref i, ref c, range);
+                }
+            }
+
+            void ProcessMergingDuplicatesDefault(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                tempDictionary.Clear();
+
+                (int start, int length) resultedRangeCurrent = default;
+                resultedRangeCurrent.start = c;
+
+                // Add the first item to result (preparing to compare)
+                ref readonly TValue previous = ref _storage[c++];
+
+                var previousCounter = new ItemHashCounter(previous);
+                previousCounter.CurrentCount++;
+                tempDictionary.Add(previousCounter, previousCounter);
+                resultedRangeCurrent.length++;
+
+                // Add all currently existing items in collision to result, and count them.
+                while (c_InRange(c))
+                {
+                    ref readonly TValue currentItem = ref _storage[c];
+
+                    if (Comparer.Compare(currentItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref currentItem;
+                    var counter = new ItemHashCounter(currentItem);
+
+                    if (tempDictionary.ContainsKey(counter))
+                        counter = tempDictionary[counter];
+                    else
+                        tempDictionary[counter] = counter;
+
+                    counter.CurrentCount++;
+                    resultedRangeCurrent.length++;
+                    c++;
+                }
+
+                // Add all incoming items in collision to result, and count them.
+                (int start, int length) resultedRangeIncoming = default;
+                resultedRangeIncoming.start = i;
+                do
+                {
+                    ref readonly TValue incomingItem = ref range[i];
+
+                    if (Comparer.Compare(incomingItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref incomingItem;
+                    var counter = new ItemHashCounter(incomingItem);
+
+                    if (tempDictionary.ContainsKey(counter))
+                        counter = tempDictionary[counter];
+                    else
+                        tempDictionary[counter] = counter;
+
+                    counter.IncomingCount++;
+                    resultedRangeIncoming.length++;
+                    i++;
+                }
+                while (i_InRange(i));
+
+                int addedCount = 0;
+                foreach (var item in tempDictionary.Values)
+                {
+                    int countToAdd = Math.Max(item.CurrentCount, item.IncomingCount);
+                    addedCount += countToAdd;
+
+                    for (int j = 0; j < countToAdd; j++)
+                    {
+                        destination[insertRIndex++] = item.Item;
+                    }
+                }
+
+                incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
+            }
+
+            void ProcessMergingDuplicatesComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                tempList.Clear(false);
+
+                (int start, int length) resultedRangeCurrent = default;
+                resultedRangeCurrent.start = c;
+
+                // Add the first item to result (preparing to compare)
+                ref readonly TValue previous = ref _storage[c++];
+
+                var previousCounter = new ItemBinaryCounter(previous);
+                previousCounter.CurrentCount++;
+                tempList.AddUnique(ref previousCounter, out _);
+                resultedRangeCurrent.length++;
+
+                // Add all currently existing items in collision to result, and count them.
+                while (c_InRange(c))
+                {
+                    ref readonly TValue currentItem = ref _storage[c];
+
+                    if (Comparer.Compare(currentItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref currentItem;
+                    var newCounter = new ItemBinaryCounter(currentItem);
+
+                    ref ItemBinaryCounter counter = ref newCounter;
+                    if (!tempList.AddUnique(ref counter, out var index))
+                        counter = ref tempList.GetItemRef(index);
+
+                    counter.CurrentCount++;
+                    resultedRangeCurrent.length++;
+                    c++;
+                }
+
+                // Add all incoming items in collision to result, and count them.
+                (int start, int length) resultedRangeIncoming = default;
+                resultedRangeIncoming.start = i;
+                do
+                {
+                    ref readonly TValue incomingItem = ref range[i];
+
+                    if (Comparer.Compare(incomingItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref incomingItem;
+                    var newCounter = new ItemBinaryCounter(incomingItem);
+
+                    ref ItemBinaryCounter counter = ref newCounter;
+                    if (!tempList.AddUnique(ref counter, out var index))
+                        counter = ref tempList.GetItemRef(index);
+
+                    counter.IncomingCount++;
+                    resultedRangeIncoming.length++;
+                    i++;
+                }
+                while (i_InRange(i));
+
+                int addedCount = 0;
+                foreach (var item in tempList)
+                {
+                    int countToAdd = Math.Max(item.CurrentCount, item.IncomingCount);
+                    addedCount += countToAdd;
+
+                    for (int j = 0; j < countToAdd; j++)
+                    {
+                        destination[insertRIndex++] = item.Item;
+                    }
+                }
+
+                incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
+            }
+
+            void ProcessMergingDuplicatesPure(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                ref readonly TValue firstItem = ref _storage[c++]; i++; // they are equal here, so we can move both indexes
+                incomingElementsSkipped++;
+                destination[insertRIndex++] = firstItem;
+
+                bool currentDone = false;
+                bool incomingDone = false;
+
+                while (true)
+                {
+                    int hasItemInRow = 0;
+
+                    if (!currentDone && c_InRange(c) && Comparer.Compare(_storage[c], firstItem) == 0)
+                    {
+                        hasItemInRow++; c++;
+                    }
+                    else
+                    {
+                        currentDone = true;
+                    }
+
+                    if (!incomingDone && i_InRange(i) && Comparer.Compare(range[i], firstItem) == 0)
+                    {
+                        hasItemInRow++; i++;
+                    }
+                    else
+                    {
+                        incomingDone = true;
+                    }
+
+                    if (hasItemInRow > 0)
+                    {
+                        destination[insertRIndex++] = firstItem;
+
+                        if (hasItemInRow == 2)
+                            incomingElementsSkipped++;
+
+                        continue;
+                    }
+
+                    break;
+                }
+            }
+
+            void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+            {
+                destination[insertRIndex++] = range[i++];
+            }
+
+            void ProcessMergingCurrent(ref int insertRIndex, ref int c)
+            {
+                destination[insertRIndex++] = _storage[c++];
+            }
+        }
+
+        private bool UnionWithFromRight(ReadOnlySpan<TValue> range)
+        {
+            int newZeroRIndex = _zeroRIndex;
+            return UnionWithFromRight(range, _storage, newZeroRIndex);
+        }
+
+        private bool UnionWithFromRight(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        {
+            if (ReferenceEquals(_storage, destination))
+            {
+                Debug.Assert(newZeroRIndex == _zeroRIndex, "In-place merge requires place for the new range.");
+            }
+
+            BinaryList<ItemBinaryCounter> tempList = null!; // for local function usage (for optimizations)
+            Dictionary<ItemHashCounter, ItemHashCounter> tempDictionary = null!; // for local function usage (for optimizations)            
+
+            if (MayContainCollisions)
+            {
+                if (DefaultComparerLeadsToCollisions)
+                    tempDictionary = new();
+                else
+                    tempList = new();
+            }
+
+            int incomingElementsSkipped = 0;
+            int rangeLength = range.Length;
+            int insertRIndex = newZeroRIndex + _count + range.Length - 1;
+            int zeroIndexShift = 0;
+
+            Debug.Assert(insertRIndex < destination.Length, "Right buffer is not long enough");
+
+            bool i_InRange(int i) => i >= 0;
+            bool c_InRange(int c) => c >= _zeroRIndex;
+
+            // remember - we do care only about duplicates among incomings
+
+            // General merge loop
+            int i = range.Length - 1;
+            int c = _zeroRIndex + _count - 1;
+
+            while (i_InRange(i) && c_InRange(c))
+            {
+                ref readonly TValue incomingItem = ref range[i];
+                ref readonly TValue currentItem = ref _storage[c];
+
+                switch (Comparer.Compare(currentItem, incomingItem))
+                {
+                    case > 0:
+                        ProcessMergingCurrent(ref insertRIndex, ref c);
+                        break;
+                    case < 0:
+                        ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                        break;
+                    default:
+                        ProcessMergingDuplicates(ref insertRIndex, ref i, ref c, range);
+                        break;
+                }
+            }
+
+            // Manage remaining items
+            if (i_InRange(i))
+            {
+                do ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                while (i_InRange(i));
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                }
+            }
+            else if (c_InRange(c))
+            {
+                int remainingPartLength = c - _zeroRIndex + 1;
+                int finishedPartLength = _count + range.Length - incomingElementsSkipped - remainingPartLength;
+
+                if (_storage != destination)
+                {
+                    // we just have to copy remaining items into new array
+                    Array.Copy(_storage, _zeroRIndex, destination, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
+                    zeroIndexShift += incomingElementsSkipped;
+                }
+                else if (incomingElementsSkipped > 0)
+                {
+                    if (finishedPartLength >= remainingPartLength)
+                    {
+                        // Shift remaining items due to missing duplicates
+                        Array.Copy(_storage, _zeroRIndex, _storage, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
+                        zeroIndexShift += incomingElementsSkipped;
+
+                        // Clear formed dirty free-spots from left side
+                        if (ContainsReferences)
+                        {
+                            Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                        }
+                    }
+                    else
+                    {
+                        // Shift finished items due to missing duplicates
+                        Array.Copy(_storage, insertRIndex + 1, _storage, insertRIndex + 1 - incomingElementsSkipped, finishedPartLength);
+
+                        // Clear formed dirty free-spots from right side
+                        if (ContainsReferences)
+                        {
+                            Array.Clear(_storage, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
+                        }
+                    }
+                }
+            }
+
+            _zeroRIndex = newZeroRIndex + zeroIndexShift;
+            _count += range.Length - incomingElementsSkipped;
+            _version = unchecked(++_version);
+            return true;
+
+            void ProcessMergingDuplicates(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                if (_mayContainCollisions)
+                {
+                    if (DefaultComparerLeadsToCollisions)
+                        ProcessMergingDuplicatesDefault(ref insertRIndex, ref i, ref c, range);
+                    else
+                        ProcessMergingDuplicatesComparable(ref insertRIndex, ref i, ref c, range);
+                }
+                else
+                {
+                    ProcessMergingDuplicatesPure(ref insertRIndex, ref i, ref c, range);
+                }
+            }
+
+            void ProcessMergingDuplicatesDefault(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                tempDictionary.Clear();
+
+                (int start, int length) resultedRangeCurrent = default;
+                resultedRangeCurrent.start = c;
+
+                // Add the first item to result (preparing to compare)
+                ref readonly TValue previous = ref _storage[c--];
+
+                var previousCounter = new ItemHashCounter(previous);
+                previousCounter.CurrentCount++;
+                tempDictionary.Add(previousCounter, previousCounter);
+                resultedRangeCurrent.length++;
+
+                // Add all currently existing items in collision to result, and count them.
+                while (c_InRange(c))
+                {
+                    ref readonly TValue currentItem = ref _storage[c];
+
+                    if (Comparer.Compare(currentItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref currentItem;
+                    var counter = new ItemHashCounter(currentItem);
+
+                    if (tempDictionary.ContainsKey(counter))
+                        counter = tempDictionary[counter];
+                    else
+                        tempDictionary[counter] = counter;
+
+                    counter.CurrentCount++;
+                    resultedRangeCurrent.length++;
+                    c--;
+                }
+
+                // Add all incoming items in collision to result, and count them.
+                (int start, int length) resultedRangeIncoming = default;
+                resultedRangeIncoming.start = i;
+                do
+                {
+                    ref readonly TValue incomingItem = ref range[i];
+
+                    if (Comparer.Compare(incomingItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref incomingItem;
+                    var counter = new ItemHashCounter(incomingItem);
+
+                    if (tempDictionary.ContainsKey(counter))
+                        counter = tempDictionary[counter];
+                    else
+                        tempDictionary[counter] = counter;
+
+                    counter.IncomingCount++;
+                    resultedRangeIncoming.length++;
+                    i--;
+                }
+                while (i_InRange(i));
+
+                int addedCount = 0;
+                foreach (var item in tempDictionary.Values)
+                {
+                    int countToAdd = Math.Max(item.CurrentCount, item.IncomingCount);
+                    addedCount += countToAdd;
+
+                    for (int j = 0; j < countToAdd; j++)
+                    {
+                        destination[insertRIndex--] = item.Item;
+                    }
+                }
+
+                incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
+            }
+
+            void ProcessMergingDuplicatesComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                tempList.Clear(false);
+
+                (int start, int length) resultedRangeCurrent = default;
+                resultedRangeCurrent.start = c;
+
+                // Add the first item to result (preparing to compare)
+                ref readonly TValue previous = ref _storage[c--];
+
+                var previousCounter = new ItemBinaryCounter(previous);
+                previousCounter.CurrentCount++;
+                tempList.AddUnique(ref previousCounter, out _);
+
+                resultedRangeCurrent.length++;
+
+                // Add all currently existing items in collision to result, and count them.
+                while (c_InRange(c))
+                {
+                    ref readonly TValue currentItem = ref _storage[c];
+
+                    if (Comparer.Compare(currentItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref currentItem;
+                    var newCounter = new ItemBinaryCounter(currentItem);
+
+                    ref ItemBinaryCounter counter = ref newCounter;
+                    if (!tempList.AddUnique(ref counter, out var index))
+                        counter = ref tempList.GetItemRef(index);
+
+                    counter.CurrentCount++;
+                    resultedRangeCurrent.length++;
+                    c--;
+                }
+
+                // Add all incoming items in collision to result, and count them.
+                (int start, int length) resultedRangeIncoming = default;
+                resultedRangeIncoming.start = i;
+                do
+                {
+                    ref readonly TValue incomingItem = ref range[i];
+
+                    if (Comparer.Compare(incomingItem, previous) != 0)
+                        break; // this is the end of duplicates, we must stop
+
+                    previous = ref incomingItem;
+                    var newCounter = new ItemBinaryCounter(incomingItem);
+
+                    ref ItemBinaryCounter counter = ref newCounter;
+                    if (!tempList.AddUnique(ref counter, out var index))
+                        counter = ref tempList.GetItemRef(index);
+
+                    counter.IncomingCount++;
+                    resultedRangeIncoming.length++;
+                    i--;
+                }
+                while (i_InRange(i));
+
+                int addedCount = 0;
+                foreach (var item in tempList)
+                {
+                    int countToAdd = Math.Max(item.CurrentCount, item.IncomingCount);
+                    addedCount += countToAdd;
+
+                    for (int j = 0; j < countToAdd; j++)
+                    {
+                        destination[insertRIndex--] = item.Item;
+                    }
+                }
+
+                incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
+            }
+
+            void ProcessMergingDuplicatesPure(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            {
+                ref readonly TValue firstItem = ref _storage[c--]; i--; // they are equal here, so we can move both indexes
+                incomingElementsSkipped++;
+                destination[insertRIndex--] = firstItem;
+
+                bool currentDone = false;
+                bool incomingDone = false;
+
+                while (true)
+                {
+                    int hasItemInRow = 0;
+
+                    if (!currentDone && c_InRange(c) && Comparer.Compare(_storage[c], firstItem) == 0)
+                    {
+                        hasItemInRow++; c--;
+                    }
+                    else
+                    {
+                        currentDone = true;
+                    }
+
+                    if (!incomingDone && i_InRange(i) && Comparer.Compare(range[i], firstItem) == 0)
+                    {
+                        hasItemInRow++; i--;
+                    }
+                    else
+                    {
+                        incomingDone = true;
+                    }
+
+                    if (hasItemInRow > 0)
+                    {
+                        destination[insertRIndex--] = firstItem;
+
+                        if (hasItemInRow == 2)
+                            incomingElementsSkipped++;
+
+                        continue;
+                    }
+
+                    break;
+                }
+            }
+
+            void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+            {
+                destination[insertRIndex--] = range[i--];
+            }
+
+            void ProcessMergingCurrent(ref int insertRIndex, ref int c)
+            {
+                destination[insertRIndex--] = _storage[c--];
+            }
+        }
+    }
+}

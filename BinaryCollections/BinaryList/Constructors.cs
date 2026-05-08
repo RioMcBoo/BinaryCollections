@@ -1,7 +1,4 @@
-﻿using Perfolizer.Mathematics.Common;
-using System.Collections;
-
-namespace BinaryCollections.BinaryList
+﻿namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {

@@ -6,10 +6,10 @@ namespace BinaryList.Tests
     /// Cleaning is necessary to free memory for the garbage collector.
     /// To simplify testing and provide clarity on what happens to memory, a reference type (class) is used.
     /// </summary>
-    class TestType : IEquatable<TestType>
+    public class TestType : IEquatable<TestType>
     {
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.Next(); // used to make expectable collisions
+        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3, 0); // used to make expectable collisions
         public static implicit operator TestType(int value) => new() { Value = value };
 
         public bool Equals(TestType? other)
@@ -34,9 +34,10 @@ namespace BinaryList.Tests
         }
     }
 
-    class TestTypeHashCollisionAble : IEquatable<TestTypeHashCollisionAble>
+    public class TestTypeHashCollisionAble : IEquatable<TestTypeHashCollisionAble>
     {
         public int Value { get; init; }
+        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3000, 0); // used to make expectable collisions
         public static implicit operator TestTypeHashCollisionAble(int value) => new() { Value = value };
 
         public bool Equals(TestTypeHashCollisionAble? other)
@@ -57,14 +58,14 @@ namespace BinaryList.Tests
 
         public override int GetHashCode()
         {
-            return base.GetHashCode(); // used to make expectable collisions
+            return RandomValue.GetHashCode(); // used to make expectable collisions
         }
     }
 
-    class TestTypeComparable : IComparable<TestTypeComparable>, IEquatable<TestTypeComparable>
+    public class TestTypeComparable : IComparable<TestTypeComparable>, IEquatable<TestTypeComparable>
     {
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.Next();
+        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3, 0);
 
         public int CompareTo(TestTypeComparable? other)
         {
@@ -95,22 +96,15 @@ namespace BinaryList.Tests
         public static implicit operator TestTypeComparable(int value) => new() { Value = value };
     }
 
-    class TestTypeRandomizer
+    public class TestTypeRandomizer
     {
-        private readonly static HashSet<int> UsedValues = new();
-        private readonly static Random Random = new Random(1);
-        private readonly static object locker = new();
-
-        public static int Next()
+        public static int Next(int minValue, int maxValue)
         {
-            lock (locker)
-            {
-                 return Random.Next(-3, 0); // to easy watching the values in debug, we use negate numbers
-            }
+            return Random.Shared.Next(minValue, maxValue); // to easy watching the values in debug, we use negate numbers
         }
     }
 
-    class TestComparer : IComparer<TestTypeComparable>
+    public class TestComparer : IComparer<TestTypeComparable>
     {
         private readonly bool _withCollisions;
 
