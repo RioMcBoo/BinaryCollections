@@ -1,10 +1,28 @@
 ﻿using System.Numerics;
-
 namespace BinaryCollections.BinaryList
 {
-    public partial class BinaryList<TValue>
+    public partial class FloatingList<TValue>
     {
-        private bool Insert(ref readonly TValue item, ref int vIndex)
+        protected bool RemoveAtIndex(int index)
+        {
+            var info = new ArraySplitInfo(index, false, _count);
+
+            if (info.LeftPart.Length <= info.RightPart.Length)
+            {
+                ShiftLeftPart(ref info);
+            }
+            else if (info.RightPart.Length < info.LeftPart.Length)
+            {
+                ShiftRightPart(ref info);
+            }
+
+            _count--;
+            _version = unchecked(++_version);
+
+            return true;
+        }
+
+        protected bool Insert(ref readonly TValue item, ref int vIndex)
         {
             if (_count == Array.MaxLength)
                 return false;
@@ -36,7 +54,7 @@ namespace BinaryCollections.BinaryList
             return true;
         }
 
-        private bool Move(TValue[] srcArray, int srcVIndex, TValue[] destArray, int destVIndex, int length)
+        protected bool Move(TValue[] srcArray, int srcVIndex, TValue[] destArray, int destVIndex, int length)
         {
             if (length > 0)
             {
@@ -47,13 +65,13 @@ namespace BinaryCollections.BinaryList
             return false;
         }
 
-        private void MoveArray(TValue[] srcArray, TValue[] destArray, int delta)
+        protected void MoveArray(TValue[] srcArray, TValue[] destArray, int delta)
         {
             Move(srcArray, 0, destArray, delta, _count);
         }
 
 
-        private void ResizeArray(int newCapacity)
+        protected void ResizeArray(int newCapacity)
         {
             TValue[] oldStorage = _storage;
             _storage = new TValue[newCapacity];
@@ -66,7 +84,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroIndex;
         }
 
-        private void PrepareForResize(int newItemsCount, out TValue[] destination)
+        protected void PrepareForResize(int newItemsCount, out TValue[] destination)
         {
             destination = _storage;
 
@@ -83,19 +101,19 @@ namespace BinaryCollections.BinaryList
                 destination = new TValue[newCapacity];
         }
 
-        private void ResizeArray(ref ArraySplitInfo info)
+        protected void ResizeArray(ref ArraySplitInfo info)
         {
             PrepareForResize(info.ArraySizeDelta, out var destination);
             ShiftArrayToCenter(_storage, destination, ref info);
             _storage = destination;
         }
 
-        private void ShiftArrayToCenter(ref ArraySplitInfo info)
+        protected void ShiftArrayToCenter(ref ArraySplitInfo info)
         {
             ShiftArrayToCenter(_storage, _storage, ref info);
         }
 
-        private void ShiftArrayToCenter(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info)
+        protected void ShiftArrayToCenter(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info)
         {
             int arraySizeDelta = info.ArraySizeDelta;
             int newCount = _count + arraySizeDelta;
@@ -105,7 +123,7 @@ namespace BinaryCollections.BinaryList
             ShiftArray(srcArray, destArray, ref info, delta);
         }
 
-        private void ShiftArray(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftArray(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
         {
             int arraySizeDelta = info.ArraySizeDelta;
             int newZeroRIndex = delta + _zeroRIndex;
@@ -130,7 +148,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex;
         }
 
-        private void ClearArray(TValue[] array, int vIndex, int length)
+        protected void ClearArray(TValue[] array, int vIndex, int length)
         {
             if (length > 0)
             {
@@ -138,7 +156,7 @@ namespace BinaryCollections.BinaryList
             }
         }
 
-        private void ShiftArrayLeft(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftArrayLeft(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
         {
             Move(srcArray, info.LeftPart.VIndex, destArray, info.LeftPart.VIndex + delta, info.LeftPart.Length);
             delta += info.LeftPoint.ArraySizeDelta;
@@ -149,7 +167,7 @@ namespace BinaryCollections.BinaryList
             Move(srcArray, info.RightPart.VIndex, destArray, info.RightPart.VIndex + delta, info.RightPart.Length);
         }
 
-        private void ShiftArrayRight(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftArrayRight(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
         {
             Move(srcArray, info.RightPart.VIndex, destArray, info.RightPart.VIndex + delta, info.RightPart.Length);
             delta -= info.RightPoint.ArraySizeDelta;
@@ -160,21 +178,21 @@ namespace BinaryCollections.BinaryList
             Move(srcArray, info.LeftPart.VIndex, destArray, info.LeftPart.VIndex + delta, info.LeftPart.Length);
         }
 
-        private void ShiftMiddlePart(ref ArraySplitInfo info, out int addItemIndexDelta)
+        protected void ShiftMiddlePart(ref ArraySplitInfo info, out int addItemIndexDelta)
         {
             int delta = info.LeftPoint.ArraySizeDelta;
             Move(_storage, info.MiddPart.VIndex, _storage, info.MiddPart.VIndex + delta, info.MiddPart.Length);
             addItemIndexDelta = info.LeftPoint.NewItemtPushes ? -1 : 0;
         }
 
-        private void ShiftEdges(ref ArraySplitInfo info)
+        protected void ShiftEdges(ref ArraySplitInfo info)
         {
             // ShiftLeftPart changes zero_index, so ShiftRightPart should be called before it
             ShiftRightPart(ref info);
             ShiftLeftPart(ref info);
         }
 
-        private void ShiftLeftPart(ref ArraySplitInfo info)
+        protected void ShiftLeftPart(ref ArraySplitInfo info)
         {
             int delta = -info.LeftPoint.ArraySizeDelta;
             Move(_storage, info.LeftPart.VIndex, _storage, info.LeftPart.VIndex + delta, info.LeftPart.Length);
@@ -185,7 +203,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex += delta;
         }
 
-        private void ShiftRightPart(ref ArraySplitInfo info)
+        protected void ShiftRightPart(ref ArraySplitInfo info)
         {
             int delta = info.RightPoint.ArraySizeDelta;
             Move(_storage, info.RightPart.VIndex, _storage, info.RightPart.VIndex + delta, info.RightPart.Length);

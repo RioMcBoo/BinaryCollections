@@ -152,8 +152,6 @@ namespace BinaryCollections.BinaryList
             bool i_InRange(int i) => i < rangeLength;
             bool c_InRange(int c) => c < _zeroRIndex + _count;
 
-            // remember - we do care only about duplicates among incomings
-
             // General merge loop
             int i = 0;
             int c = _zeroRIndex;
@@ -529,8 +527,6 @@ namespace BinaryCollections.BinaryList
 
             bool i_InRange(int i) => i >= 0;
             bool c_InRange(int c) => c >= _zeroRIndex;
-
-            // remember - we do care only about duplicates among incomings
 
             // General merge loop
             int i = range.Length - 1;

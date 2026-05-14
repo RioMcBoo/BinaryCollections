@@ -14,24 +14,5 @@
 
             return false;
         }
-
-        private bool RemoveAtIndex(int index)
-        {
-            var info = new ArraySplitInfo(index, false, _count);
-
-            if (info.LeftPart.Length <= info.RightPart.Length)
-            {
-                ShiftLeftPart(ref info);
-            }
-            else if (info.RightPart.Length < info.LeftPart.Length)
-            {
-                ShiftRightPart(ref info);
-            }
-
-            _count--;
-            _version = unchecked(++_version);
-
-            return true;
-        }
     }
 }

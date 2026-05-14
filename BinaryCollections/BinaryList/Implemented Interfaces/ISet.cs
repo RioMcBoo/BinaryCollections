@@ -19,7 +19,7 @@
             throw new NotImplementedException();
         }
 
-        void ISet<TValue>.UnionWith(IEnumerable<TValue> other) => UnionWith(other);
+        void ISet<TValue>.UnionWith(IEnumerable<TValue> other) => UnionWithUnique(other);
 
         bool ISet<TValue>.IsProperSubsetOf(IEnumerable<TValue> other)
         {
