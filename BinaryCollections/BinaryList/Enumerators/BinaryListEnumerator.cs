@@ -10,14 +10,14 @@ namespace BinaryCollections.BinaryList
         /// <summary>The range contains only duplicate elements by the equality comparer.</summary>
         UniformRange =    0x1,
         /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
-        MayContainCollisions = 0x2,
+        ContainCompareCollisions = 0x2,
     }
 
     public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
         public readonly BinaryListEnumeratorFlags Flags { get; init; }
         public IComparer<TValue> Comparer => _binaryListInstance.Comparer;
-        public bool MayContainCollisions => _binaryListInstance.MayContainCollisions;
+        public bool ContainCompareCollisions => _binaryListInstance.ContainCompareCollisions;
         public int Version => _version;
         private readonly BinaryList<TValue> _binaryListInstance;
         private readonly TValue[] _sharedData;

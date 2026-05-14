@@ -6,6 +6,6 @@
         private int _zeroRIndex;
         private int _count;
         private int _version;
-        private readonly bool _mayContainCollisions;
+        private readonly bool _containCompareCollisions;
     }
 }

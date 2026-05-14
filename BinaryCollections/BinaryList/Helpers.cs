@@ -122,37 +122,13 @@ namespace BinaryCollections.BinaryList
             }
         }
 
-        private struct ItemBinaryCounter : IComparable<ItemBinaryCounter>, IEquatable<ItemBinaryCounter>
-        {
-            public TValue Item;
-            public int IncomingCount;
-            public int CurrentCount;
-
-            public ItemBinaryCounter(TValue item) { Item = item; }
-
-            public int CompareTo(ItemBinaryCounter other)
-            {
-                return _defaultComparer.Compare(Item, other.Item);
-            }
-
-            public bool Equals(ItemBinaryCounter other)
-            {
-                return _equalityComparer.Equals(Item, other.Item);
-            }
-        }
-
-        private class ItemHashCounter : IComparable<ItemHashCounter>, IEquatable<ItemHashCounter>
+        private class ItemHashCounter : IEquatable<ItemHashCounter>
         {
             public TValue Item;
             public int IncomingCount;
             public int CurrentCount;
 
             public ItemHashCounter(TValue item) { Item = item; }
-
-            public int CompareTo(ItemHashCounter? other)
-            {
-                return _defaultComparer.Compare(Item, other!.Item);
-            }
 
             public bool Equals(ItemHashCounter? other)
             {
@@ -166,7 +142,7 @@ namespace BinaryCollections.BinaryList
 
             public override bool Equals(object? obj)
             {
-                if (obj is ItemBinaryCounter other)
+                if (obj is ItemHashCounter other)
                 {
                     return Equals(other);
                 }

@@ -2,7 +2,7 @@
 {
     public partial class BinaryList<TValue>
     {
-        /// <param name="mayContainCollisions">
+        /// <param name="containCompareCollisions">
         /// Manually sets the collision policy. A "collision" occurs when <c>Compare(A, B) == 0</c> but <c>Equals(A, B) == false</c>.
         /// </param>
         /// <remarks>
@@ -11,7 +11,7 @@
         /// the sorting comparer and the equality comparer MUST be collision-free (i.e., return the same result for equal elements).
         /// </para>
         /// <para>
-        /// You can manually set <paramref name="mayContainCollisions"/> to <see langword="false"/> if you guarantee that your <paramref name="comparer"/> 
+        /// You can manually set <paramref name="containCompareCollisions"/> to <see langword="false"/> if you guarantee that your <paramref name="comparer"/> 
         /// has no collisions, even if the list's internal heuristics suggest otherwise.
         /// </para>
         /// <para>If left as <see langword="null"/>, the list auto-determines the policy:</para>
@@ -43,7 +43,7 @@
         ///         <c>(Compare(a, b) == 0) == Equals(a, b)</c> for all possible elements.
         ///     </para>
         /// </remarks>
-        public BinaryList(IEnumerable<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
+        public BinaryList(IEnumerable<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
         {
             if (initialValues is IReadOnlyCollection<TValue> collection)
             {
@@ -52,12 +52,12 @@
 
             if (initialValues is BinaryListEnumerator<TValue> enumerator)
             {
-                _mayContainCollisions = mayContainCollisions ?? (comparer is null ? enumerator.MayContainCollisions : true);
+                _containCompareCollisions = containCompareCollisions ?? (comparer is null ? enumerator.ContainCompareCollisions : true);
                 Comparer = comparer is null ? enumerator.Comparer : comparer;
             }
             else
             {
-                _mayContainCollisions = mayContainCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
+                _containCompareCollisions = containCompareCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
                 Comparer = comparer ?? Comparer;
             }
 
@@ -68,11 +68,11 @@
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(ReadOnlySpan<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
+        public BinaryList(ReadOnlySpan<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
         {
             capacity = capacity > initialValues.Length ? capacity : initialValues.Length;
 
-            _mayContainCollisions = mayContainCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
+            _containCompareCollisions = containCompareCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
             Comparer = comparer ?? Comparer;
 
             _storage = new TValue[capacity];
@@ -82,42 +82,42 @@
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(IEnumerable<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
-            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, mayContainCollisions) { }
+        public BinaryList(IEnumerable<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
+            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, containCompareCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(ReadOnlySpan<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
-            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, mayContainCollisions) { }
+        public BinaryList(ReadOnlySpan<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
+            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, containCompareCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(IComparer<TValue> comparer, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
+        public BinaryList(IComparer<TValue> comparer, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
             Comparer = comparer ?? Comparer;
-            _mayContainCollisions = mayContainCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
+            _containCompareCollisions = containCompareCollisions ?? (comparer is null ? DefaultComparerLeadsToCollisions : true);
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? mayContainCollisions = default)
-        : this(comparison is null ? null! : new ComparsionComparer(comparison), capacity, mayContainCollisions) { }
+        public BinaryList(Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? containCompareCollisions = default)
+        : this(comparison is null ? null! : new ComparsionComparer(comparison), capacity, containCompareCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(int capacity = DefaultCapacity, bool? mayContainCollisions = default)
+        public BinaryList(int capacity = DefaultCapacity, bool? containCompareCollisions = default)
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            _mayContainCollisions = mayContainCollisions ?? DefaultComparerLeadsToCollisions;
+            _containCompareCollisions = containCompareCollisions ?? DefaultComparerLeadsToCollisions;
         }
         
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(bool? mayContainCollisions)
+        public BinaryList(bool? containCompareCollisions)
         {
             _storage = new TValue[DefaultCapacity];
             _zeroRIndex = CalculateZeroIndex(DefaultCapacity, 0);
-            _mayContainCollisions = mayContainCollisions ?? DefaultComparerLeadsToCollisions;
+            _containCompareCollisions = containCompareCollisions ?? DefaultComparerLeadsToCollisions;
         }
     }
 }

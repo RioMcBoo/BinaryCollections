@@ -194,7 +194,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue incomingItem = ref range[i];
                 ref readonly TValue currentItem = ref _storage[c];
 
-                switch (Comparer.Compare(currentItem, incomingItem))
+                switch (Compare(in currentItem, in incomingItem))
                 {
                     case > 0:
                         destination[insertRIndex++] = incomingItem; i++;
@@ -248,7 +248,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue incomingItem = ref range[i];
                 ref readonly TValue currentItem = ref _storage[c];
 
-                switch (Comparer.Compare(currentItem, incomingItem))
+                switch (Compare(in currentItem, in incomingItem))
                 {
                     case > 0:
                         destination[insertRIndex--] = currentItem; c--;

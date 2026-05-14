@@ -23,8 +23,8 @@
             /// </returns>
             public int Compare(TValue? x, TValue? y)
             {
-                if (BinaryList<TValue>._equalityComparer.Equals(x, y)) return 0;
-                return BinaryList<TValue>._equalityComparer.GetHashCode(x).CompareTo(BinaryList<TValue>._equalityComparer.GetHashCode(y));
+                if (_equalityComparer.Equals(x, y)) return 0;
+                return _equalityComparer.GetHashCode(x).CompareTo(_equalityComparer.GetHashCode(y));
             }
         }
 
@@ -50,11 +50,11 @@
             /// 
             public int Compare(TValue? x, TValue? y)
             {
-                if (BinaryList<TValue>._equalityComparer.Equals(x, y)) return 0;
+                if (_equalityComparer.Equals(x, y)) return 0;
                 if (x is null) return -1;
                 if (y is null) return 1;
 
-                return BinaryList<TValue>._equalityComparer.GetHashCode(x).CompareTo(BinaryList<TValue>._equalityComparer.GetHashCode(y));
+                return _equalityComparer.GetHashCode(x).CompareTo(_equalityComparer.GetHashCode(y));
             }
         }
     }

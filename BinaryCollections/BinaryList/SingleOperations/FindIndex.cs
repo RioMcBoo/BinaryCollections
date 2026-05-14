@@ -136,7 +136,7 @@
 
                 i = unchecked((hi + lo) >>> 1);
 
-                int compareResult = Comparer.Compare(_storage[ToRealIndex(i)], item);
+                int compareResult = Compare(in _storage[ToRealIndex(i)], in item);
 
                 if (compareResult == 0)
                 {
@@ -153,7 +153,19 @@
             }
 
             i = ~lo;
-            return false;
+            return false;            
+        }
+
+        private int Compare(ref readonly TValue current, ref readonly TValue incoming)
+        {
+            int compareResult = Comparer.Compare(current, incoming);
+
+            if (_containCompareCollisions && !DefaultComparerLeadsToCollisions)
+            {
+                compareResult = _defaultComparer.Compare(current, incoming);
+            }
+
+            return compareResult;
         }
     }
 }

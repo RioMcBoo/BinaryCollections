@@ -41,11 +41,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: false);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: false);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -92,11 +92,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -143,11 +143,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestType> PrepareList(TestType[] initialList, TestType[] toRemove, TestType[] toAdd)
             {
-                BinaryList<TestType> tempList = new(mayContainCollisions: true);
+                BinaryList<TestType> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestType> list = new(mayContainCollisions: true);
+                BinaryList<TestType> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -194,11 +194,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: false);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: false);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -245,11 +245,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -296,11 +296,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestType> PrepareList(TestType[] initialList, TestType[] toRemove, TestType[] toAdd)
             {
-                BinaryList<TestType> tempList = new(mayContainCollisions: true);
+                BinaryList<TestType> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestType> list = new(mayContainCollisions: true);
+                BinaryList<TestType> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -348,11 +348,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: false);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: false);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: false);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -399,11 +399,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new(mayContainCollisions: true);
+                BinaryList<TestTypeComparable> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -450,11 +450,11 @@ namespace BinaryList.Tests
         {
             BinaryList<TestType> PrepareList(TestType[] initialList, TestType[] toRemove, TestType[] toAdd)
             {
-                BinaryList<TestType> tempList = new(mayContainCollisions: true);
+                BinaryList<TestType> tempList = new(containCompareCollisions: true);
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestType> list = new(mayContainCollisions: true);
+                BinaryList<TestType> list = new(containCompareCollisions: true);
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();

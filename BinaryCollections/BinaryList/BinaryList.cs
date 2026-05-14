@@ -12,19 +12,19 @@ namespace BinaryCollections.BinaryList
         private int RightBuffer => Capacity - _zeroRIndex - _count;
         private bool CanMoveLeft => LeftBuffer > 0;
         private bool CanMoveRight => RightBuffer > 0;
-        public bool MayContainCollisions => _mayContainCollisions;
+        public bool ContainCompareCollisions => _containCompareCollisions;
         
         private int ToVirtualIndex(int realIndex) => realIndex - _zeroRIndex;
         private int ToRealIndex(int virtualIndex) => virtualIndex + _zeroRIndex;        
 
         internal static IComparer<TValue> _defaultComparer;
         internal static IEqualityComparer<TValue> _equalityComparer;
-        private static readonly bool ContainsReferences;
-        private static readonly bool DefaultComparerLeadsToCollisions = true;
-        private static readonly bool IsComparable =
+        private static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
+        private static readonly bool DefaultComparerLeadsToCollisions;
+        private static readonly bool IsItemTypeComparable =
             typeof(IComparable<TValue>).IsAssignableFrom(typeof(TValue)) ||
             typeof(IComparable).IsAssignableFrom(typeof(TValue));
-        private static readonly bool IsEquatable =
+        private static readonly bool IsItemTypeEquatable =
             typeof(IEquatable<TValue>).IsAssignableFrom(typeof(TValue));
 
         private const int DefaultCapacity = 4;
@@ -32,12 +32,12 @@ namespace BinaryCollections.BinaryList
         static BinaryList()
         {
             bool IsReferenceType = !typeof(TValue).IsValueType;
-            ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
 
             _defaultComparer = Comparer<TValue>.Default;
             _equalityComparer = EqualityComparer<TValue>.Default;
+            DefaultComparerLeadsToCollisions = !IsItemTypeComparable || !IsItemTypeEquatable;
 
-            if (!IsComparable)
+            if (DefaultComparerLeadsToCollisions)
             {
                 if (IsReferenceType)
                 {
@@ -47,12 +47,10 @@ namespace BinaryCollections.BinaryList
                 {
                     _defaultComparer = new ValueTypeHashCodeComparer();
                 }
-
-                DefaultComparerLeadsToCollisions = true;
-            }
-            else if (IsComparable && IsEquatable)
-            {
-                DefaultComparerLeadsToCollisions = false;
+                else
+                {
+                    throw new InvalidOperationException("Type is not comparable");
+                }
             }
         }
 
@@ -224,7 +222,7 @@ namespace BinaryCollections.BinaryList
         public BinaryListEnumerator<TValue> ExtractArray()
         {
             _version = unchecked(++_version);
-            var flags = _mayContainCollisions ? BinaryListEnumeratorFlags.MayContainCollisions : BinaryListEnumeratorFlags.None;
+            var flags = _containCompareCollisions ? BinaryListEnumeratorFlags.ContainCompareCollisions : BinaryListEnumeratorFlags.None;
             var extracted = new BinaryListEnumerator<TValue>(this, _storage, _zeroRIndex, _count, flags);
             _storage = null!;
             return extracted;
