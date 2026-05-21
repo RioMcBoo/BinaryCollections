@@ -2,9 +2,9 @@
 {
     public sealed partial class BinaryList<TValue> : FloatingList<TValue>
     {
-        private bool ContaninsCollisions => _comparerLeadsToCollisions && DefaultComparerLeadsToCollisions;
-        internal IComparer<TValue> Comparer { get; init; } = _defaultComparer;
-        public bool ComparerLeadsToCollisions => _comparerLeadsToCollisions;
+        public BinaryListFlags Flags => _flags;
+        public IComparer<TValue> Comparer => _comparer;
+        private bool ContaninsCollisions => _comparer.ContainsCollisions;
 
         internal static IComparer<TValue> _defaultComparer = Comparer<TValue>.Default;
         private static readonly bool DefaultComparerLeadsToCollisions;
@@ -73,9 +73,8 @@
 
         public BinaryListEnumerator<TValue> ExtractArray()
         {
-            _version = unchecked(++_version);
-            var flags = _comparerLeadsToCollisions ? BinaryListEnumeratorFlags.ComparerLeadsToCollisions : BinaryListEnumeratorFlags.None;
-            var extracted = new BinaryListEnumerator<TValue>(this, _storage, _zeroRIndex, _count, flags);
+            _version = unchecked(++_version);            
+            var extracted = new BinaryListEnumerator<TValue>(this, _storage, _zeroRIndex, _count);
             _storage = null!;
             return extracted;
         }

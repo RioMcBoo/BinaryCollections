@@ -156,16 +156,6 @@
             return false;            
         }
 
-        private int Compare(ref readonly TValue current, ref readonly TValue incoming)
-        {
-            int compareResult = Comparer.Compare(current, incoming);
-
-            if (_comparerLeadsToCollisions && !DefaultComparerLeadsToCollisions)
-            {
-                compareResult = _defaultComparer.Compare(current, incoming);
-            }
-
-            return compareResult;
-        }
+        private int Compare(ref readonly TValue current, ref readonly TValue incoming) => _comparer.Compare(current, incoming);
     }
 }

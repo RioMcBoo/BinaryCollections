@@ -81,7 +81,7 @@ namespace BinaryCollections.BinaryList
                 if (!CheckAddRange(range.Count))
                     return false;
 
-                if (range.Flags.HasFlag(BinaryListEnumeratorFlags.UniformRange))
+                if (range.Flags.HasFlag(BinaryListFlags.UniformRange))
                 {
                     return AddUniformRange(range.GetSpan());
                 }

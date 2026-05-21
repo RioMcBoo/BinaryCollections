@@ -10,9 +10,7 @@
         public BinaryListEnumerator<TValue> GetRange(ref readonly TValue item)
         {
             var boundaries = GetBoundariesToShare(in item);
-            var flags = BinaryListEnumeratorFlags.UniformRange;
-
-            return new(this, boundaries.Source, boundaries.RealIndex, boundaries.Length, flags);
+            return new(this, boundaries.Source, boundaries.RealIndex, boundaries.Length, BinaryListFlags.UniformRange);
         }
 
         public BinaryListEnumerator<TValue> GetRange(int index, int length)

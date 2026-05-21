@@ -70,7 +70,6 @@ namespace BinaryCollections.BinaryList
             Move(srcArray, 0, destArray, delta, _count);
         }
 
-
         protected void ResizeArray(int newCapacity)
         {
             TValue[] oldStorage = _storage;

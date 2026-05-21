@@ -1,7 +1,20 @@
 ﻿namespace BinaryCollections.BinaryList
 {
+    [Flags]
+    public enum BinaryListFlags
+    {
+        None = 0x0,
+
+        /// <summary>The range contains only duplicate elements (by the equality comparer).</summary>
+        UniformRange = 0x1,
+
+        /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
+        MayContainCollisions = 0x2,
+    }
+
     public partial class BinaryList<TValue>
     {
-        private readonly bool _comparerLeadsToCollisions = DefaultComparerLeadsToCollisions;
+        private BinaryListFlags _flags;
+        private BinaryListComparer _comparer;
     }
 }

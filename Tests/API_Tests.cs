@@ -27,20 +27,22 @@ namespace BinaryList.Tests
             CollectionAssert.AreEqual(list.ToArray(), removeResult);
         }
 
-        //[TestMethod]
-        //public void Replace_ShouldCorrectlyHandleComplexShifts()
-        //{
-        //    // Arrange
-        //    var list = new BinaryList<int> { 10, 20, 30, 40, 50 };
+        [TestMethod]
+        public void Comparer_Import_Test()
+        {
+            List<TestTypeComparable> list = new();
+            BinaryList<TestTypeComparable> binaryList = new(list, TestComparer.WithCollisions);
 
-        //    // Act
-        //    // Заменяем 20 на 45. 45 должно встать перед 50.
-        //    list.Replace(20, 45, out var newIndex);
+            Random random = new Random(0);
+            for (int i = 0; i < 100000; i++)
+            {
+                TestTypeComparable item = random.Next(0, 3000);
+                list.Add(item);
+                binaryList.Add(item);
+            }
 
-        //    // Assert
-        //    int[] expected = { 10, 30, 40, 45, 50 };
-        //    CollectionAssert.AreEqual(expected, list.ToArray());
-        //    Assert.AreEqual(3, newIndex);
-        //}
+            list.Sort(binaryList.Comparer);
+            CollectionAssert.AreEqual(list, binaryList.ToArray());
+        }
     }
 }

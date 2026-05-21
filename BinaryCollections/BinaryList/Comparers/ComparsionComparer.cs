@@ -4,10 +4,10 @@
     {
         private class ComparsionComparer : IComparer<TValue>
         {
-            private readonly Comparison<TValue> comparison;
+            private readonly Comparison<TValue> _comparison;
             public ComparsionComparer(Comparison<TValue> comparison)
             {
-                this.comparison = comparison;
+                _comparison = comparison;
             }
 
             /// <returns>
@@ -27,7 +27,7 @@
             ///         </item>
             ///     </list>
             /// </returns>
-            public int Compare(TValue? x, TValue? y) { return comparison(x, y); }
+            public int Compare(TValue? x, TValue? y) { return _comparison(x, y); }
         }        
     }
 }

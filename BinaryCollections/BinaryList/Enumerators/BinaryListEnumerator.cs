@@ -2,33 +2,24 @@
 
 namespace BinaryCollections.BinaryList
 {
-    [Flags]
-    public enum BinaryListEnumeratorFlags
-    {
-        None =                       0x0,
-        /// <summary>The range contains only duplicate elements by the equality comparer.</summary>
-        UniformRange =               0x1,
-        /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
-        ComparerLeadsToCollisions =  0x2,
-    }
-
     public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
-        public readonly BinaryListEnumeratorFlags Flags { get; init; }
+        public readonly BinaryListFlags Flags => _binaryListInstance.Flags | _sharedFlags;
         public IComparer<TValue> Comparer => _binaryListInstance.Comparer;
-        public bool ComparerLeadsToCollisions => _binaryListInstance.ComparerLeadsToCollisions;
         public int Version => _version;
+        public int Count => _end - _start;
+
         private readonly BinaryList<TValue> _binaryListInstance;
         private readonly TValue[] _sharedData;
         private readonly int _version;
         private readonly int _start;
         private readonly int _end;
         private int _current;
-        public int Count => _end - _start;
+        private BinaryListFlags _sharedFlags;
 
-        internal BinaryListEnumerator(BinaryList<TValue> instance, TValue[] sharedData, int index, int count, BinaryListEnumeratorFlags flags = BinaryListEnumeratorFlags.None)
+        internal BinaryListEnumerator(BinaryList<TValue> instance, TValue[] sharedData, int index, int count, BinaryListFlags sharedFlags = BinaryListFlags.None)
         {
-            Flags = flags;
+            _sharedFlags = sharedFlags;
             _binaryListInstance = instance;
             _sharedData = sharedData;
             _version = instance.Version;

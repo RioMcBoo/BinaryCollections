@@ -50,17 +50,7 @@
                 capacity = capacity > collection.Count ? capacity : collection.Count;
             }
 
-            if (initialValues is BinaryListEnumerator<TValue> enumerator)
-            {
-                _comparerLeadsToCollisions = comparerLeadsToCollisions ?? (comparer is null ? enumerator.ComparerLeadsToCollisions : true);
-                Comparer = comparer is null ? enumerator.Comparer : comparer;
-            }
-            else
-            {
-                _comparerLeadsToCollisions = comparerLeadsToCollisions ?? (comparer is null ? _comparerLeadsToCollisions : true);
-                Comparer = comparer ?? Comparer;
-            }
-
+            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
 
@@ -72,9 +62,7 @@
         {
             capacity = capacity > initialValues.Length ? capacity : initialValues.Length;
 
-            _comparerLeadsToCollisions = comparerLeadsToCollisions ?? (comparer is null ? _comparerLeadsToCollisions : true);
-            Comparer = comparer ?? Comparer;
-
+            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
 
@@ -93,10 +81,10 @@
         public BinaryList(IComparer<TValue> comparer, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
+
+            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            Comparer = comparer ?? Comparer;
-            _comparerLeadsToCollisions = comparerLeadsToCollisions ?? (comparer is null ? _comparerLeadsToCollisions : true);
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
@@ -107,6 +95,8 @@
         public BinaryList(int capacity = DefaultCapacity)
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
+
+            _comparer = new(ref _flags);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
         }
