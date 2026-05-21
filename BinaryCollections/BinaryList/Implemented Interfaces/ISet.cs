@@ -11,10 +11,7 @@
 
         void ISet<TValue>.IntersectWith(IEnumerable<TValue> other) => IntersectWithUnique(other);
 
-        void ISet<TValue>.SymmetricExceptWith(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        void ISet<TValue>.SymmetricExceptWith(IEnumerable<TValue> other) => SymmetricExceptWithUnique(other);
 
         void ISet<TValue>.UnionWith(IEnumerable<TValue> other) => UnionWithUnique(other);
 
