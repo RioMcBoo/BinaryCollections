@@ -2,7 +2,7 @@
 {
     partial class BinaryList<TValue> : ISet<TValue>
     {
-        bool ISet<TValue>.Add(TValue item) => Add(in item, out _);
+        bool ISet<TValue>.Add(TValue item) => AddUnique(in item, out _);
 
         void ISet<TValue>.ExceptWith(IEnumerable<TValue> other) => ExceptWithUnique(other);
 
