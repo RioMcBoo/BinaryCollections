@@ -1,23 +1,22 @@
 ﻿using System.Collections;
-using System.ComponentModel;
 
 namespace BinaryCollections.BinaryList
 {
     [Flags]
     public enum BinaryListEnumeratorFlags
     {
-        None =                      0x0,
+        None =                       0x0,
         /// <summary>The range contains only duplicate elements by the equality comparer.</summary>
-        UniformRange =              0x1,
+        UniformRange =               0x1,
         /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
-        ContainCompareCollisions =  0x2,
+        ComparerLeadsToCollisions =  0x2,
     }
 
     public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
         public readonly BinaryListEnumeratorFlags Flags { get; init; }
         public IComparer<TValue> Comparer => _binaryListInstance.Comparer;
-        public bool ContainCompareCollisions => _binaryListInstance.ContainCompareCollisions;
+        public bool ComparerLeadsToCollisions => _binaryListInstance.ComparerLeadsToCollisions;
         public int Version => _version;
         private readonly BinaryList<TValue> _binaryListInstance;
         private readonly TValue[] _sharedData;

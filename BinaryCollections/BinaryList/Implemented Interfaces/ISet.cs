@@ -9,10 +9,7 @@
             throw new NotImplementedException();
         }
 
-        void ISet<TValue>.IntersectWith(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        void ISet<TValue>.IntersectWith(IEnumerable<TValue> other) => IntersectWithUnique(other);
 
         void ISet<TValue>.SymmetricExceptWith(IEnumerable<TValue> other)
         {

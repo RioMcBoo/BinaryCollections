@@ -160,7 +160,7 @@
         {
             int compareResult = Comparer.Compare(current, incoming);
 
-            if (_containCompareCollisions && !DefaultComparerLeadsToCollisions)
+            if (_comparerLeadsToCollisions && !DefaultComparerLeadsToCollisions)
             {
                 compareResult = _defaultComparer.Compare(current, incoming);
             }

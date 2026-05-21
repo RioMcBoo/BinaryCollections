@@ -2,8 +2,9 @@
 {
     public sealed partial class BinaryList<TValue> : FloatingList<TValue>
     {
+        private bool ContaninsCollisions => _comparerLeadsToCollisions && DefaultComparerLeadsToCollisions;
         internal IComparer<TValue> Comparer { get; init; } = _defaultComparer;
-        public bool ContainCompareCollisions => _containCompareCollisions;              
+        public bool ComparerLeadsToCollisions => _comparerLeadsToCollisions;
 
         internal static IComparer<TValue> _defaultComparer = Comparer<TValue>.Default;
         private static readonly bool DefaultComparerLeadsToCollisions;
@@ -30,7 +31,7 @@
                 }
                 else
                 {
-                    throw new InvalidOperationException("Type is not comparable");
+                    // we will require a comparer from user
                 }
             }
         }        
@@ -73,7 +74,7 @@
         public BinaryListEnumerator<TValue> ExtractArray()
         {
             _version = unchecked(++_version);
-            var flags = _containCompareCollisions ? BinaryListEnumeratorFlags.ContainCompareCollisions : BinaryListEnumeratorFlags.None;
+            var flags = _comparerLeadsToCollisions ? BinaryListEnumeratorFlags.ComparerLeadsToCollisions : BinaryListEnumeratorFlags.None;
             var extracted = new BinaryListEnumerator<TValue>(this, _storage, _zeroRIndex, _count, flags);
             _storage = null!;
             return extracted;

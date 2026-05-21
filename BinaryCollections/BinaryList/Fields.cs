@@ -2,6 +2,6 @@
 {
     public partial class BinaryList<TValue>
     {
-        private readonly bool _containCompareCollisions;
+        private readonly bool _comparerLeadsToCollisions = DefaultComparerLeadsToCollisions;
     }
 }
