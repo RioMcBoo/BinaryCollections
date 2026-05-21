@@ -4,10 +4,7 @@
     {
         bool ISet<TValue>.Add(TValue item) => Add(in item, out _);
 
-        void ISet<TValue>.ExceptWith(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        void ISet<TValue>.ExceptWith(IEnumerable<TValue> other) => ExceptWithUnique(other);
 
         void ISet<TValue>.IntersectWith(IEnumerable<TValue> other) => IntersectWithUnique(other);
 
