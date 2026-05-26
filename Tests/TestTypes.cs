@@ -1,5 +1,4 @@
-﻿
-namespace BinaryList.Tests
+﻿namespace BinaryList.Tests
 {
     /// <summary>
     /// A binary list does not clean up freed cells if they are of a value type to improve performance.
@@ -160,6 +159,37 @@ namespace BinaryList.Tests
                 return Comparer<TestTypeComparable>.Default.Compare(x, y);
 
             return Comparer<int>.Default.Compare(x.RandomValue, y.RandomValue);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is TestComparer other)
+            {
+                return (_withCollisions == other._withCollisions);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_withCollisions);
+        }
+
+        public static bool operator ==(TestComparer? left, TestComparer? right)
+        {
+            if (left is null || right is null)
+                return false;
+
+            if (ReferenceEquals(left, right))
+                return true;
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TestComparer? left, TestComparer? right)
+        {
+            return !(left == right);
         }
     }
 }
