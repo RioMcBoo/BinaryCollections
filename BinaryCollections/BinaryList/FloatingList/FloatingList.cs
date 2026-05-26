@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace BinaryCollections.BinaryList
 {
@@ -7,11 +8,18 @@ namespace BinaryCollections.BinaryList
         public int Capacity => _storage.Length;
         public int Count => _count;
         public int Version => _version;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected int LeftBuffer => _zeroRIndex;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected int RightBuffer => Capacity - _zeroRIndex - _count;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected bool CanMoveLeft => LeftBuffer > 0;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected bool CanMoveRight => RightBuffer > 0;
-
+        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+        private ReadOnlySpan<TValue> Values => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
+        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+        private int ZeroIndex => _zeroRIndex;
         protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
         protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
         protected const int DefaultCapacity = 4;

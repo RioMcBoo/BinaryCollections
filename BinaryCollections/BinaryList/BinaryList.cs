@@ -1,10 +1,14 @@
-﻿namespace BinaryCollections.BinaryList
+﻿using System.Diagnostics;
+
+namespace BinaryCollections.BinaryList
 {
     public sealed partial class BinaryList<TValue> : FloatingList<TValue>
     {
         public BinaryListFlags Flags => _flags;
         public IComparer<TValue> Comparer => _comparer;
-        private bool ContaninsCollisions => _comparer.ContainsCollisions;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private bool ContaninsCollisions => _comparer.LeadsToCollisions;
 
         internal static IComparer<TValue> _defaultComparer = Comparer<TValue>.Default;
         private static readonly bool DefaultComparerLeadsToCollisions;

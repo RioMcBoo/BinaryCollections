@@ -5,33 +5,33 @@ namespace BinaryCollections.BinaryList
     {
         public class BinaryListComparer : IComparer<TValue>
         {
-            public bool LeadsToCollisions { get; init; }
-            internal readonly IComparer<TValue> _comparer;
+            private readonly bool _leadsToCollisions;
+            private readonly IComparer<TValue> _comparer;
 
-            public bool ContainsCollisions => LeadsToCollisions && DefaultComparerLeadsToCollisions;
+            public bool LeadsToCollisions => _leadsToCollisions && DefaultComparerLeadsToCollisions;
 
             public BinaryListComparer(ref BinaryListFlags flags, IComparer<TValue> comparer = null!, bool? comparerLeadsToCollisions = null)
             {
                 if (comparer is BinaryListComparer binaryListComparer)
                 {
                     _comparer = binaryListComparer._comparer;
-                    LeadsToCollisions = binaryListComparer.LeadsToCollisions;
+                    _leadsToCollisions = binaryListComparer._leadsToCollisions;
 
                     if (comparerLeadsToCollisions.HasValue && comparerLeadsToCollisions.Value == true)
                     {
                         // We only allow the stricter rule
-                        LeadsToCollisions = true;
+                        _leadsToCollisions = true;
                     }
                 }
                 else if (ReferenceEquals(comparer, _defaultComparer) || comparer == null)
                 {
                     _comparer = comparer ?? _defaultComparer;
-                    LeadsToCollisions = DefaultComparerLeadsToCollisions;
+                    _leadsToCollisions = DefaultComparerLeadsToCollisions;
 
                     if (comparerLeadsToCollisions.HasValue && comparerLeadsToCollisions.Value == true)
                     {
                         // We only allow the stricter rule
-                        LeadsToCollisions = true;
+                        _leadsToCollisions = true;
                     }
                 }
                 else
@@ -40,16 +40,16 @@ namespace BinaryCollections.BinaryList
 
                     if (comparerLeadsToCollisions.HasValue)
                     {
-                        LeadsToCollisions = comparerLeadsToCollisions.Value;
+                        _leadsToCollisions = comparerLeadsToCollisions.Value;
                     }
                     else
                     {
                         // Custom comparers are assumed to potentially lead to collisions by default
-                        LeadsToCollisions = true;
+                        _leadsToCollisions = true;
                     }
                 }
 
-                flags = ContainsCollisions ? flags | BinaryListFlags.MayContainCollisions : flags & ~BinaryListFlags.MayContainCollisions;
+                flags = LeadsToCollisions ? flags | BinaryListFlags.MayContainCollisions : flags & ~BinaryListFlags.MayContainCollisions;
             }
 
             /// <returns>
@@ -73,7 +73,7 @@ namespace BinaryCollections.BinaryList
             {
                 int compareResult = _comparer.Compare(x, y);
 
-                if (LeadsToCollisions && !DefaultComparerLeadsToCollisions)
+                if (_leadsToCollisions && !DefaultComparerLeadsToCollisions)
                 {
                     compareResult = _defaultComparer.Compare(x, y);
                 }
@@ -85,7 +85,7 @@ namespace BinaryCollections.BinaryList
             {
                 if (obj is BinaryListComparer other)
                 {
-                    return (this._comparer == other._comparer) && (this.LeadsToCollisions == other.LeadsToCollisions);
+                    return (this._comparer == other._comparer) && (this._leadsToCollisions == other._leadsToCollisions);
                 }
 
                 return false;
@@ -93,7 +93,7 @@ namespace BinaryCollections.BinaryList
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(_comparer, LeadsToCollisions);
+                return HashCode.Combine(_comparer, _leadsToCollisions);
             }
 
             public static bool operator ==(BinaryListComparer? left, BinaryListComparer? right)
