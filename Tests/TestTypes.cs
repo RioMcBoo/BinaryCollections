@@ -9,7 +9,7 @@ namespace BinaryList.Tests
     public class TestType : IEquatable<TestType>
     {
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3, 0); // used to make expectable collisions
+        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
         public static implicit operator TestType(int value) => new() { Value = value };
 
         public bool Equals(TestType? other)
@@ -37,7 +37,7 @@ namespace BinaryList.Tests
     public class TestTypeHashCollisionAble : IEquatable<TestTypeHashCollisionAble>
     {
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3000, 0); // used to make expectable collisions
+        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
         public static implicit operator TestTypeHashCollisionAble(int value) => new() { Value = value };
 
         public bool Equals(TestTypeHashCollisionAble? other)
@@ -65,7 +65,7 @@ namespace BinaryList.Tests
     public class TestTypeComparable : IComparable<TestTypeComparable>, IEquatable<TestTypeComparable>
     {
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.Next(-3, 0);
+        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
 
         public int CompareTo(TestTypeComparable? other)
         {
@@ -98,9 +98,21 @@ namespace BinaryList.Tests
 
     public class TestTypeRandomizer
     {
-        public static int Next(int minValue, int maxValue)
+        private static readonly int[] _shuffledPool;
+        private static int _index = 0;
+        private static Random _random = new(0);
+        static TestTypeRandomizer()
         {
-            return Random.Shared.Next(minValue, maxValue); // to easy watching the values in debug, we use negate numbers
+            _shuffledPool = Enumerable.Repeat(new[] { -3, -2, -1 }, 100)
+                                      .SelectMany(x => x)
+                                      .ToArray();
+            _random.Shuffle(_shuffledPool);
+        }
+
+        public static int GetNextFromPool()
+        {
+            int idx = Math.Abs(Interlocked.Increment(ref _index) % _shuffledPool.Length);
+            return _shuffledPool[idx];
         }
     }
 
