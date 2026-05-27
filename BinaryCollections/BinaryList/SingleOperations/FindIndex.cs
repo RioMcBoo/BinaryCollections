@@ -46,7 +46,7 @@
             // Find identical in right part
             for (int i = vIndex; i < Count; i++)
             {
-                var result = Comparer.Compare(_storage[ToRealIndex(i)], item);
+                var result = Compare(in _storage[ToRealIndex(i)], in item);
 
                 if (result != 0)
                     break;
@@ -61,7 +61,7 @@
             // Find identical in left part
             for (int i = vIndex - 1; i >= 0; i--)
             {
-                var result = Comparer.Compare(_storage[ToRealIndex(i)], item);
+                var result = Compare(in _storage[ToRealIndex(i)], in item);
 
                 if (result != 0)
                     break;
