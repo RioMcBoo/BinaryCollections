@@ -159,6 +159,8 @@ namespace BinaryCollections.BinaryList
             }
         }
 
+        [Obsolete("This method is dangerous because it allows you to change the internal state of collection elements, point to deleted or changed array! Use it only if you understand the consequences..", false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ref TValue GetItemRef(int index)
         {
             if (CheckIndex(index))

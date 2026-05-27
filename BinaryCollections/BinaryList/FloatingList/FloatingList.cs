@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace BinaryCollections.BinaryList
 {
-    public abstract partial class FloatingList<TValue>
+    public partial class FloatingList<TValue>
     {
         public int Capacity => _storage.Length;
         public int Count => _count;
@@ -24,7 +24,7 @@ namespace BinaryCollections.BinaryList
         protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
         protected const int DefaultCapacity = 4;
 
-        public ref TValue this[int index] => ref GetItemRef(index);
+        public TValue this[int index] => GetItem(index);
 
         public bool RemoveAt(int index)
         {
