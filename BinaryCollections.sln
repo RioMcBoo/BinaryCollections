@@ -7,23 +7,25 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryCollections", "Binary
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{88085B28-794C-4CFB-8542-09D2E89C5959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Add_Comparer_Type_Benchmark", "Reference_Value_Type_Benchmark\Add_Comparer_Type_Benchmark.csproj", "{D91E42B9-0DA1-4041-9A4E-077A24D5CC34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Add_Comparer_Type_Benchmark", "Benchmarks\Reference_Value_Type_Benchmark\Add_Comparer_Type_Benchmark.csproj", "{D91E42B9-0DA1-4041-9A4E-077A24D5CC34}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{D04613D7-47D8-48D0-A9C5-3ED409023054}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MSTests", "MSTests", "{AA3EB3D3-0B70-4816-A231-CCE20E591F7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddUnique_Benchmark", "AddUnique_vs_other_collections_Benchmark\AddUnique_Benchmark.csproj", "{3D63A58A-F270-47A4-9F9F-1217E04A883F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddUnique_Benchmark", "Benchmarks\AddUnique_vs_other_collections_Benchmark\AddUnique_Benchmark.csproj", "{3D63A58A-F270-47A4-9F9F-1217E04A883F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddUnique", "AddUnique", "{362B3478-3AEC-4F8B-856D-7B84F7CBCED0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddUnique", "Benchmarks\AddUnique", "{362B3478-3AEC-4F8B-856D-7B84F7CBCED0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Add", "Add", "{7234700B-490F-4164-9FC0-081A30AD64E6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Add", "Benchmarks\Add", "{7234700B-490F-4164-9FC0-081A30AD64E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Add_Benchmark", "Add_Benchmark\Add_Benchmark.csproj", "{0704E67B-8EFA-44B0-AB65-91944A406B8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Add_Benchmark", "Benchmarks\Add_Benchmark\Add_Benchmark.csproj", "{0704E67B-8EFA-44B0-AB65-91944A406B8C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnionWithUnique", "UnionWithUnique", "{C4E28EE1-6BA6-4A5D-B12D-B5252D5A5005}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnionWithUnique", "Benchmarks\UnionWithUnique", "{C4E28EE1-6BA6-4A5D-B12D-B5252D5A5005}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnionWithUnique", "UnionWithUnique\UnionWithUnique.csproj", "{26970382-031B-45E1-A7E2-F71770CB5F35}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnionWithUnique", "Benchmarks\UnionWithUnique\UnionWithUnique.csproj", "{26970382-031B-45E1-A7E2-F71770CB5F35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks\Benchmarks.csproj", "{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{26970382-031B-45E1-A7E2-F71770CB5F35}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26970382-031B-45E1-A7E2-F71770CB5F35}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26970382-031B-45E1-A7E2-F71770CB5F35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +74,7 @@ Global
 		{0704E67B-8EFA-44B0-AB65-91944A406B8C} = {7234700B-490F-4164-9FC0-081A30AD64E6}
 		{C4E28EE1-6BA6-4A5D-B12D-B5252D5A5005} = {D04613D7-47D8-48D0-A9C5-3ED409023054}
 		{26970382-031B-45E1-A7E2-F71770CB5F35} = {C4E28EE1-6BA6-4A5D-B12D-B5252D5A5005}
+		{AC97D08B-0B82-474A-AD9C-1F2219BDB0DE} = {D04613D7-47D8-48D0-A9C5-3ED409023054}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F86D2B44-EE5C-4095-95D3-DF7A10B18A0F}

@@ -47,11 +47,11 @@
         {
             BaseHashSibling = GenerateRandomData(TotalElements);
             BaseHashCollisionableSibling = GenerateRandomDataCollisionable(BaseHashSibling);
-            BaseBinaryList = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly, containCompareCollisions: false), new List<TestTypeComparable>(BaseHashSibling.right));
+            BaseBinaryList = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly), new List<TestTypeComparable>(BaseHashSibling.right));
             BaseBinaryListCollisionable = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.WithCollisions), new List<TestTypeComparable>(BaseHashSibling.right));
-            BaseBinaryListSibling = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly, containCompareCollisions: false), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.Properly, containCompareCollisions: false));
+            BaseBinaryListSibling = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.Properly));
             BaseBinaryListCollisionableSibling = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.WithCollisions), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.WithCollisions));
-            BaseBinaryListSiblingSingle = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly, containCompareCollisions: false), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.Properly, containCompareCollisions: false));
+            BaseBinaryListSiblingSingle = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.Properly), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.Properly));
             BaseBinaryListCollisionableSiblingSingle = (new BinaryList<TestTypeComparable>(BaseHashSibling.left, TestComparer.WithCollisions), new BinaryList<TestTypeComparable>(BaseHashSibling.right, TestComparer.WithCollisions));
             BaseList = (new List<TestTypeComparable>(BaseHashSibling.left), new List<TestTypeComparable>(BaseHashSibling.right));
             BaseListCollisionable = (new List<TestTypeHashCollisionAble>(BaseHashCollisionableSibling.left), new List<TestTypeHashCollisionAble>(BaseHashCollisionableSibling.right));
