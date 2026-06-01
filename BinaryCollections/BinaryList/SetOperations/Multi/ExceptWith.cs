@@ -76,7 +76,7 @@ namespace BinaryCollections.BinaryList
 
         public bool ExceptWith(BinaryListEnumerator<TValue> range)
         {
-            if (range.Comparer == Comparer)
+            if (range.Comparer.Equals(Comparer))
             {
                 if (!CheckAddRange(range.Count))
                     return false;

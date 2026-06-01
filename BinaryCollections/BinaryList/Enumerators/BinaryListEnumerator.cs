@@ -74,7 +74,6 @@ namespace BinaryCollections.BinaryList
         {
             ValidateVersion();
             return new ReadOnlySpan<TValue>(_sharedData, _start, Count);
-
         }
 
         public TValue[] ToArray()

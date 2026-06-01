@@ -98,12 +98,12 @@ namespace BinaryCollections.BinaryList
 
             public static bool operator ==(BinaryListComparer? left, BinaryListComparer? right)
             {
+                if (ReferenceEquals(left, right))
+                    return true;
+
                 if (left is null || right is null)
                     return false;
 
-                if (ReferenceEquals(left, right))
-                    return true;
-                
                 return left.Equals(right);
             }
 
@@ -111,6 +111,6 @@ namespace BinaryCollections.BinaryList
             {
                 return !(left == right);
             }
-        }        
+        }
     }
 }
