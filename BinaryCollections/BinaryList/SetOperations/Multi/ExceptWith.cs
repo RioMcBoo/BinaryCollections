@@ -140,7 +140,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<ItemHashCounter, ItemHashCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, ItemCounter> tempDictionary = ContaninsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -251,9 +251,7 @@ namespace BinaryCollections.BinaryList
                     // Add the first item to result (preparing to compare)
                     ref readonly TValue previous = ref _storage[c++];
 
-                    var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.SourceCount++;
-                    tempDictionary.Add(previousCounter, previousCounter);
+                    tempDictionary.Add(previous, new ItemCounter(sourceCount: 1));
                     resultedRangeCurrent.length++;
 
                     // Add all currently existing items in collision to result, and count them.
@@ -265,12 +263,12 @@ namespace BinaryCollections.BinaryList
                             break; // this is the end of duplicates, we must stop
 
                         previous = ref currentItem;
-                        var counter = new ItemHashCounter(currentItem);
 
-                        if (tempDictionary.ContainsKey(counter))
-                            counter = tempDictionary[counter];
-                        else
-                            tempDictionary[counter] = counter;
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
+                        {
+                            counter = new ItemCounter();
+                            tempDictionary[currentItem] = counter;
+                        }
 
                         counter.SourceCount++;
                         resultedRangeCurrent.length++;
@@ -288,12 +286,12 @@ namespace BinaryCollections.BinaryList
                             break; // this is the end of duplicates, we must stop
 
                         previous = ref incomingItem;
-                        var counter = new ItemHashCounter(incomingItem);
 
-                        if (tempDictionary.ContainsKey(counter))
-                            counter = tempDictionary[counter];
-                        else
-                            tempDictionary[counter] = counter;
+                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        {
+                            counter = new ItemCounter();
+                            tempDictionary[incomingItem] = counter;
+                        }
 
                         counter.TargetCount++;
                         resultedRangeIncoming.length++;
@@ -302,15 +300,15 @@ namespace BinaryCollections.BinaryList
                     while (i_InRange(i));
 
                     int addedCount = 0;
-                    foreach (var item in tempDictionary.Values)
+                    foreach (var item in tempDictionary)
                     {
-                        int countToAdd = item.SourceCount - item.TargetCount;
+                        int countToAdd = item.Value.SourceCount - item.Value.TargetCount;
                         if (countToAdd < 0)
                             countToAdd = 0;
 
                         for (int j = 0; j < countToAdd; j++)
                         {
-                            destination[insertRIndex++] = item.Item;
+                            destination[insertRIndex++] = item.Key;
                         }
 
                         addedCount += countToAdd;
@@ -391,7 +389,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<ItemHashCounter, ItemHashCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, ItemCounter> tempDictionary = ContaninsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -503,9 +501,7 @@ namespace BinaryCollections.BinaryList
                     // Add the first item to result (preparing to compare)
                     ref readonly TValue previous = ref _storage[c--];
 
-                    var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.SourceCount++;
-                    tempDictionary.Add(previousCounter, previousCounter);
+                    tempDictionary.Add(previous, new ItemCounter(sourceCount: 1));
                     resultedRangeCurrent.length++;
 
                     // Add all currently existing items in collision to result, and count them.
@@ -517,12 +513,12 @@ namespace BinaryCollections.BinaryList
                             break; // this is the end of duplicates, we must stop
 
                         previous = ref currentItem;
-                        var counter = new ItemHashCounter(currentItem);
 
-                        if (tempDictionary.ContainsKey(counter))
-                            counter = tempDictionary[counter];
-                        else
-                            tempDictionary[counter] = counter;
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
+                        {
+                            counter = new ItemCounter();
+                            tempDictionary[currentItem] = counter;
+                        }
 
                         counter.SourceCount++;
                         resultedRangeCurrent.length++;
@@ -540,12 +536,12 @@ namespace BinaryCollections.BinaryList
                             break; // this is the end of duplicates, we must stop
 
                         previous = ref incomingItem;
-                        var counter = new ItemHashCounter(incomingItem);
 
-                        if (tempDictionary.ContainsKey(counter))
-                            counter = tempDictionary[counter];
-                        else
-                            tempDictionary[counter] = counter;
+                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        {
+                            counter = new ItemCounter();
+                            tempDictionary[incomingItem] = counter;
+                        }
 
                         counter.TargetCount++;
                         resultedRangeIncoming.length++;
@@ -554,15 +550,15 @@ namespace BinaryCollections.BinaryList
                     while (i_InRange(i));
 
                     int addedCount = 0;
-                    foreach (var item in tempDictionary.Values)
+                    foreach (var item in tempDictionary)
                     {
-                        int countToAdd = item.SourceCount - item.TargetCount;
+                        int countToAdd = item.Value.SourceCount - item.Value.TargetCount;
                         if (countToAdd < 0)
                             countToAdd = 0;
 
                         for (int j = 0; j < countToAdd; j++)
                         {
-                            destination[insertRIndex--] = item.Item;
+                            destination[insertRIndex--] = item.Key;
                         }
 
                         addedCount += countToAdd;

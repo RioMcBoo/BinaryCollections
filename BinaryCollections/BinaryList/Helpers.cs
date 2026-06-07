@@ -23,32 +23,15 @@
             }
         }
 
-        private class ItemHashCounter : IEquatable<ItemHashCounter>
+        private class ItemCounter
         {
-            public TValue Item;
             public int TargetCount;
             public int SourceCount;
 
-            public ItemHashCounter(TValue item) { Item = item; }
-
-            public bool Equals(ItemHashCounter? other)
+            public ItemCounter(int targetCount = 0, int sourceCount = 0)
             {
-                return _equalityComparer.Equals(Item, other!.Item);
-            }
-
-            public override int GetHashCode()
-            {
-                return Item?.GetHashCode() ?? 0;
-            }
-
-            public override bool Equals(object? obj)
-            {
-                if (obj is ItemHashCounter other)
-                {
-                    return Equals(other);
-                }
-
-                return false;
+                TargetCount = targetCount;
+                SourceCount = sourceCount;
             }
         }
 
