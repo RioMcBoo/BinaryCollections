@@ -115,7 +115,7 @@ namespace BinaryCollections.BinaryList
         private bool AddUniformRange(ReadOnlySpan<TValue> range)
         {
             var example = range[0];
-            FindIndex(ref example, Values, out var vIndex);
+            FindIndex(ref example, Values, Comparer, out var vIndex);
             return InsertUniformRange(range, ref vIndex);
         }
 

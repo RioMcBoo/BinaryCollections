@@ -54,7 +54,7 @@
 
         private ListRangeInfo GetBoundariesToRemove(ref readonly TValue item)
         {
-            var (left, right) = FindBoundaries(in item, Values);
+            var (left, right) = FindBoundaries(in item, Values, Comparer);
 
             if (left < 0)
                 return new();

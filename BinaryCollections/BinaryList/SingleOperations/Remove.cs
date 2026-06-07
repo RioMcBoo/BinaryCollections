@@ -6,7 +6,7 @@
         
         public bool Remove(ref readonly TValue item, out int index)
         {
-            if (FindIndexExactly(in item, Values, out index))
+            if (FindIndexExactly(in item, Values, Comparer, out index))
             {
                 RemoveAtIndex(index);
                 return true;

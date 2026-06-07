@@ -41,7 +41,7 @@ namespace BinaryCollections.BinaryList
         }        
 
         public bool Contains(TValue item) => Contains(in item, out _);
-        public bool Contains(ref readonly TValue item, out int index) => FindIndexExactly(in item, Values, out index);
+        public bool Contains(ref readonly TValue item, out int index) => FindIndexExactly(in item, Values, Comparer, out index);
 
         /// <summary>
         /// Searches for the specified item and returns the index of the first occurrence within the entire collection.<br/>  
@@ -50,7 +50,7 @@ namespace BinaryCollections.BinaryList
         /// </summary>
         public int IndexOf(TValue item)
         {
-            FindLeftIndex(in item, Values,out int vIndex);
+            FindLeftIndex(in item, Values, Comparer, out int vIndex);
             return vIndex;
         }
 
@@ -61,7 +61,7 @@ namespace BinaryCollections.BinaryList
         /// </summary>
         public int LastIndexOf(TValue item)
         {
-            FindRightIndex(in item, Values, out int vIndex);
+            FindRightIndex(in item, Values, Comparer, out int vIndex);
             return vIndex;
         }
 

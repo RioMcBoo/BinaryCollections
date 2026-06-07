@@ -2,51 +2,51 @@
 {
     partial class BinaryList<TValue>
     {
-        public bool FindIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, out int vIndex)
+        private static bool FindIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int vIndex)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
-            return BinarySearchFor(in item, span, ref state.lo, ref state.hi, out vIndex);
+            return BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out vIndex);
         }
 
-        public bool FindLeftIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, out int index)
+        private static bool FindLeftIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int index)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
 
-            if (!BinarySearchFor(in item, span, ref state.lo, ref state.hi, out state.i))
+            if (!BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out state.i))
             {
                 index = state.i;
                 return false;
             }
 
-            index = FindLeftBoundIndex(in item, span, ref state);
+            index = FindLeftBoundIndex(in item, span, comparer, ref state);
 
             return true;
         }
 
-        public bool FindRightIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, out int index)
+        private static bool FindRightIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int index)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
 
-            if (!BinarySearchFor(in item, span, ref state.lo, ref state.hi, out state.i))
+            if (!BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out state.i))
             {
                 index = state.i;
                 return false;
             }
 
-            index = FindRightBoundIndex(in item, span, ref state);
+            index = FindRightBoundIndex(in item, span, comparer, ref state);
 
             return true;
         }
 
-        public bool FindIndexExactly(ref readonly TValue item, ReadOnlySpan<TValue> span, out int vIndex)
+        private static bool FindIndexExactly(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int vIndex)
         {
-            if (!FindIndex(in item, span, out vIndex))
+            if (!FindIndex(in item, span, comparer, out vIndex))
                 return false;
 
             // Find identical in right part
             for (int i = vIndex; i < span.Length; i++)
             {
-                var result = Compare(in span[i], in item);
+                var result = comparer.Compare(span[i], item);
 
                 if (result != 0)
                     break;
@@ -61,7 +61,7 @@
             // Find identical in left part
             for (int i = vIndex - 1; i >= 0; i--)
             {
-                var result = Compare(in span[i], in item);
+                var result = comparer.Compare(span[i], item);
 
                 if (result != 0)
                     break;
@@ -77,50 +77,50 @@
             return false;
         }
 
-        public (int left, int right) FindBoundaries(ref readonly TValue item, ReadOnlySpan<TValue> span)
+        public static (int left, int right) FindBoundaries(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer)
         {
             (int left, int right) result = default;
 
             // Try find any index of the item
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
-            if (!BinarySearchFor(in item, span, ref state.lo, ref state.hi, out state.i))
+            if (!BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out state.i))
                 return (state.i, state.i);
 
             // Save state for found point
             BinarySearchState foundPointState = state;
 
-            result.left = FindLeftBoundIndex(in item, span, ref state);
+            result.left = FindLeftBoundIndex(in item, span, comparer, ref state);
 
             // Restore state of found point
             state = foundPointState;
 
             // Find right boundary
-            result.right = FindRightBoundIndex(in item, span, ref state);
+            result.right = FindRightBoundIndex(in item, span, comparer, ref state);
 
             return result;
         }
 
-        private int FindLeftBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, ref BinarySearchState state)
+        private static int FindLeftBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref BinarySearchState state)
         {
             int index = 0;
 
             do { index = state.i; state.hi = state.i - 1; }
-            while (BinarySearchFor(in item, span, ref state.lo, ref state.hi, out state.i));
+            while (BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out state.i));
 
             return index;
         }
 
-        private int FindRightBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, ref BinarySearchState state)
+        private static int FindRightBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref BinarySearchState state)
         {
             int index = 0;
 
             do { index = state.i; state.lo = state.i + 1; }
-            while (BinarySearchFor(in item, span, ref state.lo, ref state.hi, out state.i));
+            while (BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out state.i));
 
             return index;
         }
 
-        private bool BinarySearchFor(ref readonly TValue item, ReadOnlySpan<TValue> span, ref int lo, ref int hi, out int i)
+        private static bool BinarySearchFor(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref int lo, ref int hi, out int i)
         {
             while (lo <= hi)
             {
@@ -136,7 +136,7 @@
 
                 i = unchecked((hi + lo) >>> 1);
 
-                int compareResult = Compare(in span[i], in item);
+                int compareResult = comparer.Compare(span[i], item);
 
                 if (compareResult == 0)
                 {

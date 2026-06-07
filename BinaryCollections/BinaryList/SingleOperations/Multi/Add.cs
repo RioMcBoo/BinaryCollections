@@ -6,7 +6,7 @@
 
         public bool Add(ref readonly TValue item, out int index)
         {
-            FindIndex(in item, Values, out index);
+            FindIndex(in item, Values, Comparer, out index);
             return Insert(in item, ref index);
         }
     }

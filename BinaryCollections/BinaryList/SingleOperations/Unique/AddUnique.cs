@@ -9,7 +9,7 @@
 
         public bool AddUnique(ref readonly TValue item, out int index)
         {
-            if (FindIndexExactly(in item, Values, out index))
+            if (FindIndexExactly(in item, Values, Comparer, out index))
                 return false;
 
             return Insert(in item, ref index);

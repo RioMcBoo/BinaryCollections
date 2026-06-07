@@ -33,7 +33,7 @@ namespace BinaryCollections.BinaryList
 
         private ListRangeInfo GetBoundariesToExtract(ref readonly TValue item)
         {
-            var (left, right) = FindBoundaries(in item, Values);
+            var (left, right) = FindBoundaries(in item, Values, Comparer);
 
             if (left < 0)
                 return new();
