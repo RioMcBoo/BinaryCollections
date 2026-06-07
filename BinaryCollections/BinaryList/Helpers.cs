@@ -26,8 +26,8 @@
         private class ItemHashCounter : IEquatable<ItemHashCounter>
         {
             public TValue Item;
-            public int IncomingCount;
-            public int CurrentCount;
+            public int TargetCount;
+            public int SourceCount;
 
             public ItemHashCounter(TValue item) { Item = item; }
 

@@ -220,7 +220,7 @@ namespace BinaryCollections.BinaryList
                     ref readonly TValue previous = ref _storage[c++];
 
                     var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.CurrentCount++;
+                    previousCounter.SourceCount++;
                     tempDictionary.Add(previousCounter, previousCounter);
                     resultedRangeCurrent.length++;
 
@@ -240,7 +240,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.CurrentCount++;
+                        counter.SourceCount++;
                         resultedRangeCurrent.length++;
                         c++;
                     }
@@ -263,7 +263,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.IncomingCount++;
+                        counter.TargetCount++;
                         resultedRangeIncoming.length++;
                         i++;
                     }
@@ -272,7 +272,7 @@ namespace BinaryCollections.BinaryList
                     int addedCount = 0;
                     foreach (var item in tempDictionary.Values)
                     {
-                        if (item.IncomingCount == 0)
+                        if (item.TargetCount == 0)
                         {
                             addedCount++;
                             destination[insertRIndex++] = item.Item;
@@ -351,7 +351,7 @@ namespace BinaryCollections.BinaryList
                     ref readonly TValue previous = ref _storage[c++];
 
                     var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.CurrentCount++;
+                    previousCounter.SourceCount++;
                     tempDictionary.Add(previousCounter, previousCounter);
                     resultedRangeCurrent.length++;
 
@@ -371,7 +371,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.CurrentCount++;
+                        counter.SourceCount++;
                         resultedRangeCurrent.length++;
                         c++;
                     }
@@ -381,7 +381,7 @@ namespace BinaryCollections.BinaryList
                     {
                         int countToAdd = 0;
 
-                        if (item.IncomingCount == 0)
+                        if (item.TargetCount == 0)
                         {
                             destination[insertRIndex++] = item.Item;
                             countToAdd++;
@@ -503,7 +503,7 @@ namespace BinaryCollections.BinaryList
                     ref readonly TValue previous = ref _storage[c--];
 
                     var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.CurrentCount++;
+                    previousCounter.SourceCount++;
                     tempDictionary.Add(previousCounter, previousCounter);
                     resultedRangeCurrent.length++;
 
@@ -523,7 +523,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.CurrentCount++;
+                        counter.SourceCount++;
                         resultedRangeCurrent.length++;
                         c--;
                     }
@@ -546,7 +546,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.IncomingCount++;
+                        counter.TargetCount++;
                         resultedRangeIncoming.length++;
                         i--;
                     }
@@ -555,7 +555,7 @@ namespace BinaryCollections.BinaryList
                     int addedCount = 0;
                     foreach (var item in tempDictionary.Values)
                     {
-                        if (item.IncomingCount == 0)
+                        if (item.TargetCount == 0)
                         {
                             addedCount++;
                             destination[insertRIndex--] = item.Item;
@@ -634,7 +634,7 @@ namespace BinaryCollections.BinaryList
                     ref readonly TValue previous = ref _storage[c--];
 
                     var previousCounter = new ItemHashCounter(previous);
-                    previousCounter.CurrentCount++;
+                    previousCounter.SourceCount++;
                     tempDictionary.Add(previousCounter, previousCounter);
                     resultedRangeCurrent.length++;
 
@@ -654,7 +654,7 @@ namespace BinaryCollections.BinaryList
                         else
                             tempDictionary[counter] = counter;
 
-                        counter.CurrentCount++;
+                        counter.SourceCount++;
                         resultedRangeCurrent.length++;
                         c--;
                     }
@@ -664,7 +664,7 @@ namespace BinaryCollections.BinaryList
                     {
                         int countToAdd = 0;
 
-                        if (item.IncomingCount == 0)
+                        if (item.TargetCount == 0)
                         {
                             destination[insertRIndex--] = item.Item;
                             countToAdd++;
