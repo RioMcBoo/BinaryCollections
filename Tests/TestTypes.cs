@@ -5,75 +5,32 @@
     /// Cleaning is necessary to free memory for the garbage collector.
     /// To simplify testing and provide clarity on what happens to memory, a reference type (class) is used.
     /// </summary>
-    public class TestType : IEquatable<TestType>
+    public interface TestType
     {
+        public static int DefaultHashFactor = int.MaxValue;
         public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
-        public static implicit operator TestType(int value) => new() { Value = value };
+        public int ValueHash { get; init; }
+        public int HashCode { get; init; }
+    }
+    
+    public class TestTypeBinary: TestType, IComparable<TestTypeBinary>, IEquatable<TestTypeBinary>
+    {
+        public static int HashFactor = TestType.DefaultHashFactor;
+        public int Value { get; init; }
+        public int ValueHash { get; init; }
+        public int HashCode { get; init; }
 
-        public bool Equals(TestType? other)
+        public int CompareTo(TestTypeBinary? other)
         {
             if (other == null)
-                return false;
+                return Comparer<TestTypeBinary>.Default.Compare(this, other);            
 
-            return Value == other.Value;
+            return Comparer<int>.Default.Compare(this.Value, other.Value);
         }
 
-        public override bool Equals(object? other)
+        public bool Equals(TestTypeBinary? other)
         {
-            if (other is not TestType otherInstance)
-                return false;
-
-            return Value == otherInstance.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return Value.GetHashCode();
-        }
-    }
-
-    public class TestTypeHashCollisionAble : IEquatable<TestTypeHashCollisionAble>
-    {
-        public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
-        public static implicit operator TestTypeHashCollisionAble(int value) => new() { Value = value };
-
-        public bool Equals(TestTypeHashCollisionAble? other)
-        {
-            if (other == null)
-                return false;
-
-            return Value == other.Value;
-        }
-
-        public override bool Equals(object? other)
-        {
-            if (other is not TestTypeHashCollisionAble otherInstance)
-                return false;
-
-            return Value == otherInstance.Value;
-        }
-
-        public override int GetHashCode()
-        {
-            return RandomValue.GetHashCode(); // used to make expectable collisions
-        }
-    }
-
-    public class TestTypeComparable : IComparable<TestTypeComparable>, IEquatable<TestTypeComparable>
-    {
-        public int Value { get; init; }
-        public int RandomValue { get; init; } = TestTypeRandomizer.GetNextFromPool(); // used to make expectable collisions
-
-        public int CompareTo(TestTypeComparable? other)
-        {
-            return TestComparer.Properly.Compare(this, other);
-        }
-
-        public bool Equals(TestTypeComparable? other)
-        {
-            if (TestComparer.Properly.Compare(this, other) == 0)
+            if (CompareTo(other) == 0)
                 return true;
 
             return false;
@@ -81,48 +38,71 @@
 
         public override bool Equals(object? other)
         {
-            if (other is not TestTypeComparable otherInstance)
-                return false;
-
-            return Value == otherInstance.Value;
+            return Equals(other as TestTypeBinary);
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return HashCode;
         }
 
-        public static implicit operator TestTypeComparable(int value) => new() { Value = value };
+        public static implicit operator TestTypeBinary(int value) => new()
+        {
+            Value = value,
+            ValueHash = value % 3,
+            HashCode = value % HashFactor 
+        };
     }
 
-    public class TestTypeRandomizer
+    public class TestTypeHash : TestType, IEquatable<TestTypeHash>
     {
-        private static readonly int[] _shuffledPool;
-        private static int _index = 0;
-        private static Random _random = new(0);
-        static TestTypeRandomizer()
+        public static int HashFactor = TestType.DefaultHashFactor;
+        public int Value { get; init; }
+        public int ValueHash { get; init; }
+        public int HashCode { get; init; }
+
+        public int CompareTo(TestTypeHash? other)
         {
-            _shuffledPool = Enumerable.Repeat(new[] { -3, -2, -1 }, 100)
-                                      .SelectMany(x => x)
-                                      .ToArray();
-            _random.Shuffle(_shuffledPool);
+            if (other == null)
+                return Comparer<TestTypeHash>.Default.Compare(this, other);
+
+            return Comparer<int>.Default.Compare(this.Value, other.Value);
         }
 
-        public static int GetNextFromPool()
+        public bool Equals(TestTypeHash? other)
         {
-            int idx = Math.Abs(Interlocked.Increment(ref _index) % _shuffledPool.Length);
-            return _shuffledPool[idx];
+            if (CompareTo(other) == 0)
+                return true;
+
+            return false;
         }
+
+        public override bool Equals(object? other)
+        {
+            return Equals(other as TestTypeHash);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode;
+        }
+
+        public static implicit operator TestTypeHash(int value) => new()
+        {
+            Value = value,
+            ValueHash = value % 3,
+            HashCode = value % HashFactor
+        };
     }
 
-    public class TestComparer : IComparer<TestTypeComparable>
+    public class TestComparer : IComparer<TestType>
     {
-        private readonly bool _withCollisions;
+        private readonly bool _byHash;
 
-        public static TestComparer Properly = new(false);
-        public static TestComparer WithCollisions = new(true);
+        public static TestComparer ByValue = new(false);
+        public static TestComparer ByHash = new(true);
 
-        private TestComparer (bool withCollisions) { _withCollisions = withCollisions; }
+        private TestComparer (bool byHash) { _byHash = byHash; }
         /// <returns>
         ///     <para>A value that indicates the relative order of the objects being compared. The return value has these meanings:</para>
         ///     <list type="table">
@@ -140,32 +120,32 @@
         ///         </item>
         ///     </list>
         /// </returns>
-        public int Compare(TestTypeComparable? x, TestTypeComparable? y) 
+        public int Compare(TestType? x, TestType? y) 
         {
-            return _withCollisions ? CompareWithCollisions(x, y) : CompareProperly(x, y);
+            return _byHash ? CompareByHashMirror(x, y) : CompareByValue(x, y);
         }
 
-        public int CompareProperly(TestTypeComparable? x, TestTypeComparable? y)
+        public int CompareByValue(TestType? x, TestType? y)
         {
             if (x == null || y == null)
-                return Comparer<TestTypeComparable>.Default.Compare(x, y);
+                return Comparer<TestType>.Default.Compare(x, y);
 
             return Comparer<int>.Default.Compare(x.Value, y.Value);
         }
 
-        public int CompareWithCollisions(TestTypeComparable? x, TestTypeComparable? y)
+        public int CompareByHashMirror(TestType? x, TestType? y)
         {
             if (x == null || y == null)
-                return Comparer<TestTypeComparable>.Default.Compare(x, y);
+                return Comparer<TestType>.Default.Compare(x, y);
 
-            return Comparer<int>.Default.Compare(x.RandomValue, y.RandomValue);
+            return Comparer<int>.Default.Compare(x.ValueHash, y.ValueHash);
         }
 
         public override bool Equals(object? obj)
         {
             if (obj is TestComparer other)
             {
-                return (_withCollisions == other._withCollisions);
+                return (_byHash == other._byHash);
             }
 
             return false;
@@ -173,7 +153,7 @@
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_withCollisions);
+            return HashCode.Combine(_byHash);
         }
 
         public static bool operator ==(TestComparer? left, TestComparer? right)

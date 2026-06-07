@@ -7,13 +7,13 @@ namespace BinaryList.Tests
         [TestMethod]
         public void ExceptWith_Comparable()
         {
-            BinaryList<TestTypeComparable> PrepareList(TestTypeComparable[] initialList, TestTypeComparable[] toRemove, TestTypeComparable[] toAdd)
+            BinaryList<TestTypeBinary> PrepareList(TestTypeBinary[] initialList, TestTypeBinary[] toRemove, TestTypeBinary[] toAdd)
             {
-                BinaryList<TestTypeComparable> tempList = new();
+                BinaryList<TestTypeBinary> tempList = new();
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestTypeComparable> list = new();
+                BinaryList<TestTypeBinary> list = new();
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -25,24 +25,24 @@ namespace BinaryList.Tests
                 return list;
             }
 
-            TestTypeComparable[] initialList = { 0, 1, 2, 4, 5, 7, 8, 9 };
-            TestTypeComparable[] toTestMergingFromLeft = { -4, -3, -2, -1 };
-            TestTypeComparable[] toTestMergingFromRight = { 10, 11, 12, 13 };
-            TestTypeComparable[] toTestShiftRightPart = { 8, 8, 7, 7, 7, 6 };
-            TestTypeComparable[] toTestShiftLeftPart = { 1, 1, 2, 2, 2, 3 };
+            TestTypeBinary[] initialList = { 0, 1, 2, 4, 5, 7, 8, 9 };
+            TestTypeBinary[] toTestMergingFromLeft = { -4, -3, -2, -1 };
+            TestTypeBinary[] toTestMergingFromRight = { 10, 11, 12, 13 };
+            TestTypeBinary[] toTestShiftRightPart = { 8, 8, 7, 7, 7, 6 };
+            TestTypeBinary[] toTestShiftLeftPart = { 1, 1, 2, 2, 2, 3 };
 
             var list1 = PrepareList(initialList, toTestMergingFromLeft, toTestShiftRightPart);
             var list2 = PrepareList(initialList, toTestMergingFromRight, toTestShiftRightPart);
             var list3 = PrepareList(initialList, toTestMergingFromLeft, toTestShiftLeftPart);
             var list4 = PrepareList(initialList, toTestMergingFromRight, toTestShiftLeftPart);
 
-            TestTypeComparable[] result1 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9];
-            TestTypeComparable[] result2 = [0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
+            TestTypeBinary[] result1 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9];
+            TestTypeBinary[] result2 = [0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
 
-            TestTypeComparable[] rawResult1 = [null, null, 0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null];
-            TestTypeComparable[] rawResult2 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null, null, null];
-            TestTypeComparable[] rawResult3 = [null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
-            TestTypeComparable[] rawResult4 = [null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9, null, null];
+            TestTypeBinary[] rawResult1 = [null, null, 0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null];
+            TestTypeBinary[] rawResult2 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null, null, null];
+            TestTypeBinary[] rawResult3 = [null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
+            TestTypeBinary[] rawResult4 = [null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9, null, null];
 
             CollectionAssert.AreEqual(result1, list1.ToArray());
             CollectionAssert.AreEqual(result1, list2.ToArray());
@@ -58,13 +58,13 @@ namespace BinaryList.Tests
         [TestMethod]
         public void ExceptWith_InComparable()
         {
-            BinaryList<TestType> PrepareList(TestType[] initialList, TestType[] toRemove, TestType[] toAdd)
+            BinaryList<TestTypeHash> PrepareList(TestTypeHash[] initialList, TestTypeHash[] toRemove, TestTypeHash[] toAdd)
             {
-                BinaryList<TestType> tempList = new();
+                BinaryList<TestTypeHash> tempList = new();
                 tempList.AddRange(initialList);
                 tempList.AddRange(toRemove);
 
-                BinaryList<TestType> list = new();
+                BinaryList<TestTypeHash> list = new();
                 list.AddRange(tempList);
                 list.AddRange(tempList);
                 list.Trim();
@@ -76,24 +76,24 @@ namespace BinaryList.Tests
                 return list;
             }
 
-            TestType[] initialList = { 0, 1, 2, 4, 5, 7, 8, 9 };
-            TestType[] toTestMergingFromLeft = { -4, -3, -2, -1 };
-            TestType[] toTestMergingFromRight = { 10, 11, 12, 13 };
-            TestType[] toTestShiftRightPart = { 8, 8, 7, 7, 7, 6 };
-            TestType[] toTestShiftLeftPart = { 1, 1, 2, 2, 2, 3 };
+            TestTypeHash[] initialList = { 0, 1, 2, 4, 5, 7, 8, 9 };
+            TestTypeHash[] toTestMergingFromLeft = { -4, -3, -2, -1 };
+            TestTypeHash[] toTestMergingFromRight = { 10, 11, 12, 13 };
+            TestTypeHash[] toTestShiftRightPart = { 8, 8, 7, 7, 7, 6 };
+            TestTypeHash[] toTestShiftLeftPart = { 1, 1, 2, 2, 2, 3 };
 
             var list1 = PrepareList(initialList, toTestMergingFromLeft, toTestShiftRightPart);
             var list2 = PrepareList(initialList, toTestMergingFromRight, toTestShiftRightPart);
             var list3 = PrepareList(initialList, toTestMergingFromLeft, toTestShiftLeftPart);
             var list4 = PrepareList(initialList, toTestMergingFromRight, toTestShiftLeftPart);
 
-            TestType[] result1 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9];
-            TestType[] result2 = [0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
+            TestTypeHash[] result1 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9];
+            TestTypeHash[] result2 = [0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
 
-            TestType[] rawResult1 = [null, null, 0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null];
-            TestType[] rawResult2 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null, null, null];
-            TestType[] rawResult3 = [null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
-            TestType[] rawResult4 = [null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9, null, null];
+            TestTypeHash[] rawResult1 = [null, null, 0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null];
+            TestTypeHash[] rawResult2 = [0, 0, 1, 1, 2, 2, 4, 4, 5, 5, 9, 9, null, null, null, null, null, null, null, null, null, null, null, null];
+            TestTypeHash[] rawResult3 = [null, null, null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9];
+            TestTypeHash[] rawResult4 = [null, null, null, null, null, null, null, null, null, null, 0, 0, 4, 4, 5, 5, 7, 7, 8, 8, 9, 9, null, null];
 
             CollectionAssert.AreEqual(result1, list1.ToArray());
             CollectionAssert.AreEqual(result1, list2.ToArray());

@@ -9,10 +9,10 @@ namespace BinaryList.Tests
         public void ShiftArrayLeft_Method()
         {
             int initialCapacity = 18;
-            TestTypeComparable[] values = { 1, 2, 3, 4, 5, 6, 10, 8, 9, 7 };
-            TestTypeComparable[] expected = { null, null, null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, null, null, null, null };
+            TestTypeBinary[] values = { 1, 2, 3, 4, 5, 6, 10, 8, 9, 7 };
+            TestTypeBinary[] expected = { null, null, null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, null, null, null, null };
 
-            var list = new BinaryList<TestTypeComparable>(initialCapacity);
+            var list = new BinaryList<TestTypeBinary>(initialCapacity);
             foreach (var v in values) list.Add(v);
 
             Assert.AreEqual(list.Count, values.Length);
@@ -24,10 +24,10 @@ namespace BinaryList.Tests
         public void ShiftArrayRight_Method()
         {
             int initialCapacity = 16;
-            TestTypeComparable[] values = { 10, 9, 8, 7, 5, 6, 1, 3, 2, 4 };
-            TestTypeComparable[] expected = { null, null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, null, null, null };
+            TestTypeBinary[] values = { 10, 9, 8, 7, 5, 6, 1, 3, 2, 4 };
+            TestTypeBinary[] expected = { null, null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, null, null, null };
 
-            var list = new BinaryList<TestTypeComparable>(initialCapacity);
+            var list = new BinaryList<TestTypeBinary>(initialCapacity);
             foreach (var v in values) list.Add(v);
 
             Assert.AreEqual(list.Count, values.Length);

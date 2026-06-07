@@ -167,7 +167,7 @@
         public BinaryList<TestStructure> Fill_BinaryList()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestStructure>(Comparer);
+            var binaryList = new BinaryList<TestStructure>(Comparer, comparerLeadsToCollisions: false);
             foreach (var item in baseline)
             {
                 binaryList.AddUnique(item);
