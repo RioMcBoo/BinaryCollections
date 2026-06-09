@@ -8,15 +8,12 @@ namespace BinaryCollections.BinaryList
     {
         public bool SymmetricExceptWith(ReadOnlySpan<TValue> range)
         {
-            if (!CheckAddRange(range.Length))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
             try
             {
                 range.CopyTo(temp);
                 Array.Sort(temp, 0, range.Length, Comparer);
-                return SymmetricExceptWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Length));
+                return SymmetricExceptWithSorted(new ReadOnlySpan<TValue>(temp, 0, range.Length));
             }
             finally
             {
@@ -26,9 +23,6 @@ namespace BinaryCollections.BinaryList
 
         public bool SymmetricExceptWith(IReadOnlyCollection<TValue> range)
         {
-            if (!CheckAddRange(range.Count))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
             try
             {
@@ -39,7 +33,7 @@ namespace BinaryCollections.BinaryList
                 }
 
                 Array.Sort(temp, 0, range.Count, Comparer);
-                return SymmetricExceptWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Count));
+                return SymmetricExceptWithSorted(new ReadOnlySpan<TValue>(temp, 0, range.Count));
             }
             finally
             {
@@ -66,22 +60,16 @@ namespace BinaryCollections.BinaryList
                 temp.Add(item);
             }
 
-            if (!CheckAddRange(temp.Count))
-                return false;
-
             var span = CollectionsMarshal.AsSpan(temp);
             span.Sort(Comparer);
-            return SymmetricExceptWithSortedRange(span);
+            return SymmetricExceptWithSorted(span);
         }
 
         public bool SymmetricExceptWith(BinaryListEnumerator<TValue> range)
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (!CheckAddRange(range.Count))
-                    return false;
-
-                return SymmetricExceptWithSortedRange(range.GetSpan());
+                return SymmetricExceptWithSorted(range.GetSpan());
             }
 
             return SymmetricExceptWith(range.GetSpan());
@@ -92,8 +80,20 @@ namespace BinaryCollections.BinaryList
             return SymmetricExceptWith(range.GetEnumerator());
         }
 
-        private bool SymmetricExceptWithSortedRange(ReadOnlySpan<TValue> range)
+        private bool SymmetricExceptWithSorted(ReadOnlySpan<TValue> range)
         {
+            if (range.Length <= 0 && _count <= 0)
+                return false;
+
+            if (range.Length <= 0)
+                return false;
+
+            if (!CheckCountOverload(range.Length))
+        {
+                if (!SymmetricExceptWithSortedSafeTest(range))
+                    ThrowOverloadException();
+            }
+
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
             {
                 return SymmetricExceptWithFromLeft(range);
@@ -104,10 +104,15 @@ namespace BinaryCollections.BinaryList
                 return SymmetricExceptWithFromRight(range);
             }
 
-            return ResizeAndSymmetricExceptWithSortedRange(range);
+            return ResizeAndSymmetricExceptWithSorted(range);
         }
 
-        private bool ResizeAndSymmetricExceptWithSortedRange(ReadOnlySpan<TValue> range)
+        private bool SymmetricExceptWithSortedSafeTest(ReadOnlySpan<TValue> range)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool ResizeAndSymmetricExceptWithSorted(ReadOnlySpan<TValue> range)
         {
             PrepareForResize(range.Length, out var destination);
 

@@ -8,15 +8,12 @@ namespace BinaryCollections.BinaryList
     {
         public bool UnionWithUnique(ReadOnlySpan<TValue> range)
         {
-            if (!CheckAddRange(range.Length))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
             try
             {
                 range.CopyTo(temp);
                 Array.Sort(temp, 0, range.Length, Comparer);
-                return UnionWithSortedRangeUnique(new ReadOnlySpan<TValue>(temp, 0, range.Length));
+                return UnionWithSortedUnique(new ReadOnlySpan<TValue>(temp, 0, range.Length));
             }
             finally
             {
@@ -26,9 +23,6 @@ namespace BinaryCollections.BinaryList
 
         public bool UnionWithUnique(IReadOnlyCollection<TValue> range)
         {
-            if (!CheckAddRange(range.Count))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
             try
             {
@@ -39,7 +33,7 @@ namespace BinaryCollections.BinaryList
                 }
 
                 Array.Sort(temp, 0, range.Count, Comparer);
-                return UnionWithSortedRangeUnique(new ReadOnlySpan<TValue>(temp, 0, range.Count));
+                return UnionWithSortedUnique(new ReadOnlySpan<TValue>(temp, 0, range.Count));
             }
             finally
             {
@@ -66,22 +60,16 @@ namespace BinaryCollections.BinaryList
                 temp.Add(item);
             }
 
-            if (!CheckAddRange(temp.Count))
-                return false;
-
             var span = CollectionsMarshal.AsSpan(temp);
             span.Sort(Comparer);
-            return UnionWithSortedRangeUnique(span);
+            return UnionWithSortedUnique(span);
         }
 
         public bool UnionWithUnique(BinaryListEnumerator<TValue> range)
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (!CheckAddRange(range.Count))
-                    return false;
-
-                return UnionWithSortedRangeUnique(range.GetSpan());
+                return UnionWithSortedUnique(range.GetSpan());
             }
 
             return UnionWithUnique(range.GetSpan());
@@ -92,8 +80,17 @@ namespace BinaryCollections.BinaryList
             return UnionWithUnique(range.GetEnumerator());
         }
 
-        private bool UnionWithSortedRangeUnique(ReadOnlySpan<TValue> range)
+        private bool UnionWithSortedUnique(ReadOnlySpan<TValue> range)
         {
+            if (range.Length <= 0)
+                return false;
+
+            if (!CheckCountOverload(range.Length))
+            {
+                if (!UnionWithSortedUniqueSafeTest(range))
+                    ThrowOverloadException();
+            }
+
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
             {
                 return UnionWithFromLeftUnique(range);
@@ -104,10 +101,15 @@ namespace BinaryCollections.BinaryList
                 return UnionWithFromRightUnique(range);
             }
 
-            return ResizeAndUnionWithSortedRangeUnique(range);
+            return ResizeAndUnionWithSortedUnique(range);
         }
 
-        private bool ResizeAndUnionWithSortedRangeUnique(ReadOnlySpan<TValue> range)
+        private bool UnionWithSortedUniqueSafeTest(ReadOnlySpan<TValue> range)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool ResizeAndUnionWithSortedUnique(ReadOnlySpan<TValue> range)
         {
             PrepareForResize(range.Length, out var destination);
 

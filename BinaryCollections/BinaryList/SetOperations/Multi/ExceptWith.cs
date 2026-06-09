@@ -8,15 +8,12 @@ namespace BinaryCollections.BinaryList
     {
         public bool ExceptWith(ReadOnlySpan<TValue> range)
         {
-            if (!CheckAddRange(range.Length))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
             try
             {
                 range.CopyTo(temp);
                 Array.Sort(temp, 0, range.Length, Comparer);
-                return ExceptWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Length));
+                return ExceptWithSorted(new ReadOnlySpan<TValue>(temp, 0, range.Length));
             }
             finally
             {
@@ -26,9 +23,6 @@ namespace BinaryCollections.BinaryList
 
         public bool ExceptWith(IReadOnlyCollection<TValue> range)
         {
-            if (!CheckAddRange(range.Count))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
             try
             {
@@ -39,7 +33,7 @@ namespace BinaryCollections.BinaryList
                 }
 
                 Array.Sort(temp, 0, range.Count, Comparer);
-                return ExceptWithSortedRange(new ReadOnlySpan<TValue>(temp, 0, range.Count));
+                return ExceptWithSorted(new ReadOnlySpan<TValue>(temp, 0, range.Count));
             }
             finally
             {
@@ -66,22 +60,16 @@ namespace BinaryCollections.BinaryList
                 temp.Add(item);
             }
 
-            if (!CheckAddRange(temp.Count))
-                return false;
-
             var span = CollectionsMarshal.AsSpan(temp);
             span.Sort(Comparer);
-            return ExceptWithSortedRange(span);
+            return ExceptWithSorted(span);
         }
 
         public bool ExceptWith(BinaryListEnumerator<TValue> range)
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (!CheckAddRange(range.Count))
-                    return false;
-
-                return ExceptWithSortedRange(range.GetSpan());
+                return ExceptWithSorted(range.GetSpan());
             }
 
             return ExceptWith(range.GetSpan());
@@ -92,8 +80,11 @@ namespace BinaryCollections.BinaryList
             return ExceptWith(range.GetEnumerator());
         }
 
-        private bool ExceptWithSortedRange(ReadOnlySpan<TValue> range)
+        private bool ExceptWithSorted(ReadOnlySpan<TValue> range)
         {
+            if (range.Length <= 0 || _count <= 0)
+                return false;
+
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
             {
                 return ExceptWithFromLeft(range);
@@ -104,10 +95,10 @@ namespace BinaryCollections.BinaryList
                 return ExceptWithFromRight(range);
             }
 
-            return ResizeAndExceptWithSortedRange(range);
+            return ResizeAndExceptWithSorted(range);
         }
 
-        private bool ResizeAndExceptWithSortedRange(ReadOnlySpan<TValue> range)
+        private bool ResizeAndExceptWithSorted(ReadOnlySpan<TValue> range)
         {
             PrepareForResize(range.Length, out var destination);
 

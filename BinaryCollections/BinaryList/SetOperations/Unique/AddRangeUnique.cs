@@ -8,7 +8,7 @@ namespace BinaryCollections.BinaryList
     {
         public bool AddRangeUnique(ReadOnlySpan<TValue> range)
         {
-            if (!CheckAddRange(range.Length))
+            if (!CheckCountOverload(range.Length))
                 return false;
 
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
@@ -26,7 +26,7 @@ namespace BinaryCollections.BinaryList
 
         public bool AddRangeUnique(IReadOnlyCollection<TValue> range)
         {
-            if (!CheckAddRange(range.Count))
+            if (!CheckCountOverload(range.Count))
                 return false;
 
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
@@ -66,7 +66,7 @@ namespace BinaryCollections.BinaryList
                 temp.Add(item);
             }
 
-            if (!CheckAddRange(temp.Count))
+            if (!CheckCountOverload(temp.Count))
                 return false;
 
             var span = CollectionsMarshal.AsSpan(temp);
@@ -78,7 +78,7 @@ namespace BinaryCollections.BinaryList
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (!CheckAddRange(range.Count))
+                if (!CheckCountOverload(range.Count))
                     return false;
 
                 if (range.Flags.HasFlag(BinaryListFlags.UniformRange))
@@ -99,12 +99,18 @@ namespace BinaryCollections.BinaryList
 
         private bool AddUniformRangeUnique(ReadOnlySpan<TValue> range)
         {
+            if (range.Length <= 0)
+                return false;
+
             ref readonly var example = ref range[0];
             return AddUnique(in example, out _);
         }
 
         private bool AddSortedRangeUnique(ReadOnlySpan<TValue> range)
         {
+            if (range.Length <= 0)
+                return false;
+
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
             {
                 return InsertSortedRangeFromLeftUnique(range);

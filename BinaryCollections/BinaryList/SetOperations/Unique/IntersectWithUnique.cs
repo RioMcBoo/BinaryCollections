@@ -8,15 +8,12 @@ namespace BinaryCollections.BinaryList
     {
         public bool IntersectWithUnique(ReadOnlySpan<TValue> range)
         {
-            if (!CheckAddRange(range.Length))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Length);
             try
             {
                 range.CopyTo(temp);
                 Array.Sort(temp, 0, range.Length, Comparer);
-                return IntersectWithSortedRangeUnique(new ReadOnlySpan<TValue>(temp, 0, range.Length));
+                return IntersectWithSortedUnique(new ReadOnlySpan<TValue>(temp, 0, range.Length));
             }
             finally
             {
@@ -26,9 +23,6 @@ namespace BinaryCollections.BinaryList
 
         public bool IntersectWithUnique(IReadOnlyCollection<TValue> range)
         {
-            if (!CheckAddRange(range.Count))
-                return false;
-
             TValue[] temp = ArrayPool<TValue>.Shared.Rent(range.Count);
             try
             {
@@ -39,7 +33,7 @@ namespace BinaryCollections.BinaryList
                 }
 
                 Array.Sort(temp, 0, range.Count, Comparer);
-                return IntersectWithSortedRangeUnique(new ReadOnlySpan<TValue>(temp, 0, range.Count));
+                return IntersectWithSortedUnique(new ReadOnlySpan<TValue>(temp, 0, range.Count));
             }
             finally
             {
@@ -66,22 +60,16 @@ namespace BinaryCollections.BinaryList
                 temp.Add(item);
             }
 
-            if (!CheckAddRange(temp.Count))
-                return false;
-
             var span = CollectionsMarshal.AsSpan(temp);
             span.Sort(Comparer);
-            return IntersectWithSortedRangeUnique(span);
+            return IntersectWithSortedUnique(span);
         }
 
         public bool IntersectWithUnique(BinaryListEnumerator<TValue> range)
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (!CheckAddRange(range.Count))
-                    return false;
-
-                return IntersectWithSortedRangeUnique(range.GetSpan());
+                return IntersectWithSortedUnique(range.GetSpan());
             }
 
             return IntersectWithUnique(range.GetSpan());
@@ -92,8 +80,17 @@ namespace BinaryCollections.BinaryList
             return IntersectWithUnique(range.GetEnumerator());
         }
 
-        private bool IntersectWithSortedRangeUnique(ReadOnlySpan<TValue> range)
+        private bool IntersectWithSortedUnique(ReadOnlySpan<TValue> range)
         {
+            if (_count <= 0)
+                return false;
+
+            if (range.Length <= 0)
+            {
+                Clear();
+                return true;
+            }
+
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)
             {
                 return IntersectWithFromLeftUnique(range);
@@ -104,10 +101,10 @@ namespace BinaryCollections.BinaryList
                 return IntersectWithFromRightUnique(range);
             }
 
-            return ResizeAndIntersectWithSortedRangeUnique(range);
+            return ResizeAndIntersectWithSortedUnique(range);
         }
 
-        private bool ResizeAndIntersectWithSortedRangeUnique(ReadOnlySpan<TValue> range)
+        private bool ResizeAndIntersectWithSortedUnique(ReadOnlySpan<TValue> range)
         {
             PrepareForResize(range.Length, out var destination);
 

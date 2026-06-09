@@ -104,15 +104,19 @@ namespace BinaryCollections.BinaryList
         protected int ToVirtualIndex(int realIndex) => realIndex - _zeroRIndex;
         protected int ToRealIndex(int virtualIndex) => virtualIndex + _zeroRIndex;
 
-        protected bool CheckAddRange(int rangeCount)
+        protected bool CheckCountOverload(int rangeCount)
         {
-            if (rangeCount <= 0)
-                return false;
-
             if (rangeCount > Array.MaxLength - _count)
+            {
                 return false;
+            }
 
             return true;
+        }
+
+        protected void ThrowOverloadException()
+        {
+            throw new InvalidOperationException("Operation would result in an overflow.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
