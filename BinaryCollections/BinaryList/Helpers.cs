@@ -23,12 +23,24 @@
             }
         }
 
-        private class ItemCounter
+        private class HeapCounter
         {
             public int TargetCount;
             public int SourceCount;
 
-            public ItemCounter(int targetCount = 0, int sourceCount = 0)
+            public HeapCounter(int targetCount = 0, int sourceCount = 0)
+            {
+                TargetCount = targetCount;
+                SourceCount = sourceCount;
+            }
+        }
+
+        private ref struct RefCounter
+        {
+            public int TargetCount;
+            public int SourceCount;
+
+            public RefCounter(int targetCount = 0, int sourceCount = 0)
             {
                 TargetCount = targetCount;
                 SourceCount = sourceCount;

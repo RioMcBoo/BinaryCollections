@@ -107,9 +107,7 @@ namespace BinaryCollections.BinaryList
         protected bool CheckCountOverload(int rangeCount)
         {
             if (rangeCount > Array.MaxLength - _count)
-            {
                 return false;
-            }
 
             return true;
         }

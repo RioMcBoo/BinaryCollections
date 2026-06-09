@@ -137,7 +137,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, ItemCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = ContaninsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -214,7 +214,7 @@ namespace BinaryCollections.BinaryList
                     // Add the first item to result (preparing to compare)
                     ref readonly TValue previous = ref _storage[c++];
 
-                    tempDictionary.Add(previous, new ItemCounter(sourceCount: 1));
+                    tempDictionary.Add(previous, new HeapCounter(sourceCount: 1));
                     resultedRangeCurrent.length++;
 
                     // Add all currently existing items in collision to result, and count them.
@@ -229,7 +229,7 @@ namespace BinaryCollections.BinaryList
 
                         if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
-                            counter = new ItemCounter();
+                            counter = new HeapCounter();
                             tempDictionary[currentItem] = counter;
                         }
 
@@ -252,7 +252,7 @@ namespace BinaryCollections.BinaryList
 
                         if (!tempDictionary.TryGetValue(incomingItem, out var counter))
                         {
-                            counter = new ItemCounter();
+                            counter = new HeapCounter();
                             tempDictionary[incomingItem] = counter;
                         }
 
@@ -385,7 +385,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, ItemCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = ContaninsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -466,7 +466,7 @@ namespace BinaryCollections.BinaryList
                     // Add the first item to result (preparing to compare)
                     ref readonly TValue previous = ref _storage[c--];
 
-                    tempDictionary.Add(previous, new ItemCounter(sourceCount: 1));
+                    tempDictionary.Add(previous, new HeapCounter(sourceCount: 1));
                     resultedRangeCurrent.length++;
 
                     // Add all currently existing items in collision to result, and count them.
@@ -481,7 +481,7 @@ namespace BinaryCollections.BinaryList
 
                         if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
-                            counter = new ItemCounter();
+                            counter = new HeapCounter();
                             tempDictionary[currentItem] = counter;
                         }
 
@@ -504,7 +504,7 @@ namespace BinaryCollections.BinaryList
 
                         if (!tempDictionary.TryGetValue(incomingItem, out var counter))
                         {
-                            counter = new ItemCounter();
+                            counter = new HeapCounter();
                             tempDictionary[incomingItem] = counter;
                         }
 
