@@ -9,7 +9,10 @@
         UniformRange = 0x1,
 
         /// <summary>The range may contain collisions (equality and sort comparers are not synchronized).</summary>
-        MayContainCollisions = 0x2,
+        NoCollisions = 0x2,
+
+        /// <summary>The range may contain duplicates (by the equality comparer).</summary>
+        NoDuplicates = 0x4,
     }
 
     public partial class BinaryList<TValue>

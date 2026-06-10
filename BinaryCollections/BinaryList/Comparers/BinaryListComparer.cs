@@ -49,7 +49,7 @@ namespace BinaryCollections.BinaryList
                     }
                 }
 
-                flags = LeadsToCollisions ? flags | BinaryListFlags.MayContainCollisions : flags & ~BinaryListFlags.MayContainCollisions;
+                flags = LeadsToCollisions ? flags & ~BinaryListFlags.NoCollisions : flags | BinaryListFlags.NoCollisions;
             }
 
             /// <returns>
