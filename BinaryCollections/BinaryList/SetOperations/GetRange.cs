@@ -10,7 +10,7 @@
         public BinaryListEnumerator<TValue> GetRange(ref readonly TValue item)
         {
             var boundaries = GetBoundariesToShare(in item);
-            return new(this, boundaries.Source, boundaries.RealIndex, boundaries.Length, BinaryListFlags.UniformRange);
+            return new(this, boundaries.Source, boundaries.Index, boundaries.Length, BinaryListFlags.UniformRange);
         }
 
         public BinaryListEnumerator<TValue> GetRange(int index, int length)
@@ -21,38 +21,47 @@
             return new(this, _storage, ToRealIndex(index), length);
         }
 
-        private ListRangeInfo GetBoundariesToShare(ref readonly TValue item)
+        private ArrayRange GetBoundariesToShare(ref readonly TValue item)
         {
             var (left, right) = FindBoundaries(in item, Values, Comparer);
 
-            if (left < 0)
+            if (left < 0 || right < 0)
                 return new();
 
-            TValue[] source = _storage;
-            int initialRIndex = ToRealIndex(left);
-            int lengthInitial = right - left + 1;
+            int collisionStartIndex = ToRealIndex(left);
+            int collisionLength = right - left + 1;
 
-            CopyRangeFromCollisions(in item, ref initialRIndex, ref lengthInitial, out source);
+            return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
 
-            return new(initialRIndex, lengthInitial, source);
-
-            void CopyRangeFromCollisions(ref readonly TValue item, ref int rIndex, ref int length, out TValue[] source)
+            ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                source = new TValue[length];
-                int write = 0;
+                TValue[] source;
 
-                for (int read = rIndex; read < rIndex + length; read++)
+                if (ContaninsCollisions)
                 {
-                    ref readonly var currItem = ref _storage[read];
-                    if (IsIdentical(in currItem, in item))
+                    // We cannot make changes to the current array.
+                    source = new TValue[length];
+                    int write = 0;
+
+                    for (int read = rIndex; read < rIndex + length; read++)
                     {
-                        source[write] = currItem;
-                        write++;
+                        ref readonly var currItem = ref _storage[read];
+                        if (IsIdentical(in currItem, in item))
+                        {
+                            source[write] = currItem;
+                            write++;
+                        }
                     }
+
+                    rIndex = 0;
+                    length = write;
+                }
+                else
+                {
+                    source = _storage;
                 }
 
-                rIndex = 0;
-                length = write;
+                return new(rIndex, length, source);
             }
         }
     }

@@ -9,15 +9,15 @@
             public int i;
         }
 
-        private readonly ref struct ListRangeInfo
+        private readonly ref struct ArrayRange
         {
-            readonly public int RealIndex;
+            readonly public int Index;
             readonly public int Length;
             readonly public TValue[] Source;
 
-            public ListRangeInfo(int realIndex, int length, TValue[] source)
+            public ArrayRange(int index, int length, TValue[] source)
             {
-                RealIndex = realIndex;
+                Index = index;
                 Length = length;
                 Source = source;
             }

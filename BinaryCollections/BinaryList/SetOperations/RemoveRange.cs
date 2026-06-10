@@ -12,7 +12,7 @@
             index = -1;
 
             var boundaries = GetBoundariesToRemove(in item);
-            var vIndex = ToVirtualIndex(boundaries.RealIndex);
+            var vIndex = ToVirtualIndex(boundaries.Index);
 
             if (RemoveRangeInternal(vIndex, boundaries.Length))
                 index = vIndex;
@@ -52,41 +52,43 @@
             return false;
         }
 
-        private ListRangeInfo GetBoundariesToRemove(ref readonly TValue item)
+        private ArrayRange GetBoundariesToRemove(ref readonly TValue item)
         {
             var (left, right) = FindBoundaries(in item, Values, Comparer);
 
-            if (left < 0)
+            if (left < 0 || right < 0)
                 return new();
 
-            TValue[] source = _storage;
-            int initialRIndex = ToRealIndex(left);
-            int lengthInitial = right - left + 1;
+            int collisionStartIndex = ToRealIndex(left);
+            int collisionLength = right - left + 1;
 
-            RemoveRangeFromCollisions(in item, ref initialRIndex, ref lengthInitial, out source);
+            return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
 
-            return new(initialRIndex, lengthInitial, source);
-
-            void RemoveRangeFromCollisions(ref readonly TValue item, ref int rIndex, ref int length, out TValue[] source)
+            ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                int write = rIndex;
-                _version = unchecked(++_version);
-
-                for (int read = rIndex; read < rIndex + length; read++)
+                if (ContaninsCollisions)
                 {
-                    ref readonly var currItem = ref _storage[read];
-                    if (!IsIdentical(in currItem, in item))
+                    // We need to group other items within collisions together
+
+                    int t = 0;
+                    int write = rIndex;
+                    _version = unchecked(++_version);
+
+                    for (int read = rIndex; read < rIndex + length; read++)
                     {
-                        _storage[write] = currItem;
-                        write++;
+                        ref readonly var currItem = ref _storage[read];
+                        if (!IsIdentical(in currItem, in item))
+                        {
+                            _storage[write] = currItem;
+                            write++;
+                        }
                     }
+
+                    rIndex = write;
+                    length -= write - rIndex;
                 }
 
-                source = _storage;
-                int keptCountInBlock = write - rIndex;
-
-                rIndex = write;
-                length = lengthInitial - keptCountInBlock;
+                return new ArrayRange(rIndex, length, _storage);
             }
         }
     }

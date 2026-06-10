@@ -21,66 +21,66 @@ namespace BinaryCollections.BinaryList
             }
 
             range = new TValue[boundaries.Length];
-            Array.Copy(boundaries.Source, boundaries.RealIndex, range, 0, boundaries.Length);
+            Array.Copy(boundaries.Source, boundaries.Index, range, 0, boundaries.Length);
 
-            if (RemoveRangeInternal(ToVirtualIndex(boundaries.RealIndex), boundaries.Length))
+            if (RemoveRangeInternal(ToVirtualIndex(boundaries.Index), boundaries.Length))
             {
-                index = ToVirtualIndex(boundaries.RealIndex);
+                index = ToVirtualIndex(boundaries.Index);
             }
 
             return true;
         }
 
-        private ListRangeInfo GetBoundariesToExtract(ref readonly TValue item)
+        private ArrayRange GetBoundariesToExtract(ref readonly TValue item)
         {
             var (left, right) = FindBoundaries(in item, Values, Comparer);
 
-            if (left < 0)
+            if (left < 0 || right < 0)
                 return new();
 
-            TValue[] source = _storage;
-            int initialRIndex = ToRealIndex(left);
-            int lengthInitial = right - left + 1;
+            int collisionStartIndex = ToRealIndex(left);
+            int collisionLength = right - left + 1;
 
-            ExtractRangeFromCollisions(in item, ref initialRIndex, ref lengthInitial, out source);
+            return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
 
-            return new(initialRIndex, lengthInitial, source);
-
-            void ExtractRangeFromCollisions(ref readonly TValue item, ref int rIndex, ref int length, out TValue[] source)
+            ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                int write = rIndex;
-                _version = unchecked(++_version);
-
-                TValue[] temp = ArrayPool<TValue>.Shared.Rent(length); int t = 0;
-
-                try
+                if (ContaninsCollisions)
                 {
-                    for (int read = rIndex; read < rIndex + length; read++)
+                    // We need to group duplicates within collisions together
+                    TValue[] temp = ArrayPool<TValue>.Shared.Rent(length);
+                    try
                     {
-                        ref readonly var currItem = ref _storage[read];
-                        if (!IsIdentical(in currItem, in item))
+                        int t = 0;
+                        int write = rIndex;
+                        _version = unchecked(++_version);
+
+                        for (int read = rIndex; read < rIndex + length; read++)
                         {
-                            _storage[write] = currItem;
-                            write++;
+                            ref readonly var currItem = ref _storage[read];
+                            if (!IsIdentical(in currItem, in item))
+                            {
+                                _storage[write] = currItem;
+                                write++;
+                            }
+                            else
+                            {
+                                temp[t++] = currItem;
+                            }
                         }
-                        else
-                        {
-                            temp[t++] = currItem;
-                        }
+
+                        Array.Copy(temp, 0, _storage, write, t);
+
+                        rIndex = write;
+                        length -= write - rIndex;
                     }
-
-                    Array.Copy(temp, 0, _storage, write, t);
-                }
-                finally
-                {
-                    ArrayPool<TValue>.Shared.Return(temp, true);
+                    finally
+                    {
+                        ArrayPool<TValue>.Shared.Return(temp, true);
+                    }
                 }
 
-                source = _storage;
-                int keptCountInBlock = write - rIndex;
-
-                rIndex = write;
-                length = lengthInitial - keptCountInBlock;
+                return new ArrayRange(rIndex, length, _storage);
             }
         }
     }
