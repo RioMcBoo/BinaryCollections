@@ -156,6 +156,17 @@
             return false;
         }
 
+        private static bool IsFoundIndexOutOfRange(int index, int count)
+        {
+            if (index > 0)
+                return index >= count;
+
+            if (index < 0)
+                return ~index == 0 || ~index == count;
+
+            throw new ArgumentOutOfRangeException("index is wrong");
+        }
+
         /// <returns>
         ///     <para>A value that indicates the relative order of the objects being compared. The return value has these meanings:</para>
         ///     <list type="table">

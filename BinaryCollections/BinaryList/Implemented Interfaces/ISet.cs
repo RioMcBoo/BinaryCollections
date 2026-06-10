@@ -12,34 +12,16 @@
 
         void ISet<TValue>.UnionWith(IEnumerable<TValue> other) => UnionWithUnique(other);
 
-        bool ISet<TValue>.IsProperSubsetOf(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.IsProperSubsetOf(IEnumerable<TValue> other) => IsProperSubsetOfUnique(other);
 
-        bool ISet<TValue>.IsProperSupersetOf(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.IsProperSupersetOf(IEnumerable<TValue> other) => IsProperSupersetOfUnique(other);
 
-        bool ISet<TValue>.IsSubsetOf(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.IsSubsetOf(IEnumerable<TValue> other) => IsSubsetOfUnique(other);
 
-        bool ISet<TValue>.IsSupersetOf(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.IsSupersetOf(IEnumerable<TValue> other) => IsSupersetOfUnique(other);
 
-        bool ISet<TValue>.Overlaps(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.Overlaps(IEnumerable<TValue> other) => Overlaps(other);
 
-        bool ISet<TValue>.SetEquals(IEnumerable<TValue> other)
-        {
-            throw new NotImplementedException();
-        }
+        bool ISet<TValue>.SetEquals(IEnumerable<TValue> other) => SetEqualsUnique(other);
     }
 }

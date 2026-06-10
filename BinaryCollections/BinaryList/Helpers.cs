@@ -47,6 +47,164 @@
             }
         }
 
+        private ref struct Iterator
+        {
+            public static TValue Default = default!;
+            public bool OutOfRange { get; private set; }
+            public readonly ReadOnlySpan<TValue> Span;
+            public readonly BinaryListFlags Flags;
+            private ref readonly TValue _current;
+            private int _index;
+            private int _lowerLimit;
+            private int _upperLimit;
+
+            public Iterator(ReadOnlySpan<TValue> span, BinaryListFlags flags)
+            {
+                Span = span;
+                Flags = flags;
+                _index = -1;
+                _lowerLimit = 0;
+                _upperLimit = span.Length - 1;
+                _current = ref Default;
+                OutOfRange = true;
+            }
+
+            public void operator ++() => Next(1);
+
+            public void operator --() => Prev(1);
+
+            /// <summary>
+            /// Advances the iterator forward by the specified number of elements.
+            /// </summary>
+            /// <param name="delta">The requested number of elements to skip forward.</param>
+            /// <returns>
+            /// The actual number of elements advanced. This value will be less than <paramref name="delta"/> 
+            /// if the iterator hits the upper boundary (<see cref="UpperLimit"/>) of the range.
+            /// </returns>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="delta"/> is negative.</exception>
+            public int Next(int delta)
+            {
+                if (delta > 0) return _setIndex(_index + delta);
+
+                if (delta < 0)
+                    throw new ArgumentOutOfRangeException(nameof(delta), "Delta must be non-negative.");
+
+                return 0;
+            }
+
+            /// <summary>
+            /// Moves the iterator backward by the specified number of elements.
+            /// </summary>
+            /// <param name="delta">The requested number of elements to skip backward.</param>
+            /// <returns>
+            /// The actual number of elements moved backward. This value will be less than <paramref name="delta"/> 
+            /// if the iterator hits the lower boundary (<see cref="LowerLimit"/>) of the range.
+            /// </returns>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="delta"/> is negative.</exception>
+            public int Prev(int delta)
+            {
+                if (delta > 0) return -_setIndex(_index - delta);
+
+                if (delta < 0)
+                    throw new ArgumentOutOfRangeException(nameof(delta), "Delta must be non-negative.");
+
+                return 0;
+            }
+
+            public ref readonly TValue this[int index]
+            {
+                get
+                {
+                    if (index < _lowerLimit || index > _upperLimit)
+                    {
+                        throw new IndexOutOfRangeException();
+                    }
+
+                    return ref Span[index];
+                }
+            }
+
+            public int Length => Span.Length;
+            public int LimitedCount => _upperLimit - _lowerLimit + 1;
+
+            public int LowerLimit
+            {
+                get => _lowerLimit;
+                set
+                {
+                    if (value < 0 || value > _upperLimit)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(value));
+                    }
+
+                    _lowerLimit = value;
+                    _setIndex(_index);
+                }
+            }
+
+            public int UpperLimit
+            {
+                get => _upperLimit;
+                set
+                {
+                    if (value >= Span.Length || value < _lowerLimit)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(value));
+                    }
+
+                    _upperLimit = value;
+                    _setIndex(_index);
+                }
+            }
+
+            public ref readonly TValue Current => ref _current;
+
+            public void SetIndex(int index)
+            {
+                if (index < 0 || index > Span.Length - 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                _setIndex(index);
+            }
+
+            /// <summary>
+            /// Sets the internal index of the iterator to the specified position, enforced by the range boundaries.
+            /// </summary>
+            /// <param name="index">The target absolute index to set.</param>
+            /// <returns>
+            /// The actual signed displacement (delta) applied to the index relative to its previous position. 
+            /// If the target index exceeds the limits, it returns the exact distance from the previous position 
+            /// to the boundary (<see cref="_upperLimit"/> or <see cref="_lowerLimit"/>).
+            /// </returns>
+            private int _setIndex(int index)
+            {
+                int oldIndex = _index;
+
+                if (index > _upperLimit)
+                {
+                    _index = _upperLimit + 1;
+                    _current = ref Default;
+                    OutOfRange = true;
+                    return _upperLimit - oldIndex;
+                }
+
+                if (index < _lowerLimit)
+                {
+                    _index = _lowerLimit - 1;
+                    _current = ref Default;
+                    OutOfRange = true;
+                    return _lowerLimit - oldIndex;
+                }
+
+                _index = index;
+                _current = ref Span[_index];
+                OutOfRange = false;
+                return _index - oldIndex;
+            }
+        }
+
         private ref struct SourceInfo
         {
             public ReadOnlySpan<TValue> Array;

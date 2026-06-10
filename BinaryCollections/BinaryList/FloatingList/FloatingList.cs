@@ -17,7 +17,7 @@ namespace BinaryCollections.BinaryList
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         protected bool CanMoveRight => RightBuffer > 0;
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        private ReadOnlySpan<TValue> Values => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
+        protected ReadOnlySpan<TValue> Values => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
         private int ZeroIndex => _zeroRIndex;
         protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
