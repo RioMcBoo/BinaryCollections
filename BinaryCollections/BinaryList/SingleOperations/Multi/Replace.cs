@@ -1,17 +1,15 @@
-﻿using System.Runtime.CompilerServices;
-
 namespace BinaryCollections.BinaryList
 {
     partial class BinaryList<TValue>
     {
         public bool Replace(TValue oldItem, TValue newItem)
         {
-            return Replace(ref oldItem, ref newItem, out _);
+            return Replace(in oldItem, in newItem, out _);
         }
 
         public bool Replace(int index, TValue newItem)
         {
-            return Replace(index, ref newItem, out _);
+            return Replace(index, in newItem, out _);
         }
 
         public bool Replace(ref readonly TValue oldItem, ref readonly TValue newItem, out int newIndex)
@@ -24,22 +22,28 @@ namespace BinaryCollections.BinaryList
             return ReplaceCore(index, out newIndex, in newItem, false);
         }
 
-        private void ReplaceItemsInArray(ref ArraySplitInfo info, out int addItemIndexDelta)
+        private void ReplaceItemsInArray(ref readonly ArraySplitInfo info)
         {
-            addItemIndexDelta = 0;
-            bool NeedsMoveMiddlePart = info.MiddPart.Length < info.LeftPart.Length + info.RightPart.Length;
+            // we take middle alignment info to see how edges will be changed
+            var alignmentInfo = info.Alignment.Middle;
+            bool BetterMoveMiddlePart = info.MiddlePart.Length <= info.LeftPart.Length + info.RightPart.Length;
 
-            if (NeedsMoveMiddlePart || Capacity == Count)
+            // Try to move middle part
+            if (BetterMoveMiddlePart)
             {
-                ShiftMiddlePart(ref info, out addItemIndexDelta);
+                // Check boundaries
+                if (info.ArraySizeDelta > 0 && RightBuffer - info.ArraySizeDelta < 0)
+                    ResizeArray(in info);
+                else
+                    ShiftMiddlePart(in info);
             }
-            else if ((info.LeftPoint.NewItemtPushes && !CanMoveLeft) || (info.RightPoint.NewItemtPushes && !CanMoveRight))
+            else // Try to move edges
             {
-                ShiftArrayToCenter(ref info);
-            }
-            else
-            {
-                ShiftEdges(ref info);
+                // check boundaries
+                if ((LeftBuffer + alignmentInfo.LeftEdgeIndexShift < 0) || (RightBuffer - alignmentInfo.RightEdgeIndexShift < 0))
+                    ResizeArray(in info);
+                else
+                    ShiftEdges(in info);
             }
         }
 
@@ -57,21 +61,20 @@ namespace BinaryCollections.BinaryList
             if (!CheckIndex(oldVIndex))
                 return false;
 
+            if (IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
+                return false;
+
             _version = unchecked(++_version);
 
-            if (oldVIndex == newVIndex && newVIndex > -1)
-            {
-                // oldItem and newItem have same index, so we can replace them easily.
-                _storage[ToRealIndex(oldVIndex)] = newItem;
-                return true;
-            }
-
             // Do replacement
-            newVIndex = newVIndex < 0 ? ~newVIndex : newVIndex;
-            var info = new ArraySplitInfo(oldVIndex, newVIndex, Count);
-            ReplaceItemsInArray(ref info, out int addItemIndexDelta);
+            bool IsNewItemAlreadyInList = newVIndex >= 0;
+            newVIndex = IsNewItemAlreadyInList ? newVIndex : ~newVIndex;
 
-            _storage[ToRealIndex(newVIndex + addItemIndexDelta)] = newItem;
+            var replaceInfo = new ReplaceInfo(oldVIndex, newVIndex, Count);
+            var info = replaceInfo.Data;
+
+            ReplaceItemsInArray(in info);
+            _storage[ToRealIndex(newVIndex + info.AddIndexShift)] = newItem;
 
             return true;
         }

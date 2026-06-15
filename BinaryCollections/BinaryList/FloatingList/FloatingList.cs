@@ -19,7 +19,7 @@ namespace BinaryCollections.BinaryList
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
         protected ReadOnlySpan<TValue> Values => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        private int ZeroIndex => _zeroRIndex;
+        public int ZeroIndex => _zeroRIndex;
         protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
         protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
         protected const int DefaultCapacity = 4;

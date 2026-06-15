@@ -12,8 +12,8 @@
         public int ValueHash { get; init; }
         public int HashCode { get; init; }
     }
-    
-    public class TestTypeBinary: TestType, IComparable<TestTypeBinary>, IEquatable<TestTypeBinary>
+
+    public class TestTypeBinary : TestType, IComparable<TestTypeBinary>, IEquatable<TestTypeBinary>
     {
         public static int HashFactor = TestType.DefaultHashFactor;
         public int Value { get; init; }
@@ -23,7 +23,7 @@
         public int CompareTo(TestTypeBinary? other)
         {
             if (other == null)
-                return Comparer<TestTypeBinary>.Default.Compare(this, other);            
+                return Comparer<TestTypeBinary>.Default.Compare(this, other);
 
             return Comparer<int>.Default.Compare(this.Value, other.Value);
         }
@@ -46,12 +46,14 @@
             return HashCode;
         }
 
-        public static implicit operator TestTypeBinary(int value) => new()
+        public TestTypeBinary(int value)
         {
-            Value = value,
-            ValueHash = value % 3,
-            HashCode = value % HashFactor 
-        };
+            Value = value;
+            ValueHash = value % 3;
+            HashCode = value % HashFactor;
+        }
+
+        public static implicit operator TestTypeBinary(int value) => new(value);
     }
 
     public class TestTypeHash : TestType, IEquatable<TestTypeHash>
@@ -87,12 +89,14 @@
             return HashCode;
         }
 
-        public static implicit operator TestTypeHash(int value) => new()
+        public TestTypeHash(int value)
         {
-            Value = value,
-            ValueHash = value % 3,
-            HashCode = value % HashFactor
-        };
+            Value = value;
+            ValueHash = value % 3;
+            HashCode = value % HashFactor;
+        }
+
+        public static implicit operator TestTypeHash(int value) => new(value);
     }
 
     public class TestComparer : IComparer<TestType>
@@ -102,7 +106,7 @@
         public static TestComparer ByValue = new(false);
         public static TestComparer ByHash = new(true);
 
-        private TestComparer (bool byHash) { _byHash = byHash; }
+        private TestComparer(bool byHash) { _byHash = byHash; }
         /// <returns>
         ///     <para>A value that indicates the relative order of the objects being compared. The return value has these meanings:</para>
         ///     <list type="table">
@@ -120,7 +124,7 @@
         ///         </item>
         ///     </list>
         /// </returns>
-        public int Compare(TestType? x, TestType? y) 
+        public int Compare(TestType? x, TestType? y)
         {
             return _byHash ? CompareByHashMirror(x, y) : CompareByValue(x, y);
         }

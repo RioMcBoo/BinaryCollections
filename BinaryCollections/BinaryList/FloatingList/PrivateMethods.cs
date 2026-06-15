@@ -3,17 +3,34 @@ namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
+        protected void ClearArray(TValue[] array, int vIndex, int length)
+        {
+            if (length > 0)
+            {
+                Array.Clear(array, ToRealIndex(vIndex), length);
+            }
+        }
+
         protected bool RemoveAtIndex(int index)
         {
-            var info = new ArraySplitInfo(index, false, _count);
+            var removeInfo = new RemoveInfo(index, _count);
+            var info = removeInfo.Data;
 
-            if (info.LeftPart.Length <= info.RightPart.Length)
+            if (info.LeftPart.Length < info.RightPart.Length)
             {
-                ShiftLeftPart(ref info);
+                ShiftLeftPart(in info);
             }
             else if (info.RightPart.Length < info.LeftPart.Length)
             {
-                ShiftRightPart(ref info);
+                ShiftRightPart(in info);
+            }
+            else if (LeftBuffer <= RightBuffer)
+            {
+                ShiftLeftPart(in info);
+            }
+            else
+            {
+                ShiftRightPart(in info);
             }
 
             _count--;
@@ -31,19 +48,20 @@ namespace BinaryCollections.BinaryList
 
             if (_count > 0)
             {
-                var info = new ArraySplitInfo(vIndex, true, _count);
+                var insertInfo = new InsertInfo(vIndex, _count);
+                var info = insertInfo.Data;
 
                 if (CanMoveLeft && info.LeftPart.Length <= info.RightPart.Length)
                 {
-                    ShiftLeftPart(ref info);
+                    ShiftLeftPart(in info);
                 }
                 else if (CanMoveRight && info.RightPart.Length <= info.LeftPart.Length)
                 {
-                    ShiftRightPart(ref info);
+                    ShiftRightPart(in info);
                 }
                 else
                 {
-                    ResizeArray(ref info);
+                    ResizeArray(in info);
                 }
             }
 
@@ -100,115 +118,46 @@ namespace BinaryCollections.BinaryList
                 destination = new TValue[newCapacity];
         }
 
-        protected void ResizeArray(ref ArraySplitInfo info)
+        protected void ResizeArray(ref readonly ArraySplitInfo info)
         {
             PrepareForResize(info.ArraySizeDelta, out var destination);
-            ShiftArrayToCenter(_storage, destination, ref info);
+            ShiftArrayToCenter(_storage, destination, in info);
             _storage = destination;
         }
 
-        protected void ShiftArrayToCenter(ref ArraySplitInfo info)
+        protected void ShiftArrayToCenter(ref readonly ArraySplitInfo info)
         {
-            ShiftArrayToCenter(_storage, _storage, ref info);
+            ShiftArrayToCenter(_storage, _storage, in info);
         }
 
-        protected void ShiftArrayToCenter(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info)
+        protected void ShiftArrayToCenter(TValue[] srcArray, TValue[] destArray, ref readonly ArraySplitInfo info)
         {
             int arraySizeDelta = info.ArraySizeDelta;
             int newCount = _count + arraySizeDelta;
             int newZeroIndex = CalculateZeroIndex(destArray.Length, newCount);
             int delta = newZeroIndex - _zeroRIndex;
 
-            ShiftArray(srcArray, destArray, ref info, delta);
+            ShiftArray(srcArray, destArray, in info, delta);
         }
 
-        protected void ShiftArray(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftMiddlePart(ref readonly ArraySplitInfo info)
         {
-            int arraySizeDelta = info.ArraySizeDelta;
-            int newZeroRIndex = delta + _zeroRIndex;
-
-            if (delta < 0)
-                ShiftArrayLeft(srcArray, destArray, ref info, delta);
-            else
-                ShiftArrayRight(srcArray, destArray, ref info, delta + arraySizeDelta);
-
-            if (ContainsReferences && srcArray == destArray)
-            {
-                int cleanLength_ShiftLeft = -delta - arraySizeDelta;
-                int cleanIndex_ShiftLeft = _count + delta + arraySizeDelta;
-
-                int cleanLength_ShiftRight = delta;
-                int cleanIndex_ShiftRight = _zeroRIndex;
-
-                ClearArray(destArray, cleanIndex_ShiftRight, cleanLength_ShiftRight);
-                ClearArray(destArray, cleanIndex_ShiftLeft, cleanLength_ShiftLeft);
-            }
-
-            _zeroRIndex = newZeroRIndex;
+            ShiftArray(_storage, _storage, in info, 0);
         }
 
-        protected void ClearArray(TValue[] array, int vIndex, int length)
+        protected void ShiftEdges(ref readonly ArraySplitInfo info)
         {
-            if (length > 0)
-            {
-                Array.Clear(array, ToRealIndex(vIndex), length);
-            }
+            ShiftArray(_storage, _storage, in info, info.Alignment.Middle.LeftEdgeIndexShift);
         }
 
-        protected void ShiftArrayLeft(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftLeftPart(ref readonly ArraySplitInfo info)
         {
-            Move(srcArray, info.LeftPart.VIndex, destArray, info.LeftPart.VIndex + delta, info.LeftPart.Length);
-            delta += info.LeftPoint.ArraySizeDelta;
-
-            if (Move(srcArray, info.MiddPart.VIndex, destArray, info.MiddPart.VIndex + delta, info.MiddPart.Length))
-                delta += info.RightPoint.ArraySizeDelta;
-
-            Move(srcArray, info.RightPart.VIndex, destArray, info.RightPart.VIndex + delta, info.RightPart.Length);
+            ShiftArray(_storage, _storage, in info, info.Alignment.Right.LeftEdgeIndexShift);
         }
 
-        protected void ShiftArrayRight(TValue[] srcArray, TValue[] destArray, ref ArraySplitInfo info, int delta)
+        protected void ShiftRightPart(ref readonly ArraySplitInfo info)
         {
-            Move(srcArray, info.RightPart.VIndex, destArray, info.RightPart.VIndex + delta, info.RightPart.Length);
-            delta -= info.RightPoint.ArraySizeDelta;
-
-            if (Move(srcArray, info.MiddPart.VIndex, destArray, info.MiddPart.VIndex + delta, info.MiddPart.Length))
-                delta -= info.LeftPoint.ArraySizeDelta;
-
-            Move(srcArray, info.LeftPart.VIndex, destArray, info.LeftPart.VIndex + delta, info.LeftPart.Length);
-        }
-
-        protected void ShiftMiddlePart(ref ArraySplitInfo info, out int addItemIndexDelta)
-        {
-            int delta = info.LeftPoint.ArraySizeDelta;
-            Move(_storage, info.MiddPart.VIndex, _storage, info.MiddPart.VIndex + delta, info.MiddPart.Length);
-            addItemIndexDelta = info.LeftPoint.NewItemtPushes ? -1 : 0;
-        }
-
-        protected void ShiftEdges(ref ArraySplitInfo info)
-        {
-            // ShiftLeftPart changes zero_index, so ShiftRightPart should be called before it
-            ShiftRightPart(ref info);
-            ShiftLeftPart(ref info);
-        }
-
-        protected void ShiftLeftPart(ref ArraySplitInfo info)
-        {
-            int delta = -info.LeftPoint.ArraySizeDelta;
-            Move(_storage, info.LeftPart.VIndex, _storage, info.LeftPart.VIndex + delta, info.LeftPart.Length);
-
-            if (ContainsReferences && delta > 0)
-                Array.Clear(_storage, _zeroRIndex, delta);
-
-            _zeroRIndex += delta;
-        }
-
-        protected void ShiftRightPart(ref ArraySplitInfo info)
-        {
-            int delta = info.RightPoint.ArraySizeDelta;
-            Move(_storage, info.RightPart.VIndex, _storage, info.RightPart.VIndex + delta, info.RightPart.Length);
-
-            if (ContainsReferences && delta < 0)
-                Array.Clear(_storage, _zeroRIndex + _count + delta, -delta);
+            ShiftArray(_storage, _storage, in info, info.Alignment.Left.LeftEdgeIndexShift);
         }
     }
 }

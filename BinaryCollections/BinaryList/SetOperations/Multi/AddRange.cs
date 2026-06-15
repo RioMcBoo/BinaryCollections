@@ -127,27 +127,23 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
         {
-            vIndex = vIndex < 0 ? ~vIndex : vIndex;
-            var info = new ArraySplitInfo(vIndex, range.Length, _count);
+            bool IsIndexNotFound = vIndex < 0;
 
-            if (_count == 0)
+            vIndex = IsIndexNotFound ? ~vIndex : vIndex;
+            var insertInfo = new InsertInfo(vIndex, _count, range.Length);
+            var info = insertInfo.Data;
+
+            if (CanMoveLeft && info.LeftPart.Length <= info.RightPart.Length)
             {
-                ResizeArray(ref info);
+                ShiftLeftPart(in info);
+            }
+            else if (CanMoveRight && info.RightPart.Length <= info.LeftPart.Length)
+            {
+                ShiftRightPart(in info);
             }
             else
             {
-                if (CanMoveLeft && info.LeftPart.Length <= info.RightPart.Length)
-                {
-                    ShiftLeftPart(ref info);
-                }
-                else if (CanMoveRight && info.RightPart.Length <= info.LeftPart.Length)
-                {
-                    ShiftRightPart(ref info);
-                }
-                else
-                {
-                    ResizeArray(ref info);
-                }
+                ResizeArray(in info);
             }
 
             range.CopyTo(_storage.AsSpan(ToRealIndex(vIndex), range.Length));

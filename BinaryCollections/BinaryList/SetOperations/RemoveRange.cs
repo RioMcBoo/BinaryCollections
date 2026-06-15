@@ -32,7 +32,8 @@
         {
             if (length > 0)
             {
-                var info = new ArraySplitInfo(new Point(vIndex, -length), _count);
+                var removeInfo = new RemoveInfo(vIndex, _count, length);
+                var info = removeInfo.Data;
 
                 if (info.LeftPart.Length <= info.RightPart.Length)
                 {
