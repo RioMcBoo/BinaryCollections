@@ -8,7 +8,7 @@
 
         void ICollection<TValue>.Clear() => Clear();
 
-        bool ICollectioContains(TValue item) => Contains(in item, out _);
+        bool ICollection<TValue>.Contains(TValue item) => Contains(in item, out _);
 
         void ICollection<TValue>.CopyTo(TValue[] array, int arrayIndex) => CopyTo(array, arrayIndex);
 
