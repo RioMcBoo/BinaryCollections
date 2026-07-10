@@ -110,17 +110,14 @@ namespace BinaryCollections.BinaryList
 
         protected readonly ref struct ArraySplitInfo
         {
-            private readonly int _addIndexShift;
-
+            public readonly int AddIndexShift;
+            public readonly int ArraySizeDelta;
             public readonly AlignmentInfoContainer Alignment;
             public readonly PartInfo LeftPart;
             public readonly PointInfo LeftPoint;
             public readonly PartInfo MiddlePart;
             public readonly PointInfo RightPoint;
             public readonly PartInfo RightPart;
-
-            public int ArraySizeDelta => LeftPoint.Count + RightPoint.Count;
-            public int AddIndexShift => _addIndexShift;
 
             public ArraySplitInfo(PointInfo removePoint, PointInfo insertPoint, int arrayLength)
             {
@@ -211,7 +208,9 @@ namespace BinaryCollections.BinaryList
                 MiddlePart = new PartInfo(middlePart.Index, middlePart.Length);
                 RightPoint = rightPoint;
                 RightPart = new PartInfo(rightPart.Index, rightPart.Length);
-                _addIndexShift = addIndexShift;
+
+                AddIndexShift = addIndexShift;
+                ArraySizeDelta = LeftPoint.Count + RightPoint.Count;
             }
         }
     }
