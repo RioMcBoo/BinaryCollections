@@ -1,4 +1,4 @@
-namespace BinaryCollections.BinaryList
+﻿namespace BinaryCollections.BinaryList
 {
     partial class BinaryList<TValue>
     {
@@ -67,14 +67,30 @@ namespace BinaryCollections.BinaryList
             _version = unchecked(++_version);
 
             // Do replacement
-            bool IsNewItemAlreadyInList = newVIndex >= 0;
-            newVIndex = IsNewItemAlreadyInList ? newVIndex : ~newVIndex;
+            bool ItemExists = newVIndex >= 0;
+            newVIndex = ItemExists ? newVIndex : ~newVIndex;
 
             var replaceInfo = new ReplaceInfo(oldVIndex, newVIndex, Count);
             var info = replaceInfo.Data;
 
             ReplaceItemsInArray(in info);
             _storage[ToRealIndex(newVIndex + info.AddIndexShift)] = newItem;
+
+            if (_count < 2)
+            {
+                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            }
+            else if (ItemExists)
+            {
+                RemoveFlags(BinaryListFlags.NoDuplicates);
+
+                if (_count == 2)
+                    AddFlags(BinaryListFlags.UniformRange);
+            }
+            else
+            {
+                RemoveFlags(BinaryListFlags.UniformRange);
+            }
 
             return true;
         }

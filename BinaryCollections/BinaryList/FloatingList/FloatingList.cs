@@ -5,6 +5,7 @@ namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
+        public BinaryListFlags Flags => _flags;
         public int Capacity => _storage.Length;
         public int Count => _count;
         public int Version => _version;
@@ -112,6 +113,7 @@ namespace BinaryCollections.BinaryList
             _version = unchecked(++_version);
             _count = 0;
             _zeroRIndex = CalculateZeroIndex(_storage.Length, _count);
+            SetDefaultFlags();
 
             if (clearArray.HasValue)
             {
@@ -134,9 +136,12 @@ namespace BinaryCollections.BinaryList
                 _count = 0;
                 _storage = new TValue[DefaultCapacity];
                 _zeroRIndex = CalculateZeroIndex(_storage.Length, _count);
+                SetDefaultFlags();
             }
             else
+            {
                 _storage = null!;
+            }
 
             return extracted;
         }

@@ -127,9 +127,9 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
         {
-            bool IsIndexNotFound = vIndex < 0;
+            bool ItemExists = vIndex >= 0;
+            vIndex = ItemExists ? vIndex : ~vIndex;
 
-            vIndex = IsIndexNotFound ? ~vIndex : vIndex;
             var insertInfo = new InsertInfo(vIndex, _count, range.Length);
             var info = insertInfo.Data;
 
@@ -149,6 +149,18 @@ namespace BinaryCollections.BinaryList
             range.CopyTo(_storage.AsSpan(ToRealIndex(vIndex), range.Length));
             _count += range.Length;
             _version = unchecked(++_version);
+
+            if (ItemExists)
+            {
+                RemoveFlags(BinaryListFlags.NoDuplicates);
+
+                if (_count - range.Length == 1)
+                    AddFlags(BinaryListFlags.UniformRange);
+            }
+            else
+            {
+                RemoveFlags(BinaryListFlags.UniformRange);
+            }
 
             return true;
         }
@@ -223,6 +235,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex;
             _count += range.Length;
             _version = unchecked(++_version);
+            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
             return true;
         }
 
@@ -277,6 +290,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex;
             _count += range.Length;
             _version = unchecked(++_version);
+            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
             return true;
         }
     }

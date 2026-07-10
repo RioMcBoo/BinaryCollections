@@ -47,6 +47,9 @@
                 _count -= length;
                 _version = unchecked(++_version);
 
+                if (_count < 2)
+                    ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
                 return true;
             }
 

@@ -36,6 +36,9 @@ namespace BinaryCollections.BinaryList
             _count--;
             _version = unchecked(++_version);
 
+            if (_count < 2)
+                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
         }
 
@@ -44,7 +47,8 @@ namespace BinaryCollections.BinaryList
             if (_count == Array.MaxLength)
                 return false;
 
-            vIndex = vIndex < 0 ? ~vIndex : vIndex;
+            bool ItemExists = vIndex >= 0;
+            vIndex = ItemExists ? vIndex : ~vIndex;
 
             if (_count > 0)
             {
@@ -68,6 +72,18 @@ namespace BinaryCollections.BinaryList
             _storage[ToRealIndex(vIndex)] = item;
             _count++;
             _version = unchecked(++_version);
+
+            if (ItemExists)
+            {
+                RemoveFlags(BinaryListFlags.NoDuplicates);
+
+                if (_count == 2)
+                    AddFlags(BinaryListFlags.UniformRange);
+            }
+            else
+            {
+                RemoveFlags(BinaryListFlags.UniformRange);
+            }
 
             return true;
         }

@@ -99,5 +99,41 @@ namespace BinaryCollections.BinaryList
 
             return true;
         }
+
+        protected void SetFlags(BinaryListFlags flags)
+        {
+            _flags = flags;
+        }
+
+        protected void SetDefaultFlags(BinaryListFlags include = BinaryListFlags.None, BinaryListFlags exclude = BinaryListFlags.None)
+        {
+            _flags = BinaryListFlags.NoDuplicates;
+            ModifyFlags(include, exclude);
+        }
+
+        protected void ModifyFlags(BinaryListFlags add = BinaryListFlags.None, BinaryListFlags remove = BinaryListFlags.None)
+        {
+            _flags = (_flags | add) & ~remove;
+        }
+
+        protected void AddFlags(BinaryListFlags add)
+        {
+            _flags = _flags | add;
+        }
+
+        protected void RemoveFlags(BinaryListFlags remove)
+        {
+            _flags = _flags & ~remove;
+        }
+
+        protected bool HasFlag(BinaryListFlags flag)
+        {
+            return (_flags & flag) == flag;
+        }
+
+        protected bool HasAnyFlag(BinaryListFlags flag)
+        {
+            return (_flags & flag) != 0;
+        }
     }
 }

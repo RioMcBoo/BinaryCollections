@@ -1,5 +1,4 @@
-﻿
-namespace BinaryCollections.BinaryList
+﻿namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {
@@ -10,7 +9,7 @@ namespace BinaryCollections.BinaryList
 
             public bool LeadsToCollisions => _leadsToCollisions && DefaultComparerLeadsToCollisions;
 
-            public BinaryListComparer(ref BinaryListFlags flags, IComparer<TValue> comparer = null!, bool? comparerLeadsToCollisions = null)
+            public BinaryListComparer(out BinaryListFlags flags, IComparer<TValue> comparer = null!, bool? comparerLeadsToCollisions = null)
             {
                 if (comparer is BinaryListComparer binaryListComparer)
                 {
@@ -49,7 +48,7 @@ namespace BinaryCollections.BinaryList
                     }
                 }
 
-                flags = LeadsToCollisions ? flags & ~BinaryListFlags.NoCollisions : flags | BinaryListFlags.NoCollisions;
+                flags = LeadsToCollisions ? BinaryListFlags.None : BinaryListFlags.NoCollisions;
             }
 
             /// <returns>

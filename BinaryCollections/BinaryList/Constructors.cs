@@ -50,9 +50,10 @@
                 capacity = capacity > collection.Count ? capacity : collection.Count;
             }
 
-            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
+            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
+            SetDefaultFlags(collisionFlag);
 
             AddRange(initialValues);
         }
@@ -62,9 +63,10 @@
         {
             capacity = capacity > initialValues.Length ? capacity : initialValues.Length;
 
-            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
+            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
+            SetDefaultFlags(collisionFlag);
 
             AddRange(initialValues);
         }
@@ -82,9 +84,10 @@
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
 
-            _comparer = new(ref _flags, comparer, comparerLeadsToCollisions);
+            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
+            SetDefaultFlags(collisionFlag);
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
@@ -96,9 +99,21 @@
         {
             capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
 
-            _comparer = new(ref _flags);
+            _comparer = new(out BinaryListFlags collisionFlag);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
+            SetDefaultFlags(collisionFlag);
+        }
+
+        public BinaryList(BinaryList<TValue> source)
+        {
+            SetFlags(source.Flags);
+            _comparer = source._comparer;
+            _storage = new TValue[source._storage.Length];
+            _zeroRIndex = source._zeroRIndex;
+            _count = source._count;
+
+            Array.Copy(source._storage, _storage, source._storage.Length);
         }
     }
 }

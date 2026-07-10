@@ -28,6 +28,9 @@ namespace BinaryCollections.BinaryList
                 index = ToVirtualIndex(boundaries.Index);
             }
 
+            if (_count < 2)
+                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
         }
 
