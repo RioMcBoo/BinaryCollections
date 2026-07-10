@@ -167,12 +167,12 @@ namespace BinaryList.Tests
         [TestMethod]
         public void Replace_Fuzzing_HeavyStressTest()
         {
-            // Фиксированный сид, чтобы если упадет — всегда можно было воспроизвести баг
+            // Fixed seed so that if it crashes, you can always reproduce the bug.
             var rand = new Random(2026);
 
             for (int i = 0; i < 2000000; i++)
             {
-                // Генерируем случайный размер и случайные числа (могут быть дубликаты, раз они валидны)
+                // We generate a random size and random numbers (there may be duplicates, as long as they are valid)
                 int count = rand.Next(2, 30);
                 int initialCapacity = rand.Next(0, count + 2);
                 var sourceData = new TestTypeBinary[count];
@@ -183,34 +183,35 @@ namespace BinaryList.Tests
 
                 var optimizedList = new BinaryList<TestTypeBinary>(sourceData, capacity: initialCapacity);
                 var comparer = optimizedList.Comparer;
-                // Сортируем для исходного состояния
+
+                // Sorting for the initial state
                 Array.Sort(sourceData, comparer);
 
                 var referenceList = sourceData.ToList();
 
-                // Рандомно триммим паддинги в 50% случаев
+                // Randomly trim padding in 50% of cases
                 if (rand.Next(2) == 0) optimizedList.Trim();
 
-                // Выбираем случайный элемент для замены, который ТОЧНО есть
+                // Select a random element to replace, which is guaranteed to exist
                 var oldItem = referenceList[rand.Next(referenceList.Count)];
 
-                // Генерируем новый элемент (произвольный: меньше, больше, равный)
+                // We generate a new element (arbitrary: smaller, larger, equal)
                 var newItem = new TestTypeBinary(rand.Next(-10, 60));
 
-                // Моделируем поведение на эталоне
-                // Находим индекс первого вхождения старого элемента
+                // We simulate the behavior on the reference
+                // We find the index of the first occurrence of the old element
                 int idxToRemove = referenceList.IndexOf(oldItem);
                 referenceList.RemoveAt(idxToRemove);
 
-                // Ищем место для вставки нового, чтобы сохранить сортировку
+                // We find the index where the new element should be inserted to maintain sort order
                 int idxToInsert = referenceList.BinarySearch(newItem);
                 if (idxToInsert < 0) idxToInsert = ~idxToInsert;
                 referenceList.Insert(idxToInsert, newItem);
 
-                // Действие на вашем бинарном списке
+                // We perform the same action on your binary list
                 optimizedList.Replace(oldItem, newItem);
 
-                // Самая жесткая проверка: сверяем и элементы, и зануление паддингов!
+                // The strictest check: we compare both the elements and the padding nullification!
                 RawCollectionAssert.AreEqual(optimizedList, referenceList);
             }
         }
