@@ -22,7 +22,7 @@
         public BinaryListEnumerator<TValue> GetRange(int index, int length)
         {
             if (!CheckIndex(index, length))
-                throw new ArgumentOutOfRangeException(nameof(index), "Index out of range");
+                throw new ArgumentOutOfRangeException($"{nameof(index)} or {nameof(length)} is out of range");
 
             return new(this, _storage, ToRealIndex(index), length);
         }
