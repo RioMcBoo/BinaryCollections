@@ -9,7 +9,10 @@
 
         public BinaryListEnumerator<TValue> GetRange(ref readonly TValue item)
         {
-            if (HasFlag(BinaryListFlags.UniformRange))
+            if (_count == 0)
+                return GetEnumerator();
+
+            if (HasFlag(BinaryListFlags.UniformRange) && IsIdentical(in _storage[ToRealIndex(0)], in item))
                 return GetEnumerator();
 
             var boundaries = GetBoundariesToShare(in item);
