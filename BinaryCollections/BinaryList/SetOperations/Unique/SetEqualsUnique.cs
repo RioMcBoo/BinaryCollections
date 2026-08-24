@@ -90,10 +90,10 @@ namespace BinaryCollections.BinaryList
         {
             Iterator source = new(Values, Flags);
             Iterator target = new(range, flags);
-            return SetEqualsSortedUnique(source, target, _comparer);
+            return SetEqualsSortedUnique(ref source, ref target, _comparer);
         }
 
-        private static bool SetEqualsSortedUnique(Iterator source, Iterator target, BinaryListComparer comparer)
+        private static bool SetEqualsSortedUnique(ref Iterator source, ref Iterator target, BinaryListComparer comparer)
         {
             if (source.Length == 0 && target.Length == 0)
                 return true;

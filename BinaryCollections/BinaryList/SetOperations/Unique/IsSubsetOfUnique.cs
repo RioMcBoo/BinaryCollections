@@ -99,10 +99,10 @@ namespace BinaryCollections.BinaryList
 
             Iterator source = new(Values, Flags);
             Iterator target = new(range, flags);
-            return IsSubsetOfSortedUnique(source, target, _comparer, out bool _, out bool _);
+            return IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool _, out bool _);
         }
 
-        private static bool IsSubsetOfSortedUnique(Iterator source, Iterator target, BinaryListComparer comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
+        private static bool IsSubsetOfSortedUnique(ref Iterator source, ref Iterator target, BinaryListComparer comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
         {
             hasExtraDuplicates = false;
             hasExtraUniqueElements = false;

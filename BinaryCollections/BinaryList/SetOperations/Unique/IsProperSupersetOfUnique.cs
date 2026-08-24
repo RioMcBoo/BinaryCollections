@@ -100,7 +100,7 @@ namespace BinaryCollections.BinaryList
             Iterator target = new(Values, Flags);
             Iterator source = new(range, flags);
 
-            if (IsSubsetOfSortedUnique(source, target, _comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements))
+            if (IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements))
             {
                 return hasExtraUniqueElements;
             }

@@ -99,7 +99,7 @@ namespace BinaryCollections.BinaryList
 
             Iterator target = new(Values, Flags);
             Iterator source = new(range, flags);
-            return IsSubsetOfSortedUnique(source, target, _comparer, out bool _, out bool _);
+            return IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool _, out bool _);
         }
     }
 }
