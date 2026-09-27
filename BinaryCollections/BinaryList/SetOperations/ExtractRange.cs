@@ -48,7 +48,7 @@ namespace BinaryCollections.BinaryList
 
             ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     // We need to group duplicates within collisions together
                     TValue[] temp = ArrayPool<TValue>.Shared.Rent(length);

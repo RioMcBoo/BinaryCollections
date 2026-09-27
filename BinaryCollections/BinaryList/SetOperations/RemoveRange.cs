@@ -70,7 +70,7 @@
 
             ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     // We need to group other items within collisions together
 

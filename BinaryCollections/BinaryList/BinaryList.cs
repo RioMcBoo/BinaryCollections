@@ -7,7 +7,7 @@ namespace BinaryCollections.BinaryList
         public BinaryListComparer Comparer => _comparer;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool ContaninsCollisions => _comparer.LeadsToCollisions;
+        private bool ContainsCollisions => _comparer.LeadsToCollisions;
 
         internal static IComparer<TValue> DefaultComparer = Comparer<TValue>.Default;
         private static readonly bool DefaultComparerLeadsToCollisions;

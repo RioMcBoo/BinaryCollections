@@ -43,7 +43,7 @@
             {
                 TValue[] source;
 
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     // We cannot make changes to the current array.
                     source = new TValue[length];

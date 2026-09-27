@@ -142,7 +142,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -235,7 +235,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingBothDefault(ref insertRIndex, ref i, ref c, range);
                 }
@@ -366,7 +366,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingIncomingDefault(ref insertRIndex, ref i, range);
                 }
@@ -433,7 +433,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingCurrent(ref int insertRIndex, ref int c)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingCurrentDefault(ref insertRIndex, ref c);
                 }
@@ -513,7 +513,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = ContaninsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = range.Length;
@@ -607,7 +607,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingBothDefault(ref insertRIndex, ref i, ref c, range);
                 }
@@ -738,7 +738,7 @@ namespace BinaryCollections.BinaryList
             
             void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingIncomingDefault(ref insertRIndex, ref i, range);
                 }
@@ -805,7 +805,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingCurrent(ref int insertRIndex, ref int c)
             {
-                if (ContaninsCollisions)
+                if (ContainsCollisions)
                 {
                     ProcessMergingCurrentDefault(ref insertRIndex, ref c);
                 }
