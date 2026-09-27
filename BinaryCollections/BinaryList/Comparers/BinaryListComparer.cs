@@ -22,9 +22,9 @@
                         _leadsToCollisions = true;
                     }
                 }
-                else if (ReferenceEquals(comparer, _defaultComparer) || comparer == null)
+                else if (ReferenceEquals(comparer, DefaultComparer) || comparer == null)
                 {
-                    _comparer = comparer ?? _defaultComparer;
+                    _comparer = comparer ?? DefaultComparer;
                     _leadsToCollisions = DefaultComparerLeadsToCollisions;
 
                     if (comparerLeadsToCollisions.HasValue && comparerLeadsToCollisions.Value == true)
@@ -74,7 +74,7 @@
 
                 if (_leadsToCollisions && !DefaultComparerLeadsToCollisions)
                 {
-                    compareResult = _defaultComparer.Compare(x, y);
+                    compareResult = DefaultComparer.Compare(x, y);
                 }
 
                 return compareResult;

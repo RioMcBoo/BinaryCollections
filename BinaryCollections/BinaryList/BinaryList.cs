@@ -9,35 +9,30 @@ namespace BinaryCollections.BinaryList
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool ContaninsCollisions => _comparer.LeadsToCollisions;
 
-        internal static IComparer<TValue> _defaultComparer = Comparer<TValue>.Default;
+        internal static IComparer<TValue> DefaultComparer = Comparer<TValue>.Default;
         private static readonly bool DefaultComparerLeadsToCollisions;
-        private static readonly bool IsItemTypeComparable =
-            typeof(IComparable<TValue>).IsAssignableFrom(typeof(TValue)) ||
-            typeof(IComparable).IsAssignableFrom(typeof(TValue));
-        private static readonly bool IsItemTypeEquatable =
-            typeof(IEquatable<TValue>).IsAssignableFrom(typeof(TValue));
 
         static BinaryList()
         {
             bool IsReferenceType = !typeof(TValue).IsValueType;
-            DefaultComparerLeadsToCollisions = !IsItemTypeComparable || !IsItemTypeEquatable;
+            DefaultComparerLeadsToCollisions = !ItemType<TValue>.IsComparable || !ItemType<TValue>.IsEquatable;
 
             if (DefaultComparerLeadsToCollisions)
             {
                 if (IsReferenceType)
                 {
-                    _defaultComparer = new ReferenceTypeHashCodeComparer();
+                    DefaultComparer = new ReferenceTypeHashCodeComparer();
                 }
-                else if (!ContainsReferences)
+                else if (!ItemType<TValue>.ContainsReferences)
                 {
-                    _defaultComparer = new ValueTypeHashCodeComparer();
+                    DefaultComparer = new ValueTypeHashCodeComparer();
                 }
                 else
                 {
                     // we will require a comparer from user
                 }
             }
-        }        
+        }
 
         public bool Contains(TValue item) => Contains(in item, out _);
         public bool Contains(ref readonly TValue item, out int index) => FindIndexExactly(in item, Values, Comparer, out index);
