@@ -2,13 +2,13 @@
 {
     partial class BinaryList<TValue>
     {
-        private static bool FindIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int vIndex)
+        private static bool FindIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, out int vIndex)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
             return BinarySearchFor(in item, span, comparer, ref state.lo, ref state.hi, out vIndex);
         }
 
-        private static bool FindLeftIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int index)
+        private static bool FindLeftIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, out int index)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
 
@@ -23,7 +23,7 @@
             return true;
         }
 
-        private static bool FindRightIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int index)
+        private static bool FindRightIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, out int index)
         {
             BinarySearchState state = new BinarySearchState { lo = 0, hi = span.Length - 1, i = default };
 
@@ -38,7 +38,7 @@
             return true;
         }
 
-        private static bool FindIndexExactly(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, out int vIndex)
+        private static bool FindIndexExactly(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, out int vIndex)
         {
             if (!FindIndex(in item, span, comparer, out vIndex))
                 return false;
@@ -77,7 +77,7 @@
             return false;
         }
 
-        public static (int left, int right) FindBoundaries(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer)
+        public static (int left, int right) FindBoundaries(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer)
         {
             (int left, int right) result = default;
 
@@ -100,7 +100,7 @@
             return result;
         }
 
-        private static int FindLeftBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref BinarySearchState state)
+        private static int FindLeftBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref BinarySearchState state)
         {
             int index = 0;
 
@@ -110,7 +110,7 @@
             return index;
         }
 
-        private static int FindRightBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref BinarySearchState state)
+        private static int FindRightBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref BinarySearchState state)
         {
             int index = 0;
 
@@ -120,7 +120,7 @@
             return index;
         }
 
-        private static bool BinarySearchFor(ref readonly TValue item, ReadOnlySpan<TValue> span, IComparer<TValue> comparer, ref int lo, ref int hi, out int i)
+        private static bool BinarySearchFor(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref int lo, ref int hi, out int i)
         {
             while (lo <= hi)
             {

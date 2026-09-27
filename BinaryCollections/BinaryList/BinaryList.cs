@@ -4,7 +4,7 @@ namespace BinaryCollections.BinaryList
 {
     public sealed partial class BinaryList<TValue> : FloatingList<TValue>
     {
-        public IComparer<TValue> Comparer => _comparer;
+        public BinaryListComparer Comparer => _comparer;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private bool ContaninsCollisions => _comparer.LeadsToCollisions;
