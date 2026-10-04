@@ -133,11 +133,13 @@ namespace BinaryCollections.BinaryList
             var insertInfo = new InsertInfo(vIndex, _count, range.Length);
             var info = insertInfo.Data;
 
-            if (CanMoveLeft && info.LeftPart.Length <= info.RightPart.Length)
+            bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
+
+            if (CanMoveLeft && LeftIsPriority)
             {
                 ShiftLeftPart(in info);
             }
-            else if (CanMoveRight && info.RightPart.Length <= info.LeftPart.Length)
+            else if (CanMoveRight && !LeftIsPriority)
             {
                 ShiftRightPart(in info);
             }

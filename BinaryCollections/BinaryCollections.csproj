@@ -10,4 +10,8 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ThrowHelper\ExceptionHelper.csproj" />
+  </ItemGroup>
+
 </Project>

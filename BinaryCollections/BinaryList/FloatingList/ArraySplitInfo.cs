@@ -1,4 +1,6 @@
-﻿
+﻿using ExceptionHelper;
+using System.Diagnostics;
+
 namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
@@ -110,7 +112,7 @@ namespace BinaryCollections.BinaryList
 
         protected readonly ref struct ArraySplitInfo
         {
-            public readonly int AddIndexShift;
+            public readonly int ReplaceAddIndexShift;
             public readonly int ArraySizeDelta;
             public readonly AlignmentInfoContainer Alignment;
             public readonly PartInfo LeftPart;
@@ -121,30 +123,21 @@ namespace BinaryCollections.BinaryList
 
             public ArraySplitInfo(PointInfo removePoint, PointInfo insertPoint, int arrayLength)
             {
-                // Checking arguments for compliance
-                if (removePoint.Operation == insertPoint.Operation
-                    || (removePoint.Operation != Operation.Remove && insertPoint.Operation != Operation.Insert))
-                {
-                    throw new ArgumentException("BinaryList.FloatingList.OperationInfo: Invalid operation combination");
-                }
+                // Checking arguments for compliance 1
+                Debug.Assert(removePoint.Operation != insertPoint.Operation,
+                    "BinaryList.FloatingList.ArraySplitInfo: Invalid operation combination");
 
-                // If one operation is missing, its index must be equal to the another operation.
-                if (removePoint.Operation == Operation.None && removePoint.Index != insertPoint.Index)
-                {
-                    throw new ArgumentException("BinaryList.FloatingList.OperationInfo.removePoint: Invalid Index");
-                }
+                // Checking arguments for compliance 2
+                Debug.Assert(removePoint.Operation == Operation.Remove || insertPoint.Operation == Operation.Insert,
+                    "BinaryList.FloatingList.ArraySplitInfo: Invalid operation combination");
 
-                // If one operation is missing, its index must be equal to the another operation.
-                if (insertPoint.Operation == Operation.None && insertPoint.Index != removePoint.Index)
-                {
-                    throw new ArgumentException("BinaryList.FloatingList.OperationInfo.insertPoint: Invalid Index");
-                }
+                // If one operation is missing, its index must be equal to the another operation 1. 
+                Debug.Assert(removePoint.Operation != Operation.None || removePoint.Index == insertPoint.Index,
+                    "BinaryList.FloatingList.ArraySplitInfo.removePoint: Invalid Index");
 
-                // Checking for array out of bounds when removing items from the array
-                if (arrayLength - removePoint.Index + removePoint.Count < 0)
-                {
-                    throw new ArgumentException("BinaryList.FloatingList.OperationInfo: Invalid Remove items count");
-                }
+                // If one operation is missing, its index must be equal to the another operation 2.
+                Debug.Assert(insertPoint.Operation != Operation.None || insertPoint.Index == removePoint.Index,
+                    "BinaryList.FloatingList.ArraySplitInfo.insertPoint: Invalid Index");
 
                 var leftPoint = removePoint;
                 var rightPoint = insertPoint;
@@ -156,7 +149,7 @@ namespace BinaryCollections.BinaryList
                 }
 
                 (int Index, int Length) leftPart, middlePart, rightPart;
-                int addIndexShift;
+                int replaceAddIndexShift;
 
                 if (leftPoint.Operation == Operation.Insert || rightPoint.Operation == Operation.Remove)
                 {
@@ -169,7 +162,7 @@ namespace BinaryCollections.BinaryList
                     rightPart.Index = rightPoint.Index - rightPoint.Count;
                     rightPart.Length = arrayLength - rightPart.Index;
 
-                    addIndexShift = 0;
+                    replaceAddIndexShift = 0;
                 }
                 else if (leftPoint.Operation == Operation.Remove || rightPoint.Operation == Operation.Insert)
                 {
@@ -183,11 +176,12 @@ namespace BinaryCollections.BinaryList
                     rightPart.Length = arrayLength - rightPart.Index;
 
                     var indexDiffTemp = leftPoint.Index - rightPoint.Index;
-                    addIndexShift = leftPoint.Count > indexDiffTemp ? leftPoint.Count : indexDiffTemp;
+                    replaceAddIndexShift = leftPoint.Count > indexDiffTemp ? leftPoint.Count : indexDiffTemp;
                 }
                 else
                 {
-                    throw new InvalidOperationException("BinaryList.FloatingList.OperationInfo: Checking was not fully implemented");
+                    Throw.InvalidOperationException(nameof(ArraySplitInfo), "Checking was not fully implemented");
+                    return;
                 }
 
                 Alignment.Middle = new FloatingList<TValue>.AlignmentInfo(
@@ -209,7 +203,7 @@ namespace BinaryCollections.BinaryList
                 RightPoint = rightPoint;
                 RightPart = new PartInfo(rightPart.Index, rightPart.Length);
 
-                AddIndexShift = addIndexShift;
+                ReplaceAddIndexShift = replaceAddIndexShift;
                 ArraySizeDelta = LeftPoint.Count + RightPoint.Count;
             }
         }

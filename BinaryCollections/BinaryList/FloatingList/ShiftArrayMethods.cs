@@ -1,4 +1,6 @@
-﻿namespace BinaryCollections.BinaryList
+﻿using System.Runtime.CompilerServices;
+
+namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
@@ -31,28 +33,39 @@
             }
 
             _zeroRIndex = newZeroRIndex;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void ClearArray(TValue[] array, int vIndex, int length)
+            {
+                if (length > 0)
+                {
+                    Array.Clear(array, ToRealIndex(vIndex), length);
+                }
+            }
         }
 
-        protected void ShiftArrayLeft(TValue[] srcArray, TValue[] destArray, ref readonly ArraySplitInfo info, int delta)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ShiftArrayLeft(TValue[] srcArray, TValue[] destArray, ref readonly ArraySplitInfo info, int delta)
         {
-            Move(srcArray, info.LeftPart.Index, destArray, info.LeftPart.Index + delta, info.LeftPart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.LeftPart.Index), destArray, ToRealIndex(info.LeftPart.Index + delta), info.LeftPart.Length);
             delta += info.LeftPoint.Count;
 
-            Move(srcArray, info.MiddlePart.Index, destArray, info.MiddlePart.Index + delta, info.MiddlePart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.MiddlePart.Index), destArray, ToRealIndex(info.MiddlePart.Index + delta), info.MiddlePart.Length);
             delta += info.RightPoint.Count;
 
-            Move(srcArray, info.RightPart.Index, destArray, info.RightPart.Index + delta, info.RightPart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.RightPart.Index), destArray, ToRealIndex(info.RightPart.Index + delta), info.RightPart.Length);
         }
 
-        protected void ShiftArrayRight(TValue[] srcArray, TValue[] destArray, ref readonly ArraySplitInfo info, int delta)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ShiftArrayRight(TValue[] srcArray, TValue[] destArray, ref readonly ArraySplitInfo info, int delta)
         {
-            Move(srcArray, info.RightPart.Index, destArray, info.RightPart.Index + delta, info.RightPart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.RightPart.Index), destArray, ToRealIndex(info.RightPart.Index + delta), info.RightPart.Length);
             delta -= info.RightPoint.Count;
 
-            Move(srcArray, info.MiddlePart.Index, destArray, info.MiddlePart.Index + delta, info.MiddlePart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.MiddlePart.Index), destArray, ToRealIndex(info.MiddlePart.Index + delta), info.MiddlePart.Length);
             delta -= info.LeftPoint.Count;
 
-            Move(srcArray, info.LeftPart.Index, destArray, info.LeftPart.Index + delta, info.LeftPart.Length);
+            Array.Copy(srcArray, ToRealIndex(info.LeftPart.Index), destArray, ToRealIndex(info.LeftPart.Index + delta), info.LeftPart.Length);
         }
     }
 }

@@ -1,38 +1,24 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using ExceptionHelper;
 
 namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected int ToVirtualIndex(int realIndex) => realIndex - _zeroRIndex;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected int ToRealIndex(int virtualIndex) => virtualIndex + _zeroRIndex;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected bool CheckCountOverload(int rangeCount)
         {
             if (rangeCount > Array.MaxLength - _count)
                 return false;
 
             return true;
-        }
-
-        protected void ThrowOverloadException()
-        {
-            throw new InvalidOperationException("Operation would result in an overflow.");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void CheckVersion(int version)
-        {
-            if (version != _version)
-                ThrowInvalidOperation();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void ThrowInvalidOperation()
-        {
-            throw new InvalidOperationException("Array was changed");
         }
 
         [Obsolete("Only for debugging purposes. If the element is a value type, it will be difficult to find boundaries", false)]
@@ -54,51 +40,50 @@ namespace BinaryCollections.BinaryList
             return extracted;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TValue GetItem(int index)
         {
-            if (CheckIndex(index))
+            if (!CheckIndex(index))
             {
-                return _storage[ToRealIndex(index)];
+                Throw.IndexOutOfRangeException(nameof(GetItemRef), index);
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "Index out of range");
-            }
+
+            return _storage[ToRealIndex(index)];
         }
 
         [Obsolete("This method is dangerous because it allows you to change the internal state of collection elements, point to deleted or changed array! Use it only if you understand the consequences..", false)]
         [EditorBrowsable(EditorBrowsableState.Never)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref TValue GetItemRef(int index)
         {
-            if (CheckIndex(index))
+            if (!CheckIndex(index))
             {
-                return ref _storage[ToRealIndex(index)];
+                Throw.IndexOutOfRangeException(nameof(GetItemRef), index);
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "Index out of range");
-            }
+
+            return ref _storage[ToRealIndex(index)];
         }
 
         protected static int CalculateZeroIndex(int capacity, int count)
         {
-            if (capacity < 0 || count < 0 || capacity < count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(CalculateZeroIndex), "capacity < 0 || count < 0 || capacity < count");
-            }
+            Debug.Assert(capacity >= 0, "capacity < 0");
+            Debug.Assert(count >= 0, "count < 0");
+            Debug.Assert(capacity >= count, "capacity > count");
 
             return (capacity - count) / 2;
         }
 
-        protected bool CheckIndex(int vIndex, int length = 1)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected bool CheckIndex(int vIndex, int length)
         {
-            if (vIndex < 0 || vIndex + length > _count)
-            {
-                return false;
-            }
-
-            return true;
+            return (uint)vIndex + (uint)length <= (uint)_count;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected bool CheckIndex(int vIndex)
+        {
+            return (uint)vIndex <= (uint)_count;
+        }        
 
         protected void SetFlags(BinaryListFlags flags)
         {

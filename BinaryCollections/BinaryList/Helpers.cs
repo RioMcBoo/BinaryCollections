@@ -1,4 +1,7 @@
-﻿namespace BinaryCollections.BinaryList
+﻿using System.Runtime.CompilerServices;
+using ExceptionHelper;
+
+namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {
@@ -87,7 +90,7 @@
                 if (delta > 0) return _setIndex(_index + delta);
 
                 if (delta < 0)
-                    throw new ArgumentOutOfRangeException(nameof(delta), "Delta must be non-negative.");
+                    Throw.ArgumentOutOfRangeException(nameof(Next), delta, "Delta must be non-negative.");
 
                 return 0;
             }
@@ -106,7 +109,7 @@
                 if (delta > 0) return -_setIndex(_index - delta);
 
                 if (delta < 0)
-                    throw new ArgumentOutOfRangeException(nameof(delta), "Delta must be non-negative.");
+                    Throw.ArgumentOutOfRangeException(nameof(Prev), delta, "Delta must be non-negative.");
 
                 return 0;
             }
@@ -117,7 +120,7 @@
                 {
                     if (index < _lowerLimit || index > _upperLimit)
                     {
-                        throw new IndexOutOfRangeException();
+                        Throw.IndexOutOfRangeException("Iterator.[]", index);
                     }
 
                     return ref Span[index];
@@ -134,7 +137,7 @@
                 {
                     if (value < 0 || value > _upperLimit)
                     {
-                        throw new ArgumentOutOfRangeException(nameof(value));
+                        Throw.ArgumentOutOfRangeException(nameof(LowerLimit), value, "Value is out of range.");
                     }
 
                     _lowerLimit = value;
@@ -149,7 +152,7 @@
                 {
                     if (value >= Span.Length || value < _lowerLimit)
                     {
-                        throw new ArgumentOutOfRangeException(nameof(value));
+                        Throw.ArgumentOutOfRangeException(nameof(UpperLimit), value, "Value is out of range.");
                     }
 
                     _upperLimit = value;
@@ -161,10 +164,8 @@
 
             public void SetIndex(int index)
             {
-                if (index < 0 || index > Span.Length - 1)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
+                if ((uint)index >= (uint)Span.Length)
+                    Throw.IndexOutOfRangeException(nameof(SetIndex), index);
 
                 _setIndex(index);
             }
@@ -220,6 +221,7 @@
             public SourceInfo Destination;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsIdentical(ref readonly TValue currentItem, ref readonly TValue item)
         {
             return _equalityComparer.Equals(currentItem, item);

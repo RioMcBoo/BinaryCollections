@@ -1,19 +1,40 @@
-﻿using System.Collections;
+﻿using ExceptionHelper;
+using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace BinaryCollections.BinaryList
 {
     public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
-        public readonly BinaryListFlags Flags => _binaryListInstance.Flags | _sharedFlags;
-        public IComparer<TValue> Comparer => _binaryListInstance.Comparer;
-        public int Version => _version;
-        public int Count => _end - _start;
+        public readonly BinaryListFlags Flags
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _binaryListInstance.Flags | _sharedFlags;
+        }
+
+        public IComparer<TValue> Comparer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _binaryListInstance.Comparer;
+        }
+
+        public int Version
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _version;
+        }
+
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count;
+        }
 
         private readonly BinaryList<TValue> _binaryListInstance;
         private readonly TValue[] _sharedData;
         private readonly int _version;
         private readonly int _start;
-        private readonly int _end;
+        private readonly int _count;
         private int _current;
         private BinaryListFlags _sharedFlags;
 
@@ -25,32 +46,39 @@ namespace BinaryCollections.BinaryList
             _version = instance.Version;
             _start = index;
             _current = _start - 1;
-            _end = _start + count;
+            _count = count;
         }
 
-        public TValue Current => _sharedData[_current];
+        public TValue Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _sharedData[_current];
+        }
 
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Current;
+        }
 
         public TValue this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ValidateVersion();
 
-                if (CheckIndex(index))
-                {
-                    return _sharedData[_start + index];
-                }
+                if (!CheckIndex(index))
+                    Throw.IndexOutOfRangeException("BinaryListEnumerator.[] : ", index);
 
-                throw new IndexOutOfRangeException($"Index {index} is out of range for enumerator with count {Count}.");
+                return _sharedData[_start + index];
             }
         }
 
         public bool MoveNext()
         {
             ValidateVersion();
-            return ++_current < _end;
+            return ++_current < _count;
         }
 
         public void Dispose() { }
@@ -88,19 +116,17 @@ namespace BinaryCollections.BinaryList
             return new(span.ToArray());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateVersion()
         {
-            _binaryListInstance.CheckVersion(_version);
+            if (_version != _binaryListInstance.Version)
+                Throw.ArrayWasChanged(nameof(ValidateVersion));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool CheckIndex(int vIndex)
         {
-            if (vIndex < 0 || vIndex >= Count)
-            {
-                return false;
-            }
-
-            return true;
+            return (uint)vIndex < (uint)Count;
         }
     }
 }

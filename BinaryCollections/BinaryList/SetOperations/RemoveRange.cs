@@ -35,13 +35,13 @@
                 var removeInfo = new RemoveInfo(vIndex, _count, length);
                 var info = removeInfo.Data;
 
-                if (info.LeftPart.Length <= info.RightPart.Length)
+                if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
                 {
-                    ShiftLeftPart(ref info);
+                    ShiftLeftPart(in info);
                 }
-                else if (info.RightPart.Length < info.LeftPart.Length)
+                else
                 {
-                    ShiftRightPart(ref info);
+                    ShiftRightPart(in info);
                 }
 
                 _count -= length;

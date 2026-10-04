@@ -1,31 +1,84 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
+using ExceptionHelper;
 
 namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
-        public BinaryListFlags Flags => _flags;
-        public int Capacity => _storage.Length;
-        public int Count => _count;
-        public int Version => _version;
+        public BinaryListFlags Flags
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _flags;
+        }
+
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _storage.Length;
+        }
+
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count;
+        }
+
+        public int Version
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _version;
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected int LeftBuffer => _zeroRIndex;
+        protected int LeftBuffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _zeroRIndex;
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected int RightBuffer => Capacity - _zeroRIndex - _count;
+        protected int RightBuffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Capacity - _zeroRIndex - _count;
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected bool CanMoveLeft => LeftBuffer > 0;
+        protected bool CanMoveLeft
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => LeftBuffer > 0; 
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        protected bool CanMoveRight => RightBuffer > 0;
+        protected bool CanMoveRight
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => RightBuffer > 0;
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        protected ReadOnlySpan<TValue> Values => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
+        protected ReadOnlySpan<TValue> Values
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => new ReadOnlySpan<TValue>(_storage, _zeroRIndex, _count);
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        public int ZeroIndex => _zeroRIndex;
+        public int ZeroIndex
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _zeroRIndex;
+        }
+
         protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
         protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
+        protected static double BackwardShiftPenalty = Avx512F.IsSupported ? 1.05 : 1.25;
         protected const int DefaultCapacity = 4;
 
-        public TValue this[int index] => GetItem(index);
+        public TValue this[int index] => GetItemRef(index);
 
         public bool RemoveAt(int index)
         {
@@ -39,7 +92,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match == null)
             {
-                throw new ArgumentNullException(nameof(match));
+                Throw.ArgumentNullException(nameof(Find), match);
             }
 
             // Linear search
@@ -59,7 +112,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match == null)
             {
-                throw new ArgumentNullException(nameof(match));
+                Throw.ArgumentNullException(nameof(FindLast), match);
             }
 
             for (int vIndex = _count - 1; vIndex >= 0; vIndex--)
@@ -78,7 +131,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match == null)
             {
-                throw new ArgumentNullException(nameof(match));
+                Throw.ArgumentNullException(nameof(FindAll), match);
             }
 
             List<TValue> list = new List<TValue>();
@@ -150,7 +203,7 @@ namespace BinaryCollections.BinaryList
         {
             if (_count - fromIndex < length)
             {
-                throw new ArgumentException("Not enough elements in the source array");
+                Throw.ArgumentException(nameof(Copy), "Not enough elements in the source array");
             }
 
             // Delegate rest of error checking to Array.Copy.

@@ -1,4 +1,6 @@
-﻿namespace BinaryCollections.BinaryList
+﻿using ExceptionHelper;
+
+namespace BinaryCollections.BinaryList
 {
     partial class BinaryList<TValue>
     {
@@ -22,7 +24,7 @@
         public BinaryListEnumerator<TValue> GetRange(int index, int length)
         {
             if (!CheckIndex(index, length))
-                throw new ArgumentOutOfRangeException($"{nameof(index)} or {nameof(length)} is out of range");
+                Throw.ArgumentException(nameof(GetRange), $"{nameof(index)} or {nameof(length)} is out of range");
 
             return new(this, _storage, ToRealIndex(index), length);
         }

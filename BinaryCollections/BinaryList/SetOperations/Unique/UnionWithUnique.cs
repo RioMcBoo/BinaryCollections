@@ -1,6 +1,7 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using ExceptionHelper;
 
 namespace BinaryCollections.BinaryList
 {
@@ -88,7 +89,7 @@ namespace BinaryCollections.BinaryList
             if (!CheckCountOverload(range.Length))
             {
                 if (!UnionWithSortedUniqueSafeTest(range))
-                    ThrowOverloadException();
+                    Throw.CollectionOverloadException(nameof(UnionWithSortedUnique));
             }
 
             if (LeftBuffer >= RightBuffer && LeftBuffer >= range.Length)

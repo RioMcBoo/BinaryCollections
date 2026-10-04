@@ -1,4 +1,7 @@
-﻿namespace BinaryCollections.BinaryList
+﻿using System.Runtime.CompilerServices;
+using ExceptionHelper;
+
+namespace BinaryCollections.BinaryList
 {
     partial class BinaryList<TValue>
     {
@@ -120,6 +123,7 @@
             return index;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool BinarySearchFor(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref int lo, ref int hi, out int i)
         {
             while (lo <= hi)
@@ -156,6 +160,7 @@
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsFoundIndexOutOfRange(int index, int count)
         {
             if (index > 0)
@@ -164,7 +169,8 @@
             if (index < 0)
                 return ~index == 0 || ~index == count;
 
-            throw new ArgumentOutOfRangeException("index is wrong");
+            Throw.ArgumentException(nameof(IsFoundIndexOutOfRange), "index is wrong");
+            return false;
         }
 
         /// <returns>

@@ -74,7 +74,7 @@
             var info = replaceInfo.Data;
 
             ReplaceItemsInArray(in info);
-            _storage[ToRealIndex(newVIndex + info.AddIndexShift)] = newItem;
+            _storage[ToRealIndex(newVIndex + info.ReplaceAddIndexShift)] = newItem;
 
             if (_count < 2)
             {
