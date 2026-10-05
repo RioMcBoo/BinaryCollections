@@ -78,7 +78,7 @@ namespace BinaryCollections.BinaryList
         public bool MoveNext()
         {
             ValidateVersion();
-            return ++_current < _count;
+            return CheckIndex(++_current - _start);
         }
 
         public void Dispose() { }
