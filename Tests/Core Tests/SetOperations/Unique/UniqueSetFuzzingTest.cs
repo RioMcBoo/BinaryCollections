@@ -49,6 +49,10 @@ namespace BinaryList.Tests
 
                     switch (function)
                     {
+                        case "AddRange":
+                            expFunc = UniqueModifierExpected.AddRange;
+                            optFunc = optimizedList.AddRangeUnique;
+                            break;
                         case "IntersectWith":
                             expFunc = UniqueModifierExpected.IntersectWith;
                             optFunc = optimizedList.IntersectWithUnique;
@@ -124,6 +128,7 @@ namespace BinaryList.Tests
 
                 try
                 {
+                    TestFunction("AddRange");
                     TestFunction("IntersectWith");
                     TestFunction("ExceptWith");
                     TestFunction("SymmetricExceptWith");
@@ -187,6 +192,10 @@ namespace BinaryList.Tests
 
                     switch (function)
                     {
+                        case "AddRange":
+                            expFunc = UniqueModifierExpected.AddRange;
+                            optFunc = optimizedList.AddRangeUnique;
+                            break;
                         case "IntersectWith":
                             expFunc = UniqueModifierExpected.IntersectWith;
                             optFunc = optimizedList.IntersectWithUnique;
@@ -262,6 +271,7 @@ namespace BinaryList.Tests
 
                 try
                 {
+                    TestFunction("AddRange");
                     TestFunction("IntersectWith");
                     TestFunction("ExceptWith");
                     TestFunction("SymmetricExceptWith");

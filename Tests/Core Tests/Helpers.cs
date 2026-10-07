@@ -65,13 +65,20 @@ public static class RawCollectionAssert
             return result;
         }
 
+        public static List<T> AddRange<T>(IEnumerable<T> source, IEnumerable<T> target) where T : notnull
+        {
+            var result = source.ToList();
+            result.AddRange(target);
+
+            return result;
+        }
+
         public static List<T> UnionWith<T>(IEnumerable<T> source, IEnumerable<T> target) where T : notnull
         {
             var srcCounts = CORE_Tests.GetElementCounts(source);
             var tgCounts = CORE_Tests.GetElementCounts(target);
             var result = new Dictionary<T, int>();
 
-            // Все ключи из обеих коллекций
             var allKeys = srcCounts.Keys.Union(tgCounts.Keys);
 
             foreach (var key in allKeys)
@@ -221,6 +228,21 @@ public static class RawCollectionAssert
 
     public static class UniqueModifierExpected
     {
+        public static List<T> AddRange<T>(IEnumerable<T> source, IEnumerable<T> target) where T : notnull
+        {
+            var result = source.ToList();
+
+            foreach (var item in target)
+            {
+                if (!result.Contains(item))
+                {
+                    result.Add(item);
+                }
+            }
+
+            return result;
+        }
+
         public static List<T> UnionWith<T>(IEnumerable<T> source, IEnumerable<T> target) where T : notnull
         {
             var set = new HashSet<T>(source);
