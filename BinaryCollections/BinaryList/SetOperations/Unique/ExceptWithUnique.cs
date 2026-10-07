@@ -178,6 +178,8 @@ namespace BinaryCollections.BinaryList
                 while (c_InRange(c));
             }
 
+            incomingElementsSkipped = newZeroRIndex + _count + range.Length - insertRIndex;
+
             // Clear remaining free-spots
             if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
             {
@@ -270,24 +272,19 @@ namespace BinaryCollections.BinaryList
                             destination[insertRIndex++] = item.Key;
                         }
                     }
-
-                    incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
                 }
 
                 void ProcessMergingBothComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
                 {
                     ref readonly TValue firstItem = ref _storage[c++]; i++; // they are equal here, so we can move both indexes
-                    incomingElementsSkipped+=2;
 
                     while (c_InRange(c) && Compare(in _storage[c], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         c++;
                     }
 
                     while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         i++;
                     }
                 }
@@ -307,11 +304,10 @@ namespace BinaryCollections.BinaryList
                 void ProcessMergingIncomingDefault(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
                 {
                     ref readonly TValue firstItem = ref range[i++];
-                    incomingElementsSkipped++;
 
                     while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++; i++;
+                        i++;
                     }
                 }
 
@@ -379,8 +375,6 @@ namespace BinaryCollections.BinaryList
 
                         addedCount += countToAdd;
                     }
-
-                    incomingElementsSkipped += resultedRangeCurrent.length - addedCount;
                 }
 
                 void ProcessMergingCurrentComparable(ref int insertRIndex, ref int c)
@@ -390,7 +384,6 @@ namespace BinaryCollections.BinaryList
 
                     while (c_InRange(c) && Compare(in _storage[c], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         c++;
                     }
                 }
@@ -458,13 +451,14 @@ namespace BinaryCollections.BinaryList
                 while (c_InRange(c));
             }
 
+            incomingElementsSkipped = (insertRIndex + 1) - newZeroRIndex;
+            zeroIndexShift += incomingElementsSkipped;
+
             // Clear remaining free-spots
             if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
             {
                 Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
             }
-
-            zeroIndexShift += incomingElementsSkipped;
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
@@ -552,24 +546,19 @@ namespace BinaryCollections.BinaryList
                             destination[insertRIndex--] = item.Key;
                         }
                     }
-
-                    incomingElementsSkipped += resultedRangeCurrent.length + resultedRangeIncoming.length - addedCount;
                 }
 
                 void ProcessMergingBothComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
                 {
                     ref readonly TValue firstItem = ref _storage[c--]; i--; // they are equal here, so we can move both indexes
-                    incomingElementsSkipped += 2;
 
                     while (c_InRange(c) && Compare(in _storage[c], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         c--;
                     }
 
                     while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         i--;
                     }
                 }
@@ -589,11 +578,10 @@ namespace BinaryCollections.BinaryList
                 void ProcessMergingIncomingDefault(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
                 {
                     ref readonly TValue firstItem = ref range[i--];
-                    incomingElementsSkipped++;
 
                     while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++; i--;
+                        i--;
                     }
                 }
 
@@ -661,8 +649,6 @@ namespace BinaryCollections.BinaryList
 
                         addedCount += countToAdd;
                     }
-
-                    incomingElementsSkipped += resultedRangeCurrent.length - addedCount;
                 }
 
                 void ProcessMergingCurrentComparable(ref int insertRIndex, ref int c)
@@ -672,7 +658,6 @@ namespace BinaryCollections.BinaryList
 
                     while (c_InRange(c) && Compare(in _storage[c], in firstItem) == 0)
                     {
-                        incomingElementsSkipped++;
                         c--;
                     }
                 }
