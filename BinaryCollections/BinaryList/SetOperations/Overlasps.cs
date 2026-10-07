@@ -191,7 +191,7 @@ namespace BinaryCollections.BinaryList
                         i = ~i;
                     }
 
-                    target.UpperLimit = i - 1;
+                    target.UpperLimit = i;
                     return true;
                 }
 
@@ -205,7 +205,7 @@ namespace BinaryCollections.BinaryList
                         i = ~i;
                     }
 
-                    source.UpperLimit = i - 1;
+                    source.UpperLimit = i;
                     return true;
                 }
             }

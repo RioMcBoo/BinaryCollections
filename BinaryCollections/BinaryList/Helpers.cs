@@ -164,7 +164,7 @@ namespace BinaryCollections.BinaryList
 
             public void SetIndex(int index)
             {
-                if ((uint)index >= (uint)Span.Length)
+                if ((uint)index > (uint)Span.Length)
                     Throw.IndexOutOfRangeException(nameof(SetIndex), index);
 
                 _setIndex(index);

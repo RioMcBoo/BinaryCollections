@@ -83,10 +83,7 @@ namespace BinaryCollections.BinaryList
 
         private bool SymmetricExceptWithSortedUnique(ReadOnlySpan<TValue> range)
         {
-            if (range.Length <= 0 && _count <= 0)
-                return false;
-
-            if (range.Length <= 0)
+            if (range.Length <= 0 && _count <= 1)
                 return false;
 
             if (!CheckCountOverload(range.Length))
@@ -202,7 +199,9 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
@@ -527,7 +526,9 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)

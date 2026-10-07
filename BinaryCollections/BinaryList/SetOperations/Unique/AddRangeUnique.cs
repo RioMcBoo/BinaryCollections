@@ -208,8 +208,8 @@ namespace BinaryCollections.BinaryList
             }
             else if (c_InRange(c))
             {
+                int remainingPartLength = _zeroRIndex + _count - c;
                 int finishedPartLength = insertRIndex - newZeroRIndex;
-                int remainingPartLength = _count + range.Length - incomingElementsSkipped - finishedPartLength;
 
                 if (_storage != destination)
                 {
@@ -241,6 +241,15 @@ namespace BinaryCollections.BinaryList
                             Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
                         }
                     }
+                }
+            }
+            else
+            {
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, insertRIndex, incomingElementsSkipped);
                 }
             }
 
@@ -524,6 +533,8 @@ namespace BinaryCollections.BinaryList
                 do ProcessMergingIncoming(ref insertRIndex, ref i, range);
                 while (i_InRange(i));
 
+                zeroIndexShift += incomingElementsSkipped;
+
                 // Clear remaining free-spots
                 if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
                 {
@@ -532,8 +543,8 @@ namespace BinaryCollections.BinaryList
             }
             else if (c_InRange(c))
             {
-                int remainingPartLength = c - _zeroRIndex + 1;
-                int finishedPartLength = _count + range.Length - incomingElementsSkipped - remainingPartLength;
+                int remainingPartLength = (c + 1) - _zeroRIndex;
+                int finishedPartLength = _count + range.Length - (insertRIndex + 1 - newZeroRIndex);
 
                 if (_storage != destination)
                 {
@@ -566,6 +577,16 @@ namespace BinaryCollections.BinaryList
                             Array.Clear(_storage, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
                         }
                     }
+                }
+            }
+            else
+            {
+                zeroIndexShift += incomingElementsSkipped;
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
                 }
             }
 

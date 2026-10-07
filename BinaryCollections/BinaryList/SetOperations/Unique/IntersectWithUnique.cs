@@ -191,7 +191,9 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
@@ -423,7 +425,9 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)

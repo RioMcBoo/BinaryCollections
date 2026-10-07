@@ -179,7 +179,7 @@ namespace BinaryCollections.BinaryList
                     if (!FindRightIndex(in item, target.Span, comparer, out int i))
                         return false;
 
-                    target.UpperLimit = i - 1;
+                    target.UpperLimit = i;
                     hasExtraUniqueElements = true;
                     return true;
                 }

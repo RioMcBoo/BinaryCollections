@@ -192,8 +192,8 @@ namespace BinaryCollections.BinaryList
             }
             else if (c_InRange(c))
             {
+                int remainingPartLength = _zeroRIndex + _count - c;
                 int finishedPartLength = insertRIndex - newZeroRIndex;
-                int remainingPartLength = _count + range.Length - incomingElementsSkipped - finishedPartLength;
 
                 if (_storage != destination)
                 {
@@ -227,11 +227,22 @@ namespace BinaryCollections.BinaryList
                     }
                 }
             }
+            else
+            {
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, insertRIndex, incomingElementsSkipped);
+                }
+            }
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
@@ -555,6 +566,8 @@ namespace BinaryCollections.BinaryList
                 do ProcessMergingIncoming(ref insertRIndex, ref i, range);
                 while (i_InRange(i));
 
+                zeroIndexShift += incomingElementsSkipped;
+
                 // Clear remaining free-spots
                 if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
                 {
@@ -563,8 +576,8 @@ namespace BinaryCollections.BinaryList
             }
             else if (c_InRange(c))
             {
-                int remainingPartLength = c - _zeroRIndex + 1;
-                int finishedPartLength = _count + range.Length - incomingElementsSkipped - remainingPartLength;
+                int remainingPartLength = (c + 1) - _zeroRIndex;
+                int finishedPartLength = _count + range.Length - (insertRIndex + 1 - newZeroRIndex);
 
                 if (_storage != destination)
                 {
@@ -599,11 +612,23 @@ namespace BinaryCollections.BinaryList
                     }
                 }
             }
+            else
+            {
+                zeroIndexShift += incomingElementsSkipped;
+
+                // Clear remaining free-spots
+                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                {
+                    Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                }
+            }
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += range.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
+
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+
             return true;
 
             void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)

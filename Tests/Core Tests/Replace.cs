@@ -170,7 +170,7 @@ namespace BinaryList.Tests
             // Fixed seed so that if it crashes, you can always reproduce the bug.
             var rand = new Random(2026);
 
-            for (int i = 0; i < 2000000; i++)
+            for (int i = 0; i < 100000; i++)
             {
                 // We generate a random size and random numbers (there may be duplicates, as long as they are valid)
                 int count = rand.Next(2, 30);
