@@ -125,9 +125,20 @@ namespace BinaryCollections.BinaryList
                 _zeroRIndex = newZeroRIndex;
                 return SymmetricExceptWithFromRight(range);
             }
-
+#if TEST
+            if (_count % 2 == 0)
+            {
+                // Because this case does not arise in practice,
+                // yet we must maintain the code for the eventuality that it might suddenly become active.
+                SymmetricExceptWithFromRight(range, destination, newZeroRIndex);
+            }
+            else
+            {
+                SymmetricExceptWithFromLeft(range, destination, newZeroRIndex);
+            }
+#else
             SymmetricExceptWithFromLeft(range, destination, newZeroRIndex);
-
+#endif
             _storage = destination;
             return true;
         }

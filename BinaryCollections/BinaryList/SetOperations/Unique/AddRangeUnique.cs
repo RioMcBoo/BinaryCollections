@@ -137,8 +137,20 @@ namespace BinaryCollections.BinaryList
                 return InsertSortedRangeFromRightUnique(range);
             }
 
+#if TEST
+            if (_count % 2 == 0)
+            {
+                // Because this case does not arise in practice,
+                // yet we must maintain the code for the eventuality that it might suddenly become active.
+                InsertSortedRangeFromRightUnique(range, destination, newZeroRIndex);
+            }
+            else
+            {
+                InsertSortedRangeFromLeftUnique(range, destination, newZeroRIndex);
+            }
+#else
             InsertSortedRangeFromLeftUnique(range, destination, newZeroRIndex);
-
+#endif
             _storage = destination;
             return true;
         }

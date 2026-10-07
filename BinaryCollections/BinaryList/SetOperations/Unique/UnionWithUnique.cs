@@ -122,9 +122,20 @@ namespace BinaryCollections.BinaryList
                 _zeroRIndex = newZeroRIndex;
                 return UnionWithFromRightUnique(range);
             }
-
+#if TEST
+            if (_count % 2 == 0)
+            {
+                // Because this case does not arise in practice,
+                // yet we must maintain the code for the eventuality that it might suddenly become active.
+                UnionWithFromRightUnique(range, destination, newZeroRIndex);
+            }
+            else
+            {
+                UnionWithFromLeftUnique(range, destination, newZeroRIndex);
+            }
+#else
             UnionWithFromLeftUnique(range, destination, newZeroRIndex);
-
+#endif
             _storage = destination;
             return true;
         }

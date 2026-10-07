@@ -116,9 +116,20 @@ namespace BinaryCollections.BinaryList
                 _zeroRIndex = newZeroRIndex;
                 return IntersectWithFromRight(range);
             }
-
+#if TEST
+            if (_count % 2 == 0)
+            {
+                // Because this case does not arise in practice,
+                // yet we must maintain the code for the eventuality that it might suddenly become active.
+                IntersectWithFromRight(range, destination, newZeroRIndex);
+            }
+            else
+            {
+                IntersectWithFromLeft(range, destination, newZeroRIndex);
+            }
+#else
             IntersectWithFromLeft(range, destination, newZeroRIndex);
-
+#endif
             _storage = destination;
             return true;
         }
