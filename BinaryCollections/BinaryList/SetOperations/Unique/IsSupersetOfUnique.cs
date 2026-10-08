@@ -97,9 +97,9 @@ namespace BinaryCollections.BinaryList
             if (range.Length == 0)
                 return true;
 
-            Iterator target = new(Values, Flags);
-            Iterator source = new(range, flags);
-            return IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool _, out bool _);
+            Iterator second = new(Values, Flags);
+            Iterator first = new(range, flags);
+            return IsSubsetOfSortedUnique(ref first, ref second, _comparer, out bool _, out bool _);
         }
     }
 }

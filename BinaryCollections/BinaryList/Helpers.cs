@@ -28,25 +28,25 @@ namespace BinaryCollections.BinaryList
 
         private class HeapCounter
         {
-            public int TargetCount;
-            public int SourceCount;
+            public int SecondCount;
+            public int FirstCount;
 
-            public HeapCounter(int targetCount = 0, int sourceCount = 0)
+            public HeapCounter(int secondCount = 0, int firstCount = 0)
             {
-                TargetCount = targetCount;
-                SourceCount = sourceCount;
+                SecondCount = secondCount;
+                FirstCount = firstCount;
             }
         }
 
         private ref struct RefCounter
         {
-            public int TargetCount;
-            public int SourceCount;
+            public int SecondCount;
+            public int FirstCount;
 
-            public RefCounter(int targetCount = 0, int sourceCount = 0)
+            public RefCounter(int secondCount = 0, int firstCount = 0)
             {
-                TargetCount = targetCount;
-                SourceCount = sourceCount;
+                SecondCount = secondCount;
+                FirstCount = firstCount;
             }
         }
 

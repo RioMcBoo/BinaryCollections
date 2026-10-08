@@ -161,158 +161,160 @@ namespace BinaryCollections.BinaryList
             return InsertSortedRangeFromLeftUnique(range, _storage, newZeroRIndex);
         }
 
-        private bool InsertSortedRangeFromLeftUnique(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        private bool InsertSortedRangeFromLeftUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            var first = _storage;
+
             if (ReferenceEquals(_storage, destination))
             {
-                Debug.Assert(_zeroRIndex - newZeroRIndex == range.Length, "In-place merge requires place for the new range.");
+                Debug.Assert(_zeroRIndex - newZeroRIndex == second.Length, "In-place merge requires place for the new range.");
             }
 
             // for local function usage (for optimizations) 
             Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
-            int rangeLength = range.Length;
-            int insertRIndex = newZeroRIndex;
+            int rangeLength = second.Length;
+            int d = newZeroRIndex;
             int zeroIndexShift = 0;
 
-            Debug.Assert(insertRIndex > -1, "Left buffer is not long enough");
+            Debug.Assert(d > -1, "Left buffer is not long enough");
 
-            bool i_InRange(int i) => i < rangeLength;
-            bool c_InRange(int c) => c < _zeroRIndex + _count;
+            bool s_InRange(int s) => s < rangeLength;
+            bool f_InRange(int f) => f < _zeroRIndex + _count;
 
             // remember - we do care only about duplicates among incomings
 
             // General merge loop
-            int i = 0;
-            int c = _zeroRIndex;
+            int s = 0;
+            int f = _zeroRIndex;
 
-            while (i_InRange(i) && c_InRange(c))
+            while (s_InRange(s) && f_InRange(f))
             {
-                ref readonly TValue incomingItem = ref range[i];
-                ref readonly TValue currentItem = ref _storage[c];
+                ref readonly TValue secondItem = ref second[s];
+                ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in currentItem, in incomingItem))
+                switch (Compare(in firstItem, in secondItem))
                 {
                     case > 0:
-                        ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                        ProcessMergingSecond(ref d, ref s, second);
                         break;
                     case < 0:
-                        ProcessMergingCurrent(ref insertRIndex, ref c);
+                        ProcessMergingFirst(ref d, ref f);
                         break;
                     case 0:
-                        ProcessMergingBoth(ref insertRIndex, ref i, ref c, range);
+                        ProcessMergingBoth(ref d, ref s, ref f, second);
                         break;
                 }
             }
 
             // Manage remaining items
-            if (i_InRange(i))
+            if (s_InRange(s))
             {
-                do ProcessMergingIncoming(ref insertRIndex, ref i, range);
-                while (i_InRange(i));
+                do ProcessMergingSecond(ref d, ref s, second);
+                while (s_InRange(s));
 
-                incomingElementsSkipped = newZeroRIndex + _count + range.Length - insertRIndex;
+                incomingElementsSkipped = newZeroRIndex + _count + second.Length - d;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
-                    Array.Clear(_storage, insertRIndex, incomingElementsSkipped);
+                    Array.Clear(first, d, incomingElementsSkipped);
                 }
             }
-            else if (c_InRange(c))
+            else if (f_InRange(f))
             {
-                int remainingPartLength = _zeroRIndex + _count - c;
-                int finishedPartLength = insertRIndex - newZeroRIndex;
+                int remainingPartLength = _zeroRIndex + _count - f;
+                int finishedPartLength = d - newZeroRIndex;
 
-                incomingElementsSkipped = _count + range.Length - remainingPartLength - finishedPartLength;
+                incomingElementsSkipped = _count + second.Length - remainingPartLength - finishedPartLength;
 
-                if (_storage != destination)
+                if (first != destination)
                 {
                     // we just have to copy remaining items into new array
-                    Array.Copy(_storage, c, destination, insertRIndex, remainingPartLength);
+                    Array.Copy(first, f, destination, d, remainingPartLength);
                 }
                 else if (incomingElementsSkipped > 0)
                 {
                     if (finishedPartLength >= remainingPartLength)
                     {
                         // Shift remaining items due to missing duplicates
-                        Array.Copy(_storage, c, _storage, insertRIndex, remainingPartLength);
+                        Array.Copy(first, f, first, d, remainingPartLength);
 
                         // Clear formed dirty free-spots from right side
                         if (ContainsReferences)
                         {
-                            Array.Clear(_storage, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
+                            Array.Clear(first, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
                         }
                     }
                     else
                     {
                         // Shift finished items due to missing duplicates
-                        Array.Copy(_storage, newZeroRIndex, _storage, newZeroRIndex + incomingElementsSkipped, finishedPartLength);
+                        Array.Copy(first, newZeroRIndex, first, newZeroRIndex + incomingElementsSkipped, finishedPartLength);
                         zeroIndexShift += incomingElementsSkipped;
 
                         // Clear formed dirty free-spots from left side
                         if (ContainsReferences)
                         {
-                            Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                            Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                         }
                     }
                 }
             }
             else
             {
-                incomingElementsSkipped = newZeroRIndex + _count + range.Length - insertRIndex;
+                incomingElementsSkipped = newZeroRIndex + _count + second.Length - d;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
-                    Array.Clear(_storage, insertRIndex, incomingElementsSkipped);
+                    Array.Clear(first, d, incomingElementsSkipped);
                 }
             }
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
-            _count += range.Length - incomingElementsSkipped;
+            _count += second.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
 
-            if (incomingElementsSkipped < range.Length)
+            if (incomingElementsSkipped < second.Length)
                 RemoveFlags(BinaryListFlags.UniformRange);
 
             return true;
 
-            void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
                 if (ContainsCollisions)
                 {
-                    ProcessMergingBothDefault(ref insertRIndex, ref i, ref c, range);
+                    ProcessMergingBothDefault(ref d, ref s, ref f, second);
                 }
                 else
                 {
-                    ProcessMergingBothComparable(ref insertRIndex, ref i, ref c, range);
+                    ProcessMergingBothComparable(ref d, ref s, ref f, second);
                 }
 
-                void ProcessMergingBothDefault(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+                void ProcessMergingBothDefault(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
                 {
                     tempDictionary.Clear();
 
-                    (int start, int length) resultedRangeCurrent = default;
-                    resultedRangeCurrent.start = c;
+                    (int start, int length) resultedRangeFirst = default;
+                    resultedRangeFirst.start = f;
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref _storage[c++];
-                    destination[insertRIndex++] = previous;
+                    ref readonly TValue previousItem = ref first[f++];
+                    destination[d++] = previousItem;
 
-                    tempDictionary.Add(previous, new HeapCounter(sourceCount: 1));
-                    resultedRangeCurrent.length++;
+                    tempDictionary.Add(previousItem, new HeapCounter(firstCount: 1));
+                    resultedRangeFirst.length++;
 
                     // Add all currently existing items in collision to result, and count them.
-                    while (c_InRange(c))
+                    while (f_InRange(f))
                     {
-                        ref readonly TValue currentItem = ref _storage[c];
+                        ref readonly TValue currentItem = ref first[f];
 
-                        if (Compare(in currentItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref currentItem;
+                        previousItem = ref currentItem;
 
                         if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
@@ -320,33 +322,33 @@ namespace BinaryCollections.BinaryList
                             tempDictionary[currentItem] = counter;
                         }
 
-                        counter.SourceCount++;
-                        resultedRangeCurrent.length++;
-                        destination[insertRIndex++] = currentItem;
-                        c++;
+                        counter.FirstCount++;
+                        resultedRangeFirst.length++;
+                        destination[d++] = currentItem;
+                        f++;
                     }
 
                     // Add all incoming items in collision to result, and count them.
-                    (int start, int length) resultedRangeIncoming = default;
-                    resultedRangeIncoming.start = i;
-                    while (i_InRange(i))
+                    (int start, int length) resultedRangeSecond = default;
+                    resultedRangeSecond.start = s;
+                    while (s_InRange(s))
                     {
-                        ref readonly TValue incomingItem = ref range[i];
+                        ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in incomingItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref incomingItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[incomingItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.TargetCount++;
-                        resultedRangeIncoming.length++;
-                        i++;
+                        counter.SecondCount++;
+                        resultedRangeSecond.length++;
+                        s++;
                     }
 
                     int addedCount = 0;
@@ -354,33 +356,33 @@ namespace BinaryCollections.BinaryList
                     {
                         int countToAdd = 0;
 
-                        if (item.Value.SourceCount > 0)
+                        if (item.Value.FirstCount > 0)
                         {
-                            countToAdd = item.Value.SourceCount;
+                            countToAdd = item.Value.FirstCount;
                         }
                         else
                         {
                             countToAdd = 1;
-                            destination[insertRIndex++] = item.Key;
+                            destination[d++] = item.Key;
                         }
 
                         addedCount += countToAdd;
                     }
                 }
 
-                void ProcessMergingBothComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+                void ProcessMergingBothComparable(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
                 {
-                    ref readonly TValue firstItem = ref _storage[c++]; i++; // they are equal here, so we can move both indexes
+                    ref readonly TValue initialItem = ref first[f++]; s++; // they are equal here, so we can move both indexes
 
-                    destination[insertRIndex++] = firstItem;
+                    destination[d++] = initialItem;
 
-                    while (c_InRange(c))
+                    while (f_InRange(f))
                     {
-                        ref readonly TValue currentItem = ref _storage[c];
-                        if (Compare(in _storage[c], in firstItem) == 0)
+                        ref readonly TValue currentItem = ref first[f];
+                        if (Compare(in first[f], in initialItem) == 0)
                         {
-                            destination[insertRIndex++] = currentItem;
-                            c++;
+                            destination[d++] = currentItem;
+                            f++;
                         }
                         else
                         {
@@ -388,56 +390,56 @@ namespace BinaryCollections.BinaryList
                         }
                     }
 
-                    while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
+                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
                     {
-                        i++;
+                        s++;
                     }
                 }
             }
 
-            void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+            void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
                 if (ContainsCollisions)
                 {
-                    ProcessMergingIncomingDefault(ref insertRIndex, ref i, range);
+                    ProcessMergingSecondDefault(ref d, ref s, second);
                 }
                 else
                 {
-                    ProcessMergingIncomingComparable(ref insertRIndex, ref i, range);
+                    ProcessMergingSecondComparable(ref d, ref s, second);
                 }
 
-                void ProcessMergingIncomingDefault(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+                void ProcessMergingSecondDefault(ref int d, ref int s, ReadOnlySpan<TValue> second)
                 {
                     tempDictionary.Clear();
 
-                    (int start, int length) resultedRangeIncoming = default;
-                    resultedRangeIncoming.start = i;
+                    (int start, int length) resultedRangeSecond = default;
+                    resultedRangeSecond.start = s;
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref range[i++];
+                    ref readonly TValue previousItem = ref second[s++];
 
-                    tempDictionary.Add(previous, new HeapCounter(targetCount: 1));
-                    resultedRangeIncoming.length++;
+                    tempDictionary.Add(previousItem, new HeapCounter(secondCount: 1));
+                    resultedRangeSecond.length++;
 
                     // Add all incoming items in collision to result, and count them.
-                    while (i_InRange(i))
+                    while (s_InRange(s))
                     {
-                        ref readonly TValue incomingItem = ref range[i];
+                        ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in incomingItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref incomingItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[incomingItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.TargetCount++;
-                        resultedRangeIncoming.length++;
-                        i++;
+                        counter.SecondCount++;
+                        resultedRangeSecond.length++;
+                        s++;
                     }
 
                     int addedCount = 0;
@@ -447,37 +449,37 @@ namespace BinaryCollections.BinaryList
 
                         for (int j = 0; j < countToAdd; j++)
                         {
-                            destination[insertRIndex++] = item.Key;
+                            destination[d++] = item.Key;
                         }
 
                         addedCount += countToAdd;
                     }
                 }
 
-                void ProcessMergingIncomingComparable(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+                void ProcessMergingSecondComparable(ref int d, ref int s, ReadOnlySpan<TValue> second)
                 {
-                    ref readonly TValue firstItem = ref range[i++];
-                    destination[insertRIndex++] = firstItem;
+                    ref readonly TValue initialItem = ref second[s++];
+                    destination[d++] = initialItem;
 
-                    while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
+                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
                     {
-                        i++;
+                        s++;
                     }
                 }
             }
 
-            void ProcessMergingCurrent(ref int insertRIndex, ref int c)
+            void ProcessMergingFirst(ref int d, ref int f)
             {
-                ref readonly TValue firstItem = ref _storage[c++];
-                destination[insertRIndex++] = firstItem;
+                ref readonly TValue initialItem = ref first[f++];
+                destination[d++] = initialItem;
 
-                while (c_InRange(c))
+                while (f_InRange(f))
                 {
-                    ref readonly TValue currentItem = ref _storage[c];
-                    if (Compare(in _storage[c], in firstItem) == 0)
+                    ref readonly TValue currentItem = ref first[f];
+                    if (Compare(in first[f], in initialItem) == 0)
                     {
-                        destination[insertRIndex++] = currentItem;
-                        c++;
+                        destination[d++] = currentItem;
+                        f++;
                     }
                     else
                     {
@@ -493,8 +495,10 @@ namespace BinaryCollections.BinaryList
             return InsertSortedRangeFromRightUnique(range, _storage, newZeroRIndex);
         }
 
-        private bool InsertSortedRangeFromRightUnique(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        private bool InsertSortedRangeFromRightUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            var first = _storage;
+
             if (ReferenceEquals(_storage, destination))
             {
                 Debug.Assert(newZeroRIndex == _zeroRIndex, "In-place merge requires place for the new range.");
@@ -504,65 +508,65 @@ namespace BinaryCollections.BinaryList
             Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
-            int rangeLength = range.Length;
-            int insertRIndex = newZeroRIndex + _count + range.Length - 1;
+            int rangeLength = second.Length;
+            int d = newZeroRIndex + _count + second.Length - 1;
             int zeroIndexShift = 0;
 
-            Debug.Assert(insertRIndex < destination.Length, "Right buffer is not long enough");
+            Debug.Assert(d < destination.Length, "Right buffer is not long enough");
 
-            bool i_InRange(int i) => i >= 0;
-            bool c_InRange(int c) => c >= _zeroRIndex;
+            bool s_InRange(int s) => s >= 0;
+            bool f_InRange(int f) => f >= _zeroRIndex;
 
             // remember - we do care only about duplicates among incomings
 
             // General merge loop
-            int i = range.Length - 1;
-            int c = _zeroRIndex + _count - 1;
+            int s = second.Length - 1;
+            int f = _zeroRIndex + _count - 1;
 
-            while (i_InRange(i) && c_InRange(c))
+            while (s_InRange(s) && f_InRange(f))
             {
-                ref readonly TValue incomingItem = ref range[i];
-                ref readonly TValue currentItem = ref _storage[c];
+                ref readonly TValue secondItem = ref second[s];
+                ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in currentItem, in incomingItem))
+                switch (Compare(in firstItem, in secondItem))
                 {
                     case > 0:
-                        ProcessMergingCurrent(ref insertRIndex, ref c);
+                        ProcessMergingFirst(ref d, ref f);
                         break;
                     case < 0:
-                        ProcessMergingIncoming(ref insertRIndex, ref i, range);
+                        ProcessMergingSecond(ref d, ref s, second);
                         break;
                     default:
-                        ProcessMergingBoth(ref insertRIndex, ref i, ref c, range);
+                        ProcessMergingBoth(ref d, ref s, ref f, second);
                         break;
                 }
             }
 
             // Manage remaining items
-            if (i_InRange(i))
+            if (s_InRange(s))
             {
-                do ProcessMergingIncoming(ref insertRIndex, ref i, range);
-                while (i_InRange(i));
+                do ProcessMergingSecond(ref d, ref s, second);
+                while (s_InRange(s));
 
-                incomingElementsSkipped = (insertRIndex + 1) - newZeroRIndex;
+                incomingElementsSkipped = (d + 1) - newZeroRIndex;
                 zeroIndexShift += incomingElementsSkipped;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
-                    Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                    Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                 }
             }
-            else if (c_InRange(c))
+            else if (f_InRange(f))
             {
-                int remainingPartLength = (c + 1) - _zeroRIndex;
-                int finishedPartLength = _count + range.Length - (insertRIndex + 1 - newZeroRIndex);
-                incomingElementsSkipped = _count + range.Length - remainingPartLength - finishedPartLength;
+                int remainingPartLength = (f + 1) - _zeroRIndex;
+                int finishedPartLength = _count + second.Length - (d + 1 - newZeroRIndex);
+                incomingElementsSkipped = _count + second.Length - remainingPartLength - finishedPartLength;
 
-                if (_storage != destination)
+                if (first != destination)
                 {
                     // we just have to copy remaining items into new array
-                    Array.Copy(_storage, _zeroRIndex, destination, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
+                    Array.Copy(first, _zeroRIndex, destination, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
                     zeroIndexShift += incomingElementsSkipped;
                 }
                 else if (incomingElementsSkipped > 0)
@@ -570,83 +574,83 @@ namespace BinaryCollections.BinaryList
                     if (finishedPartLength >= remainingPartLength)
                     {
                         // Shift remaining items due to missing duplicates
-                        Array.Copy(_storage, _zeroRIndex, _storage, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
+                        Array.Copy(first, _zeroRIndex, first, newZeroRIndex + incomingElementsSkipped, remainingPartLength);
                         zeroIndexShift += incomingElementsSkipped;
 
                         // Clear formed dirty free-spots from left side
                         if (ContainsReferences)
                         {
-                            Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                            Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                         }
                     }
                     else
                     {
                         // Shift finished items due to missing duplicates
-                        Array.Copy(_storage, insertRIndex + 1, _storage, insertRIndex + 1 - incomingElementsSkipped, finishedPartLength);
+                        Array.Copy(first, d + 1, first, d + 1 - incomingElementsSkipped, finishedPartLength);
 
                         // Clear formed dirty free-spots from right side
                         if (ContainsReferences)
                         {
-                            Array.Clear(_storage, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
+                            Array.Clear(first, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
                         }
                     }
                 }
             }
             else
             {
-                incomingElementsSkipped = (insertRIndex + 1) - newZeroRIndex;
+                incomingElementsSkipped = (d + 1) - newZeroRIndex;
                 zeroIndexShift += incomingElementsSkipped;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && _storage == destination)
+                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
-                    Array.Clear(_storage, newZeroRIndex, incomingElementsSkipped);
+                    Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                 }
             }
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
-            _count += range.Length - incomingElementsSkipped;
+            _count += second.Length - incomingElementsSkipped;
             _version = unchecked(++_version);
 
-            if (incomingElementsSkipped < range.Length)
+            if (incomingElementsSkipped < second.Length)
                 RemoveFlags(BinaryListFlags.UniformRange);
 
             return true;
 
-            void ProcessMergingBoth(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+            void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
                 if (ContainsCollisions)
                 {
-                    ProcessMergingBothDefault(ref insertRIndex, ref i, ref c, range);
+                    ProcessMergingBothDefault(ref d, ref s, ref f, second);
                 }
                 else
                 {
-                    ProcessMergingBothComparable(ref insertRIndex, ref i, ref c, range);
+                    ProcessMergingBothComparable(ref d, ref s, ref f, second);
                 }
 
-                void ProcessMergingBothDefault(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+                void ProcessMergingBothDefault(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
                 {
                     tempDictionary.Clear();
 
                     (int start, int length) resultedRangeCurrent = default;
-                    resultedRangeCurrent.start = c;
+                    resultedRangeCurrent.start = f;
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref _storage[c--];
-                    destination[insertRIndex--] = previous;
+                    ref readonly TValue previousItem = ref first[f--];
+                    destination[d--] = previousItem;
 
-                    tempDictionary.Add(previous, new HeapCounter(sourceCount: 1));
+                    tempDictionary.Add(previousItem, new HeapCounter(firstCount: 1));
                     resultedRangeCurrent.length++;
 
                     // Add all currently existing items in collision to result, and count them.
-                    while (c_InRange(c))
+                    while (f_InRange(f))
                     {
-                        ref readonly TValue currentItem = ref _storage[c];
+                        ref readonly TValue currentItem = ref first[f];
 
-                        if (Compare(in currentItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref currentItem;
+                        previousItem = ref currentItem;
 
                         if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
@@ -654,33 +658,33 @@ namespace BinaryCollections.BinaryList
                             tempDictionary[currentItem] = counter;
                         }
 
-                        counter.SourceCount++;
+                        counter.FirstCount++;
                         resultedRangeCurrent.length++;
-                        destination[insertRIndex--] = currentItem;
-                        c--;
+                        destination[d--] = currentItem;
+                        f--;
                     }
 
                     // Add all incoming items in collision to result, and count them.
                     (int start, int length) resultedRangeIncoming = default;
-                    resultedRangeIncoming.start = i;
-                    while (i_InRange(i))
+                    resultedRangeIncoming.start = s;
+                    while (s_InRange(s))
                     {
-                        ref readonly TValue incomingItem = ref range[i];
+                        ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in incomingItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref incomingItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[incomingItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.TargetCount++;
+                        counter.SecondCount++;
                         resultedRangeIncoming.length++;
-                        i--;
+                        s--;
                     }
 
                     int addedCount = 0;
@@ -688,33 +692,33 @@ namespace BinaryCollections.BinaryList
                     {
                         int countToAdd = 0;
 
-                        if (item.Value.SourceCount > 0)
+                        if (item.Value.FirstCount > 0)
                         {
-                            countToAdd = item.Value.SourceCount;
+                            countToAdd = item.Value.FirstCount;
                         }
                         else
                         {
                             countToAdd = 1;
-                            destination[insertRIndex--] = item.Key;
+                            destination[d--] = item.Key;
                         }
 
                         addedCount += countToAdd;
                     }
                 }
 
-                void ProcessMergingBothComparable(ref int insertRIndex, ref int i, ref int c, ReadOnlySpan<TValue> range)
+                void ProcessMergingBothComparable(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
                 {
-                    ref readonly TValue firstItem = ref _storage[c--]; i--; // they are equal here, so we can move both indexes
+                    ref readonly TValue initialItem = ref first[f--]; s--; // they are equal here, so we can move both indexes
 
-                    destination[insertRIndex--] = firstItem;
+                    destination[d--] = initialItem;
 
-                    while (c_InRange(c))
+                    while (f_InRange(f))
                     {
-                        ref readonly TValue currentItem = ref _storage[c];
-                        if (Compare(in _storage[c], in firstItem) == 0)
+                        ref readonly TValue currentItem = ref first[f];
+                        if (Compare(in first[f], in initialItem) == 0)
                         {
-                            destination[insertRIndex--] = currentItem;
-                            c--;
+                            destination[d--] = currentItem;
+                            f--;
                         }
                         else
                         {
@@ -722,56 +726,56 @@ namespace BinaryCollections.BinaryList
                         }
                     }
 
-                    while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
+                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
                     {
-                        i--;
+                        s--;
                     }
                 }
             }
 
-            void ProcessMergingIncoming(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+            void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
                 if (ContainsCollisions)
                 {
-                    ProcessMergingIncomingDefault(ref insertRIndex, ref i, range);
+                    ProcessMergingSecondDefault(ref d, ref s, second);
                 }
                 else
                 {
-                    ProcessMergingIncomingComparable(ref insertRIndex, ref i, range);
+                    ProcessMergingSecondComparable(ref d, ref s, second);
                 }
 
-                void ProcessMergingIncomingDefault(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+                void ProcessMergingSecondDefault(ref int d, ref int s, ReadOnlySpan<TValue> second)
                 {
                     tempDictionary.Clear();
 
                     (int start, int length) resultedRangeIncoming = default;
-                    resultedRangeIncoming.start = i;
+                    resultedRangeIncoming.start = s;
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref range[i--];
+                    ref readonly TValue previousItem = ref second[s--];
 
-                    tempDictionary.Add(previous, new HeapCounter(targetCount: 1));
+                    tempDictionary.Add(previousItem, new HeapCounter(secondCount: 1));
                     resultedRangeIncoming.length++;
 
                     // Add all incoming items in collision to result, and count them.
-                    while (i_InRange(i))
+                    while (s_InRange(s))
                     {
-                        ref readonly TValue incomingItem = ref range[i];
+                        ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in incomingItem, in previous) != 0)
+                        if (Compare(in currentItem, in previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref incomingItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(incomingItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[incomingItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.TargetCount++;
+                        counter.SecondCount++;
                         resultedRangeIncoming.length++;
-                        i--;
+                        s--;
                     }
 
                     int addedCount = 0;
@@ -781,37 +785,37 @@ namespace BinaryCollections.BinaryList
 
                         for (int j = 0; j < countToAdd; j++)
                         {
-                            destination[insertRIndex--] = item.Key;
+                            destination[d--] = item.Key;
                         }
 
                         addedCount += countToAdd;
                     }
                 }
 
-                void ProcessMergingIncomingComparable(ref int insertRIndex, ref int i, ReadOnlySpan<TValue> range)
+                void ProcessMergingSecondComparable(ref int d, ref int s, ReadOnlySpan<TValue> second)
                 {
-                    ref readonly TValue firstItem = ref range[i--];
-                    destination[insertRIndex--] = firstItem;
+                    ref readonly TValue initialItem = ref second[s--];
+                    destination[d--] = initialItem;
 
-                    while (i_InRange(i) && Compare(in range[i], in firstItem) == 0)
+                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
                     {
-                        i--;
+                        s--;
                     }
                 }
             }
 
-            void ProcessMergingCurrent(ref int insertRIndex, ref int c)
+            void ProcessMergingFirst(ref int d, ref int f)
             {
-                ref readonly TValue firstItem = ref _storage[c--];
-                destination[insertRIndex--] = firstItem;
+                ref readonly TValue initialItem = ref first[f--];
+                destination[d--] = initialItem;
 
-                while (c_InRange(c))
+                while (f_InRange(f))
                 {
-                    ref readonly TValue currentItem = ref _storage[c];
-                    if (Compare(in _storage[c], in firstItem) == 0)
+                    ref readonly TValue currentItem = ref first[f];
+                    if (Compare(in first[f], in initialItem) == 0)
                     {
-                        destination[insertRIndex--] = currentItem;
-                        c--;
+                        destination[d--] = currentItem;
+                        f--;
                     }
                     else
                     {

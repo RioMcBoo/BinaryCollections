@@ -86,35 +86,35 @@ namespace BinaryCollections.BinaryList
             return OverlapsSorted(source, target, _comparer);
         }
 
-        private static bool OverlapsSorted(Iterator source, Iterator target, BinaryListComparer comparer)
+        private static bool OverlapsSorted(Iterator first, Iterator second, BinaryListComparer comparer)
         {
-            if (source.Length == 0 || target.Length == 0)
+            if (first.Length == 0 || second.Length == 0)
                 return false;
 
             // for local function usage (for optimizations) 
             Dictionary<TValue?, HeapCounter> tempDictionary = comparer.LeadsToCollisions ? new() : null!;            
 
-            if (!CheckLeftBoundary(ref target, ref source))
+            if (!CheckLeftBoundary(ref second, ref first))
                 return false;
 
-            if (!CheckRightBoundary(ref target, ref source))
+            if (!CheckRightBoundary(ref second, ref first))
                 return false;
 
-            target.SetIndex(target.LowerLimit);
-            source.SetIndex(source.LowerLimit);
+            second.SetIndex(second.LowerLimit);
+            first.SetIndex(first.LowerLimit);
 
-            while (!target.OutOfRange && !source.OutOfRange)
+            while (!second.OutOfRange && !first.OutOfRange)
             {
-                switch (comparer.Compare(source.Current, target.Current))
+                switch (comparer.Compare(first.Current, second.Current))
                 {
                     case > 0:
-                        ProcessTarget(ref target);
+                        ProcessSecond(ref second);
                         break;
                     case < 0:
-                        ProcessSource(ref source);
+                        ProcessFirst(ref first);
                         break;
                     case 0:
-                        if (ProcessBoth(ref source, ref target))
+                        if (ProcessBoth(ref first, ref second))
                             return true;
                         break;
                 }
@@ -122,168 +122,168 @@ namespace BinaryCollections.BinaryList
 
             return false;
 
-            bool CheckLeftBoundary(ref Iterator target, ref Iterator source)
+            bool CheckLeftBoundary(ref Iterator second, ref Iterator first)
             {
-                ref readonly TValue targetItem = ref target[0];
-                ref readonly TValue sourceItem = ref source[0];
+                ref readonly TValue secondItem = ref second[0];
+                ref readonly TValue firstItem = ref first[0];
 
-                switch (comparer.Compare(sourceItem, targetItem))
+                switch (comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
-                        return SkipTargetTo(in sourceItem, ref target);
+                        return SkipSecondTo(in firstItem, ref second);
                     case < 0:
-                        return SkipSourceTo(in targetItem, ref source);
+                        return SkipFirstTo(in secondItem, ref first);
                     case 0:
                         return true;
                 }
 
-                bool SkipTargetTo(ref readonly TValue item, ref Iterator target)
+                bool SkipSecondTo(ref readonly TValue item, ref Iterator second)
                 {
-                    if (!FindLeftIndex(in item, target.Span, comparer, out int i))
+                    if (!FindLeftIndex(in item, second.Span, comparer, out int i))
                     {
-                        if (IsFoundIndexOutOfRange(i, target.Span.Length))
+                        if (IsFoundIndexOutOfRange(i, second.Span.Length))
                             return false;
 
                         i = ~i;
                     }
 
-                    target.LowerLimit = i;
+                    second.LowerLimit = i;
                     return true;
                 }
 
-                bool SkipSourceTo(ref readonly TValue item, ref Iterator source)
+                bool SkipFirstTo(ref readonly TValue item, ref Iterator first)
                 {
-                    if (!FindLeftIndex(in item, source.Span, comparer, out int i))
+                    if (!FindLeftIndex(in item, first.Span, comparer, out int i))
                     {
-                        if (IsFoundIndexOutOfRange(i, source.Span.Length))
+                        if (IsFoundIndexOutOfRange(i, first.Span.Length))
                             return false;
 
                         i = ~i;
                     }
 
-                    source.LowerLimit = i;
+                    first.LowerLimit = i;
                     return true;
                 }
             }
 
-            bool CheckRightBoundary(ref Iterator target, ref Iterator source)
+            bool CheckRightBoundary(ref Iterator second, ref Iterator first)
             {
-                ref readonly TValue targetItem = ref target[^1];
-                ref readonly TValue sourceItem = ref source[^1];
+                ref readonly TValue secondItem = ref second[^1];
+                ref readonly TValue firstItem = ref first[^1];
 
-                switch (comparer.Compare(sourceItem, targetItem))
+                switch (comparer.Compare(firstItem, secondItem))
                 {
                     case < 0:
-                        return SkipTargetTo(in sourceItem, ref target);
+                        return SkipTargetTo(in firstItem, ref second);
                     case > 0:
-                        return SkipSourceTo(in targetItem, ref source);
+                        return SkipSourceTo(in secondItem, ref first);
                     case 0:
                         return true;
                 }
 
-                bool SkipTargetTo(ref readonly TValue item, ref Iterator target)
+                bool SkipTargetTo(ref readonly TValue item, ref Iterator second)
                 {
-                    if (!FindRightIndex(in item, target.Span, comparer, out int i))
+                    if (!FindRightIndex(in item, second.Span, comparer, out int i))
                     {
-                        if (IsFoundIndexOutOfRange(i, target.Span.Length))
+                        if (IsFoundIndexOutOfRange(i, second.Span.Length))
                             return false;
 
                         i = ~i;
                     }
 
-                    target.UpperLimit = i;
+                    second.UpperLimit = i;
                     return true;
                 }
 
-                bool SkipSourceTo(ref readonly TValue item, ref Iterator source)
+                bool SkipSourceTo(ref readonly TValue item, ref Iterator first)
                 {
-                    if (!FindRightIndex(in item, source.Span, comparer, out int i))
+                    if (!FindRightIndex(in item, first.Span, comparer, out int i))
                     {
-                        if (IsFoundIndexOutOfRange(i, source.Span.Length))
+                        if (IsFoundIndexOutOfRange(i, first.Span.Length))
                             return false;
 
                         i = ~i;
                     }
 
-                    source.UpperLimit = i;
+                    first.UpperLimit = i;
                     return true;
                 }
             }
 
-            bool ProcessBoth(ref Iterator source, ref Iterator target)
+            bool ProcessBoth(ref Iterator first, ref Iterator second)
             {
                 if (comparer.LeadsToCollisions)
                 {
-                    return ProcessBothDefault(ref source, ref target);
+                    return ProcessBothDefault(ref first, ref second);
                 }
                 else
                 {
-                    return ProcessBothComparable(ref source, ref target);
+                    return ProcessBothComparable(ref first, ref second);
                 }
 
-                bool ProcessBothDefault(ref Iterator source, ref Iterator target)
+                bool ProcessBothDefault(ref Iterator first, ref Iterator second)
                 {
                     tempDictionary.Clear();
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref source.Current;
+                    ref readonly TValue previousItem = ref first.Current;
 
-                    GetCounter(in source.Current).SourceCount++;
-                    GetCounter(in target.Current).TargetCount++;
+                    GetCounter(in first.Current).FirstCount++;
+                    GetCounter(in second.Current).SecondCount++;
 
-                    while (source.Next(1) == 1)
+                    while (first.Next(1) == 1)
                     {
-                        ref readonly TValue sourceItem = ref source.Current;
+                        ref readonly TValue currentItem = ref first.Current;
 
-                        if (comparer.Compare(sourceItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        GetCounter(in sourceItem).SourceCount++;
+                        GetCounter(in currentItem).FirstCount++;
                     }
 
-                    while (target.Next(1) == 1)
+                    while (second.Next(1) == 1)
                     {
-                        ref readonly TValue targetItem = ref target.Current;
+                        ref readonly TValue currentItem = ref second.Current;
 
-                        if (comparer.Compare(targetItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        GetCounter(in targetItem).TargetCount++;
+                        GetCounter(in currentItem).SecondCount++;
                     }
 
                     foreach (var item in tempDictionary.Values)
                     {
-                        if (item.TargetCount > 0 && item.SourceCount > 0)
+                        if (item.SecondCount > 0 && item.FirstCount > 0)
                             return true;
                     }
 
                     return false;
                 }
 
-                bool ProcessBothComparable(ref Iterator source, ref Iterator target)
+                bool ProcessBothComparable(ref Iterator first, ref Iterator second)
                 {
                     return true;
                 }
             }
 
-            void ProcessTarget(ref Iterator target)
+            void ProcessSecond(ref Iterator second)
             {
-                ref readonly TValue prevItem = ref target.Current;
+                ref readonly TValue previousItem = ref second.Current;
 
-                while (target.Next(1) == 1)
+                while (second.Next(1) == 1)
                 {
-                    if (comparer.Compare(target.Current, prevItem) != 0)
+                    if (comparer.Compare(second.Current, previousItem) != 0)
                         return;
                 }
             }
 
-            void ProcessSource(ref Iterator source)
+            void ProcessFirst(ref Iterator first)
             {
-                ref readonly TValue prevItem = ref source.Current;
+                ref readonly TValue previousItem = ref first.Current;
 
-                while (source.Next(1) == 1)
+                while (first.Next(1) == 1)
                 {
-                    if (comparer.Compare(source.Current, prevItem) != 0)
+                    if (comparer.Compare(first.Current, previousItem) != 0)
                         return;
                 }
             }

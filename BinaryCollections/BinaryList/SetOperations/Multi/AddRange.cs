@@ -203,52 +203,56 @@ namespace BinaryCollections.BinaryList
             return InsertSortedRangeFromLeft(range, _storage, newZeroRIndex);
         }
 
-        private bool InsertSortedRangeFromLeft(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        private bool InsertSortedRangeFromLeft(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
-            if (ReferenceEquals(_storage, destination))
+            var first = _storage;
+
+            if (ReferenceEquals(first, destination))
             {
-                Debug.Assert(_zeroRIndex - newZeroRIndex == range.Length, "In-place merge requires place for the new range.");
+                Debug.Assert(_zeroRIndex - newZeroRIndex == second.Length, "In-place merge requires place for the new range.");
             }
 
-            int i = 0;
-            int c = _zeroRIndex;
-            int insertRIndex = newZeroRIndex;
+            int s = 0;
+            int f = _zeroRIndex;
+            int d = newZeroRIndex;
 
-            Debug.Assert(insertRIndex > -1, "Left buffer is not long enough");
+            Debug.Assert(d > -1, "Left buffer is not long enough");
 
-            while (i < range.Length && c < _zeroRIndex + _count)
+            while (s < second.Length && f < _zeroRIndex + _count)
             {
-                ref readonly TValue incomingItem = ref range[i];
-                ref readonly TValue currentItem = ref _storage[c];
+                ref readonly TValue secondItem = ref second[s];
+                ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in currentItem, in incomingItem))
+                switch (Compare(in firstItem, in secondItem))
                 {
                     case > 0:
-                        destination[insertRIndex++] = incomingItem; i++;
+                        destination[d++] = secondItem; s++;
                         break;
                     case < 0:
-                        destination[insertRIndex++] = currentItem; c++;
+                        destination[d++] = firstItem; f++;
                         break;
                     default:
-                        destination[insertRIndex++] = incomingItem; i++;
-                        destination[insertRIndex++] = currentItem; c++;
+                        destination[d++] = secondItem; s++;
+                        destination[d++] = firstItem; f++;
                         break;
                 }
             }
 
-            if (i < range.Length)
+            if (s < second.Length)
             {
-                range[i..].CopyTo(destination.AsSpan(insertRIndex));
+                second[s..].CopyTo(destination.AsSpan(d));
             }
-            else if (c < _zeroRIndex + _count && _storage != destination)
+            else if (f < _zeroRIndex + _count && _storage != destination)
             {
-                Array.Copy(_storage, c, destination, insertRIndex, _zeroRIndex + _count - c);
+                Array.Copy(_storage, f, destination, d, _zeroRIndex + _count - f);
             }
 
             _zeroRIndex = newZeroRIndex;
-            _count += range.Length;
+            _count += second.Length;
             _version = unchecked(++_version);
+
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+
             return true;
         }
 
@@ -258,52 +262,56 @@ namespace BinaryCollections.BinaryList
             return InsertSortedRangeFromRight(range, _storage, newZeroRIndex);
         }
 
-        private bool InsertSortedRangeFromRight(ReadOnlySpan<TValue> range, TValue[] destination, int newZeroRIndex)
+        private bool InsertSortedRangeFromRight(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            var first = _storage;
+
             if (ReferenceEquals(_storage, destination))
             {
                 Debug.Assert(newZeroRIndex == _zeroRIndex, "In-place merge requires place for the new range.");
             }
 
-            int i = range.Length - 1;
-            int c = _zeroRIndex + _count - 1;
-            int insertRIndex = newZeroRIndex + _count + range.Length - 1;
+            int s = second.Length - 1;
+            int f = _zeroRIndex + _count - 1;
+            int insertRIndex = newZeroRIndex + _count + second.Length - 1;
 
             Debug.Assert(insertRIndex < destination.Length, "Right buffer is not long enough");
 
-            while (i >= 0 && c >= _zeroRIndex)
+            while (s >= 0 && f >= _zeroRIndex)
             {
-                ref readonly TValue incomingItem = ref range[i];
-                ref readonly TValue currentItem = ref _storage[c];
+                ref readonly TValue secondItem = ref second[s];
+                ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in currentItem, in incomingItem))
+                switch (Compare(in firstItem, in secondItem))
                 {
                     case > 0:
-                        destination[insertRIndex--] = currentItem; c--;
+                        destination[insertRIndex--] = firstItem; f--;
                         break;
                     case < 0:
-                        destination[insertRIndex--] = incomingItem; i--;
+                        destination[insertRIndex--] = secondItem; s--;
                         break;
                     default:
-                        destination[insertRIndex--] = currentItem; c--;
-                        destination[insertRIndex--] = incomingItem; i--;
+                        destination[insertRIndex--] = firstItem; f--;
+                        destination[insertRIndex--] = secondItem; s--;
                         break;
                 }
             }
 
-            if (i >= 0)
+            if (s >= 0)
             {
-                range[..(i + 1)].CopyTo(destination.AsSpan(newZeroRIndex));
+                second[..(s + 1)].CopyTo(destination.AsSpan(newZeroRIndex));
             }
-            else if (c >= _zeroRIndex && _storage != destination)
+            else if (f >= _zeroRIndex && _storage != destination)
             {
-                Array.Copy(_storage, _zeroRIndex, destination, newZeroRIndex, c - _zeroRIndex + 1);
+                Array.Copy(_storage, _zeroRIndex, destination, newZeroRIndex, f - _zeroRIndex + 1);
             }
 
             _zeroRIndex = newZeroRIndex;
-            _count += range.Length;
+            _count += second.Length;
             _version = unchecked(++_version);
+
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+
             return true;
         }
     }

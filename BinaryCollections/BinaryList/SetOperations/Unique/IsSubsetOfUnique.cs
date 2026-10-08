@@ -97,12 +97,12 @@ namespace BinaryCollections.BinaryList
             if (range.Length == 0)
                 return false;
 
-            Iterator source = new(Values, Flags);
-            Iterator target = new(range, flags);
-            return IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool _, out bool _);
+            Iterator first = new(Values, Flags);
+            Iterator second = new(range, flags);
+            return IsSubsetOfSortedUnique(ref first, ref second, _comparer, out bool _, out bool _);
         }
 
-        private static bool IsSubsetOfSortedUnique(ref Iterator source, ref Iterator target, BinaryListComparer comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
+        private static bool IsSubsetOfSortedUnique(ref Iterator first, ref Iterator second, BinaryListComparer comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
         {
             hasExtraDuplicates = false;
             hasExtraUniqueElements = false;
@@ -110,26 +110,26 @@ namespace BinaryCollections.BinaryList
             // for local function usage (for optimizations) 
             Dictionary<TValue?, HeapCounter> tempDictionary = comparer.LeadsToCollisions ? new() : null!;
 
-            if (!CheckLeftBoundary(ref target, ref source, ref hasExtraUniqueElements))
+            if (!CheckLeftBoundary(ref second, ref first, ref hasExtraUniqueElements))
                 return false;
 
-            if (!CheckRightBoundary(ref target, ref source, ref hasExtraUniqueElements))
+            if (!CheckRightBoundary(ref second, ref first, ref hasExtraUniqueElements))
                 return false;
 
-            target.SetIndex(target.LowerLimit);
-            source.SetIndex(source.LowerLimit);
+            second.SetIndex(second.LowerLimit);
+            first.SetIndex(first.LowerLimit);
 
-            while (!target.OutOfRange && !source.OutOfRange)
+            while (!second.OutOfRange && !first.OutOfRange)
             {
-                switch (comparer.Compare(source.Current, target.Current))
+                switch (comparer.Compare(first.Current, second.Current))
                 {
                     case > 0:
-                        ProcessTarget(ref target, ref hasExtraUniqueElements);
+                        ProcessSecond(ref second, ref hasExtraUniqueElements);
                         break;
                     case < 0:
                         return false;
                     case 0:
-                        if (!ProcessBoth(ref source, ref target, ref hasExtraDuplicates))
+                        if (!ProcessBoth(ref first, ref second, ref hasExtraDuplicates))
                             return false;
                         break;
                 }
@@ -137,154 +137,154 @@ namespace BinaryCollections.BinaryList
 
             return true;
 
-            bool CheckLeftBoundary(ref Iterator target, ref Iterator source, ref bool hasExtraUniqueElements)
+            bool CheckLeftBoundary(ref Iterator second, ref Iterator first, ref bool hasExtraUniqueElements)
             {
-                ref readonly TValue targetItem = ref target[0];
-                ref readonly TValue sourceItem = ref source[0];
+                ref readonly TValue secondItem = ref second[0];
+                ref readonly TValue firstItem = ref first[0];
 
-                switch (comparer.Compare(sourceItem, targetItem))
+                switch (comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
-                        return SkipTargetTo(in sourceItem, ref target, ref hasExtraUniqueElements);
+                        return SkipSecondTo(in firstItem, ref second, ref hasExtraUniqueElements);
                     case < 0:
                         return false; // out of incoming range
                     case 0:
                         return true;
                 }
 
-                bool SkipTargetTo(ref readonly TValue item, ref Iterator target, ref bool hasExtraUniqueElements)
+                bool SkipSecondTo(ref readonly TValue item, ref Iterator second, ref bool hasExtraUniqueElements)
                 {
-                    if (!FindLeftIndex(in item, target.Span, comparer, out int i))
+                    if (!FindLeftIndex(in item, second.Span, comparer, out int i))
                         return false;
 
-                    target.LowerLimit = i;
+                    second.LowerLimit = i;
                     hasExtraUniqueElements = true;
                     return true;
                 }
             }
 
-            bool CheckRightBoundary(ref Iterator target, ref Iterator source, ref bool hasExtraUniqueElements)
+            bool CheckRightBoundary(ref Iterator second, ref Iterator first, ref bool hasExtraUniqueElements)
             {
-                ref readonly TValue targetItem = ref target[^1];
-                ref readonly TValue sourceItem = ref source[^1];
+                ref readonly TValue secondItem = ref second[^1];
+                ref readonly TValue firstItem = ref first[^1];
 
-                switch (comparer.Compare(sourceItem, targetItem))
+                switch (comparer.Compare(firstItem, secondItem))
                 {
                     case < 0:
-                        return SkipTargetTo(in sourceItem, ref target, ref hasExtraUniqueElements);
+                        return SkipSecondTo(in firstItem, ref second, ref hasExtraUniqueElements);
                     case > 0:
                         return false; // out of incoming range
                     case 0:
                         return true;
                 }
 
-                bool SkipTargetTo(ref readonly TValue item, ref Iterator target, ref bool hasExtraUniqueElements)
+                bool SkipSecondTo(ref readonly TValue item, ref Iterator second, ref bool hasExtraUniqueElements)
                 {
-                    if (!FindRightIndex(in item, target.Span, comparer, out int i))
+                    if (!FindRightIndex(in item, second.Span, comparer, out int i))
                         return false;
 
-                    target.UpperLimit = i;
+                    second.UpperLimit = i;
                     hasExtraUniqueElements = true;
                     return true;
                 }
             }
 
-            bool ProcessBoth(ref Iterator source, ref Iterator target, ref bool hasExtraDuplicates)
+            bool ProcessBoth(ref Iterator first, ref Iterator second, ref bool hasExtraDuplicates)
             {
                 if (comparer.LeadsToCollisions)
                 {
-                    return ProcessBothDefault(ref source, ref target, ref hasExtraDuplicates);
+                    return ProcessBothDefault(ref first, ref second, ref hasExtraDuplicates);
                 }
                 else
                 {
-                    return ProcessBothComparable(ref source, ref target, ref hasExtraDuplicates);
+                    return ProcessBothComparable(ref first, ref second, ref hasExtraDuplicates);
                 }
 
-                bool ProcessBothDefault(ref Iterator source, ref Iterator target, ref bool hasExtraDuplicates)
+                bool ProcessBothDefault(ref Iterator first, ref Iterator second, ref bool hasExtraDuplicates)
                 {
                     hasExtraDuplicates = false;
                     tempDictionary.Clear();
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref source.Current;
-                    source++;
+                    ref readonly TValue previousItem = ref first.Current;
+                    first++;
 
-                    tempDictionary.Add(previous, new HeapCounter(sourceCount: 1));
+                    tempDictionary.Add(previousItem, new HeapCounter(firstCount: 1));
 
-                    while (!source.OutOfRange)
+                    while (!first.OutOfRange)
                     {
-                        ref readonly TValue sourceItem = ref source.Current;
+                        ref readonly TValue currentItem = ref first.Current;
 
-                        if (comparer.Compare(sourceItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref sourceItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(sourceItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[sourceItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.SourceCount++;
-                        source++;
+                        counter.FirstCount++;
+                        first++;
                     }
 
-                    while (!target.OutOfRange)
+                    while (!second.OutOfRange)
                     {
-                        ref readonly TValue targetItem = ref target.Current;
+                        ref readonly TValue currentItem = ref second.Current;
 
-                        if (comparer.Compare(targetItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        previous = ref targetItem;
+                        previousItem = ref currentItem;
 
-                        if (!tempDictionary.TryGetValue(targetItem, out var counter))
+                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
                         {
                             counter = new HeapCounter();
-                            tempDictionary[targetItem] = counter;
+                            tempDictionary[currentItem] = counter;
                         }
 
-                        counter.TargetCount++;
-                        target++;
+                        counter.SecondCount++;
+                        second++;
                     }
 
                     foreach (var item in tempDictionary.Values)
                     {
-                        if (item.TargetCount == 0)
+                        if (item.SecondCount == 0)
                             return false;
 
-                        if (item.SourceCount == 0)
+                        if (item.FirstCount == 0)
                             hasExtraDuplicates = true;
                     }
 
                     return true;
                 }
 
-                bool ProcessBothComparable(ref Iterator source, ref Iterator target, ref bool hasExtraDuplicates)
+                bool ProcessBothComparable(ref Iterator first, ref Iterator second, ref bool hasExtraDuplicates)
                 {
-                    ref readonly TValue firstItem = ref source.Current;
-                    source++; target++; // they are equal here, so we can move both indexes
+                    ref readonly TValue initialItem = ref first.Current;
+                    first++; second++; // they are equal here, so we can move both indexes
 
                     int sourceAmount = 1;
                     int targetAmount = 1;
 
-                    while (!source.OutOfRange)
+                    while (!first.OutOfRange)
                     {
-                        if (comparer.Compare(source.Current, firstItem) != 0)
+                        if (comparer.Compare(first.Current, initialItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         sourceAmount++;
-                        source++;
+                        first++;
                     }
 
-                    while (!target.OutOfRange)
+                    while (!second.OutOfRange)
                     {
-                        if (comparer.Compare(target.Current, firstItem) != 0)
+                        if (comparer.Compare(second.Current, initialItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         targetAmount++;
-                        target++;
+                        second++;
                     }
 
                     if (targetAmount == 0 && sourceAmount == 0)
@@ -306,14 +306,14 @@ namespace BinaryCollections.BinaryList
                 }
             }
 
-            void ProcessTarget(ref Iterator target, ref bool hasExtraUniqueElements)
+            void ProcessSecond(ref Iterator second, ref bool hasExtraUniqueElements)
             {
-                ref readonly TValue prevItem = ref target.Current;
+                ref readonly TValue previousItem = ref second.Current;
                 hasExtraUniqueElements = true;
 
-                while (target.Next(1) == 1)
+                while (second.Next(1) == 1)
                 {
-                    if (comparer.Compare(target.Current, prevItem) != 0)
+                    if (comparer.Compare(second.Current, previousItem) != 0)
                         return;
                 }
             }

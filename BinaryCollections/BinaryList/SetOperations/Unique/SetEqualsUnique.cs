@@ -88,106 +88,106 @@ namespace BinaryCollections.BinaryList
 
         private bool SetEqualsSortedUnique(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
         {
-            Iterator source = new(Values, Flags);
-            Iterator target = new(range, flags);
-            return SetEqualsSortedUnique(ref source, ref target, _comparer);
+            Iterator first = new(Values, Flags);
+            Iterator second = new(range, flags);
+            return SetEqualsSortedUnique(ref first, ref second, _comparer);
         }
 
-        private static bool SetEqualsSortedUnique(ref Iterator source, ref Iterator target, BinaryListComparer comparer)
+        private static bool SetEqualsSortedUnique(ref Iterator first, ref Iterator second, BinaryListComparer comparer)
         {
-            if (source.Length == 0 && target.Length == 0)
+            if (first.Length == 0 && second.Length == 0)
                 return true;
 
             // for local function usage (for optimizations) 
             Dictionary<TValue?, HeapCounter> tempDictionary = comparer.LeadsToCollisions ? new() : null!;            
 
-            target.SetIndex(target.LowerLimit);
-            source.SetIndex(source.LowerLimit);
+            second.SetIndex(second.LowerLimit);
+            first.SetIndex(first.LowerLimit);
 
-            while (!target.OutOfRange && !source.OutOfRange)
+            while (!second.OutOfRange && !first.OutOfRange)
             {
-                switch (comparer.Compare(source.Current, target.Current))
+                switch (comparer.Compare(first.Current, second.Current))
                 {
                     case > 0:
                     case < 0:
                         return false;
                     case 0:
-                        if (!ProcessBoth(ref source, ref target))
+                        if (!ProcessBoth(ref first, ref second))
                             return false;
                         break;
                 }
             }
 
-            return source.OutOfRange == target.OutOfRange;
+            return first.OutOfRange == second.OutOfRange;
 
-            bool ProcessBoth(ref Iterator source, ref Iterator target)
+            bool ProcessBoth(ref Iterator first, ref Iterator second)
             {
                 if (comparer.LeadsToCollisions)
                 {
-                    return ProcessBothDefault(ref source, ref target);
+                    return ProcessBothDefault(ref first, ref second);
                 }
                 else
                 {
-                    return ProcessBothComparable(ref source, ref target);
+                    return ProcessBothComparable(ref first, ref second);
                 }
 
-                bool ProcessBothDefault(ref Iterator source, ref Iterator target)
+                bool ProcessBothDefault(ref Iterator first, ref Iterator second)
                 {
                     tempDictionary.Clear();
 
                     // Add the first item to result (preparing to compare)
-                    ref readonly TValue previous = ref source.Current;
+                    ref readonly TValue previousItem = ref first.Current;
 
-                    GetCounter(in source.Current).SourceCount++;
-                    GetCounter(in target.Current).TargetCount++;
+                    GetCounter(in first.Current).FirstCount++;
+                    GetCounter(in second.Current).SecondCount++;
 
-                    while (source.Next(1) == 1)
+                    while (first.Next(1) == 1)
                     {
-                        ref readonly TValue sourceItem = ref source.Current;
+                        ref readonly TValue currentItem = ref first.Current;
 
-                        if (comparer.Compare(sourceItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        GetCounter(in sourceItem).SourceCount++;
+                        GetCounter(in currentItem).FirstCount++;
                     }
 
-                    while (target.Next(1) == 1)
+                    while (second.Next(1) == 1)
                     {
-                        ref readonly TValue targetItem = ref target.Current;
+                        ref readonly TValue currentItem = ref second.Current;
 
-                        if (comparer.Compare(targetItem, previous) != 0)
+                        if (comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
-                        GetCounter(in targetItem).TargetCount++;
+                        GetCounter(in currentItem).SecondCount++;
                     }
 
                     foreach (var item in tempDictionary.Values)
                     {
-                        if (item.TargetCount == 0 ||  item.SourceCount == 0)
+                        if (item.SecondCount == 0 ||  item.FirstCount == 0)
                             return false;
                     }
 
                     return true;
                 }
 
-                bool ProcessBothComparable(ref Iterator source, ref Iterator target)
+                bool ProcessBothComparable(ref Iterator first, ref Iterator second)
                 {
-                    ref readonly TValue previous = ref source.Current;
+                    ref readonly TValue previousItem = ref first.Current;
                     RefCounter counter = new(1, 1);
 
-                    while (source.Next(1) == 1)
+                    while (first.Next(1) == 1)
                     {
-                        if (comparer.Compare(source.Current, previous) != 0)
+                        if (comparer.Compare(first.Current, previousItem) != 0)
                             break;
                     }
 
-                    while (target.Next(1) == 1)
+                    while (second.Next(1) == 1)
                     {
-                        if (comparer.Compare(target.Current, previous) != 0)
+                        if (comparer.Compare(second.Current, previousItem) != 0)
                             break;
                     }
 
-                    return source.OutOfRange == target.OutOfRange;
+                    return first.OutOfRange == second.OutOfRange;
                 }
             }
 

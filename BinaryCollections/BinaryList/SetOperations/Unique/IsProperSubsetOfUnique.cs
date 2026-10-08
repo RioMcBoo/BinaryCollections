@@ -97,10 +97,10 @@ namespace BinaryCollections.BinaryList
             if (range.Length == 0)
                 return false;
 
-            Iterator source = new(Values, Flags);
-            Iterator target = new(range, flags);
+            Iterator first = new(Values, Flags);
+            Iterator second = new(range, flags);
 
-            if (IsSubsetOfSortedUnique(ref source, ref target, _comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements))
+            if (IsSubsetOfSortedUnique(ref first, ref second, _comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements))
             {
                 return hasExtraUniqueElements;
             }

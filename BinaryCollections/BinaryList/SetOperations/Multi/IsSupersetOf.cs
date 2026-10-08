@@ -93,10 +93,10 @@ namespace BinaryCollections.BinaryList
             if (range.Length > Count)
                 return false;
 
-            Iterator target = new(Values, Flags);
-            Iterator source = new(range, flags);
+            Iterator second = new(Values, Flags);
+            Iterator first = new(range, flags);
 
-            return IsSubsetOfSorted(source, target, _comparer, out bool _, out bool _);
+            return IsSubsetOfSorted(first, second, _comparer, out bool _, out bool _);
         }
     }
 }
