@@ -32,6 +32,8 @@
         {
             if (length > 0)
             {
+                _version = unchecked(++_version);
+
                 var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
 
                 if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
@@ -44,7 +46,6 @@
                 }
 
                 _count -= length;
-                _version = unchecked(++_version);
 
                 if (_count < 2)
                     ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);

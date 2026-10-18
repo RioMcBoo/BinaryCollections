@@ -163,6 +163,8 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertSortedRangeFromLeftUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(_storage, destination))
@@ -274,7 +276,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             if (incomingElementsSkipped < second.Length)
                 RemoveFlags(BinaryListFlags.UniformRange);
@@ -497,6 +498,8 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertSortedRangeFromRightUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(_storage, destination))
@@ -610,7 +613,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             if (incomingElementsSkipped < second.Length)
                 RemoveFlags(BinaryListFlags.UniformRange);

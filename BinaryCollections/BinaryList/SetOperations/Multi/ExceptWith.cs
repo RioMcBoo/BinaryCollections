@@ -136,6 +136,8 @@ namespace BinaryCollections.BinaryList
 
         private bool ExceptWithFromLeft(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(first, destination))
@@ -244,7 +246,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             if (_count < 2)
                 ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
@@ -400,6 +401,8 @@ namespace BinaryCollections.BinaryList
 
         private bool ExceptWithFromRight(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(first, destination))
@@ -512,7 +515,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             if (_count < 2)
                 ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);

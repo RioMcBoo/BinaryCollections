@@ -127,6 +127,8 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
         {
+            _version = unchecked(++_version);
+
             bool ItemExists = vIndex >= 0;
             vIndex = ItemExists ? vIndex : ~vIndex;
 
@@ -149,7 +151,6 @@ namespace BinaryCollections.BinaryList
 
             range.CopyTo(_storage.AsSpan(ToRealIndex(vIndex), range.Length));
             _count += range.Length;
-            _version = unchecked(++_version);
 
             if (ItemExists)
             {
@@ -204,6 +205,8 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertSortedRangeFromLeft(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(first, destination))
@@ -248,7 +251,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex;
             _count += second.Length;
-            _version = unchecked(++_version);
 
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
 
@@ -263,6 +265,8 @@ namespace BinaryCollections.BinaryList
 
         private bool InsertSortedRangeFromRight(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(_storage, destination))
@@ -307,7 +311,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex;
             _count += second.Length;
-            _version = unchecked(++_version);
 
             RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
 

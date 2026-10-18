@@ -7,6 +7,8 @@ namespace BinaryCollections.BinaryList
     {
         protected bool RemoveAtIndex(int index)
         {
+            _version = unchecked(++_version);
+
             var info = ArraySplitInfo.GetRemoveInfo(index, _count);
 
             if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
@@ -19,7 +21,6 @@ namespace BinaryCollections.BinaryList
             }
 
             _count--;
-            _version = unchecked(++_version);
 
             if (_count < 2)
                 ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
@@ -31,6 +32,8 @@ namespace BinaryCollections.BinaryList
         {
             if (_count == Array.MaxLength)
                 return false;
+
+            _version = unchecked(++_version);
 
             bool ItemExists = vIndex >= 0;
             vIndex = ItemExists ? vIndex : ~vIndex;
@@ -54,7 +57,6 @@ namespace BinaryCollections.BinaryList
 
             _storage[ToRealIndex(vIndex)] = item;
             _count++;
-            _version = unchecked(++_version);
 
             if (ItemExists)
             {

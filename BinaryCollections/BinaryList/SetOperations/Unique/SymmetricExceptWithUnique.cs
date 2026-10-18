@@ -148,6 +148,8 @@ namespace BinaryCollections.BinaryList
 
         private bool SymmetricExceptWithFromLeftUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(first, destination))
@@ -213,7 +215,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
 
@@ -466,6 +467,8 @@ namespace BinaryCollections.BinaryList
 
         private bool SymmetricExceptWithFromRightUnique(ReadOnlySpan<TValue> second, TValue[] destination, int newZeroRIndex)
         {
+            _version = unchecked(++_version);
+
             var first = _storage;
 
             if (ReferenceEquals(first, destination))
@@ -532,7 +535,6 @@ namespace BinaryCollections.BinaryList
 
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
-            _version = unchecked(++_version);
 
             ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
 
