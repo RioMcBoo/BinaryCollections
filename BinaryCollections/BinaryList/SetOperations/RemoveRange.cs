@@ -32,8 +32,7 @@
         {
             if (length > 0)
             {
-                var removeInfo = new RemoveInfo(vIndex, _count, length);
-                var info = removeInfo.Data;
+                var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
 
                 if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
                 {
@@ -58,13 +57,13 @@
 
         private ArrayRange GetBoundariesToRemove(ref readonly TValue item)
         {
-            var (left, right) = FindBoundaries(in item, Values, Comparer);
+            var boundaries = FindBoundaries(in item, Values, Comparer);
 
-            if (left < 0 || right < 0)
+            if (boundaries.Left < 0 || boundaries.Right < 0)
                 return new();
 
-            int collisionStartIndex = ToRealIndex(left);
-            int collisionLength = right - left + 1;
+            int collisionStartIndex = ToRealIndex(boundaries.Left);
+            int collisionLength = boundaries.Right - boundaries.Left + 1;
 
             return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
 

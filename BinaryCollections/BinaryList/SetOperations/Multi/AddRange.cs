@@ -130,8 +130,7 @@ namespace BinaryCollections.BinaryList
             bool ItemExists = vIndex >= 0;
             vIndex = ItemExists ? vIndex : ~vIndex;
 
-            var insertInfo = new InsertInfo(vIndex, _count, range.Length);
-            var info = insertInfo.Data;
+            var info = ArraySplitInfo.GetInsertInfo(vIndex, _count, range.Length);
 
             bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
 

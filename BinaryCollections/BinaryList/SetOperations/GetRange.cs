@@ -31,13 +31,13 @@ namespace BinaryCollections.BinaryList
 
         private ArrayRange GetBoundariesToShare(ref readonly TValue item)
         {
-            var (left, right) = FindBoundaries(in item, Values, Comparer);
+            var boundaries = FindBoundaries(in item, Values, Comparer);
 
-            if (left < 0 || right < 0)
+            if (boundaries.Left < 0 || boundaries.Right < 0)
                 return new();
 
-            int collisionStartIndex = ToRealIndex(left);
-            int collisionLength = right - left + 1;
+            int collisionStartIndex = ToRealIndex(boundaries.Left);
+            int collisionLength = boundaries.Right - boundaries.Left + 1;
 
             return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
 

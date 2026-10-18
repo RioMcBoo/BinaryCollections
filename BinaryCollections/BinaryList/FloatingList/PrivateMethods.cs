@@ -7,8 +7,7 @@ namespace BinaryCollections.BinaryList
     {
         protected bool RemoveAtIndex(int index)
         {
-            var removeInfo = new RemoveInfo(index, _count);
-            var info = removeInfo.Data;
+            var info = ArraySplitInfo.GetRemoveInfo(index, _count);
 
             if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
             {
@@ -28,7 +27,7 @@ namespace BinaryCollections.BinaryList
             return true;
         }
 
-        protected bool Insert(ref readonly TValue item, ref int vIndex)
+        protected bool InsertAtIndex(ref readonly TValue item, ref int vIndex)
         {
             if (_count == Array.MaxLength)
                 return false;
@@ -36,8 +35,7 @@ namespace BinaryCollections.BinaryList
             bool ItemExists = vIndex >= 0;
             vIndex = ItemExists ? vIndex : ~vIndex;
 
-            var insertInfo = new InsertInfo(vIndex, _count);
-            var info = insertInfo.Data;
+            var info = ArraySplitInfo.GetInsertInfo(vIndex, _count);
 
             bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
 
@@ -132,16 +130,22 @@ namespace BinaryCollections.BinaryList
         {
             Debug.Assert(info.ArraySizeDelta == 0, "When replacing Middle part can be shifted only if edges are not moved");
 
-            int delta = -info.Alignment.Middle.RightEdgeIndexShift;
-            Array.Copy(_storage, ToRealIndex(info.MiddlePart.Index), _storage, ToRealIndex(info.MiddlePart.Index + delta), info.MiddlePart.Length);
+            int delta = -info.Alignment.Middle.LeftEdgeIndexShift;
+            int partIndex = ToRealIndex(info.MiddlePart.Index);
+            int newPartIndex = partIndex + delta;
+            int partLength = info.MiddlePart.Length;
+
+            Array.Copy(_storage, partIndex, _storage, newPartIndex, partLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ShiftEdges(ref readonly ArraySplitInfo info)
         {
+            var alignment = info.Alignment.Middle;
+
             // ShiftLeftPart changes zero_index, so ShiftRightPart should be called before it
-            ShiftRightPart(in info.RightPart, in info.Alignment.Middle);
-            ShiftLeftPart(in info.LeftPart, in info.Alignment.Middle);
+            ShiftRightPart(in info.RightPart, in alignment);
+            ShiftLeftPart(in info.LeftPart, in alignment);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,7 +164,11 @@ namespace BinaryCollections.BinaryList
         private void ShiftLeftPart(ref readonly PartInfo info, ref readonly AlignmentInfo alignment)
         {
             int delta = alignment.LeftEdgeIndexShift;
-            Array.Copy(_storage, ToRealIndex(info.Index), _storage, ToRealIndex(info.Index + delta), info.Length);
+            int partIndex = ToRealIndex(info.Index);
+            int newPartIndex = partIndex + delta;
+            int partLength = info.Length;
+
+            Array.Copy(_storage, partIndex, _storage, newPartIndex, partLength);
 
             if (ContainsReferences && delta > 0)
                 Array.Clear(_storage, _zeroRIndex, delta);
@@ -172,10 +180,14 @@ namespace BinaryCollections.BinaryList
         private void ShiftRightPart(ref readonly PartInfo info, ref readonly AlignmentInfo alignment)
         {
             int delta = alignment.RightEdgeIndexShift;
-            Array.Copy(_storage, ToRealIndex(info.Index), _storage, ToRealIndex(info.Index + delta), info.Length);
+            int partIndex = ToRealIndex(info.Index);
+            int newPartIndex = partIndex + delta;
+            int partLength = info.Length;
+
+            Array.Copy(_storage, partIndex, _storage, newPartIndex, partLength);
 
             if (ContainsReferences && delta < 0)
-                Array.Clear(_storage, _zeroRIndex + _count + delta, -delta);
+                Array.Clear(_storage, newPartIndex + partLength, -delta);
         }
     }
 }

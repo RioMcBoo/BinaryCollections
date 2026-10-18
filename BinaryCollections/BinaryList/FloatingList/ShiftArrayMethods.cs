@@ -8,12 +8,13 @@ namespace BinaryCollections.BinaryList
         {
             // we move the array relative to the zero index, so this is related to left alignment
             AlignmentInfo alignmentInfo = info.Alignment.Left;
+            /*alignmentInfo.LeftEdgeIndexShift == 0 (always, in this case)*/
 
             int newZeroRIndex = delta + _zeroRIndex;
 
             if (delta < 0)
             {
-                ShiftArrayLeft(srcArray, destArray, in info, delta + alignmentInfo.LeftEdgeIndexShift);
+                ShiftArrayLeft(srcArray, destArray, in info, delta + 0 /*[alignmentInfo.LeftEdgeIndexShift]*/);
             }
             else
             {
@@ -25,8 +26,8 @@ namespace BinaryCollections.BinaryList
                 int cleanLength_ShiftLeft = -delta - alignmentInfo.RightEdgeIndexShift;
                 int cleanIndex_ShiftLeft = _count + delta + alignmentInfo.RightEdgeIndexShift;
 
-                int cleanLength_ShiftRight = delta;
-                int cleanIndex_ShiftRight = 0;
+                int cleanLength_ShiftRight = delta /* + [alignmentInfo.LeftEdgeIndexShift]*/;
+                int cleanIndex_ShiftRight = 0 /* - [alignmentInfo.LeftEdgeIndexShift]*/;
 
                 ClearArray(destArray, cleanIndex_ShiftLeft, cleanLength_ShiftLeft);
                 ClearArray(destArray, cleanIndex_ShiftRight, cleanLength_ShiftRight);

@@ -5,11 +5,16 @@ namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {
-        private ref struct BinarySearchState
+        public ref struct Boundaries
         {
-            public int lo;
-            public int hi;
-            public int i;
+            public int Left;
+            public int Right;
+
+            public Boundaries(int left, int right)
+            {
+                Left = left;
+                Right = right;
+            }
         }
 
         private readonly ref struct ArrayRange

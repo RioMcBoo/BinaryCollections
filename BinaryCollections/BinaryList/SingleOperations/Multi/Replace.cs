@@ -70,8 +70,7 @@
             bool ItemExists = newVIndex >= 0;
             newVIndex = ItemExists ? newVIndex : ~newVIndex;
 
-            var replaceInfo = new ReplaceInfo(oldVIndex, newVIndex, Count);
-            var info = replaceInfo.Data;
+            var info = ArraySplitInfo.GetReplaceInfo(oldVIndex, newVIndex, Count);
 
             ReplaceItemsInArray(in info);
             _storage[ToRealIndex(newVIndex + info.ReplaceAddIndexShift)] = newItem;

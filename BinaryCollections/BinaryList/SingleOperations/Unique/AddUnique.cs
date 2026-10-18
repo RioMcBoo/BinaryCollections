@@ -12,7 +12,7 @@
             if (FindIndexExactly(in item, Values, Comparer, out index))
                 return false;
 
-            return Insert(in item, ref index);
+            return InsertAtIndex(in item, ref index);
         }
     }
 }

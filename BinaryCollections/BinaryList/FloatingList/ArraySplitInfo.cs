@@ -5,41 +5,15 @@ namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
-        protected enum Operation
-        {
-            None,
-            Insert,
-            Remove,
-        }
-
         protected readonly struct PointInfo
         {
             public readonly int Index;
             public readonly int Count;
-            public readonly Operation Operation;
 
             public PointInfo(int index, int count = 0)
             {
                 Index = index;
                 Count = count;
-                Operation = Count switch
-                {
-                    > 0 => Operation.Insert,
-                    < 0 => Operation.Remove,
-                    _ => Operation.None,
-                };
-            }
-
-            public PointInfo(int index, Operation operation)
-            {
-                Index = index;
-                Operation = operation;
-                Count = operation switch
-                {
-                    Operation.Insert => 1,
-                    Operation.Remove => -1,
-                    _ => 0,
-                };
             }
         }
 
@@ -67,50 +41,21 @@ namespace BinaryCollections.BinaryList
             }
         }
 
-        protected struct AlignmentInfoContainer
+        protected readonly struct AlignmentInfoContainer
         {
-            public AlignmentInfo Middle;
-            public AlignmentInfo Left;
-            public AlignmentInfo Right;
-        }
+            public readonly AlignmentInfo Middle;
+            public readonly AlignmentInfo Left;
+            public readonly AlignmentInfo Right;
 
-        protected readonly ref struct ReplaceInfo
-        {
-            public readonly ArraySplitInfo Data;
-
-            public ReplaceInfo(int removeVIndex, int insertVIndex, int arrayLength)
+            public AlignmentInfoContainer(AlignmentInfo middle, AlignmentInfo left, AlignmentInfo right)
             {
-                PointInfo removePoint = new(removeVIndex, Operation.Remove);
-                PointInfo insertPoint = new(insertVIndex, Operation.Insert);
-                Data = new ArraySplitInfo(removePoint, insertPoint, arrayLength);
+                Middle = middle;
+                Left = left;
+                Right = right;
             }
         }
 
-        protected readonly ref struct InsertInfo
-        {
-            public readonly ArraySplitInfo Data;
-
-            public InsertInfo(int vIndex, int arrayLength, int count = 1)
-            {
-                PointInfo removePoint = new(vIndex, Operation.None);
-                PointInfo insertPoint = new(vIndex, count);
-                Data = new ArraySplitInfo(removePoint, insertPoint, arrayLength);
-            }
-        }
-
-        protected readonly ref struct RemoveInfo
-        {
-            public readonly ArraySplitInfo Data;
-
-            public RemoveInfo(int vIndex, int arrayLength, int count = 1)
-            {
-                PointInfo removePoint = new(vIndex, -count);
-                PointInfo insertPoint = new(vIndex, Operation.None);
-                Data = new ArraySplitInfo(removePoint, insertPoint, arrayLength);
-            }
-        }
-
-        protected readonly ref struct ArraySplitInfo
+        protected readonly struct ArraySplitInfo
         {
             public readonly int ReplaceAddIndexShift;
             public readonly int ArraySizeDelta;
@@ -121,22 +66,43 @@ namespace BinaryCollections.BinaryList
             public readonly PointInfo RightPoint;
             public readonly PartInfo RightPart;
 
-            public ArraySplitInfo(PointInfo removePoint, PointInfo insertPoint, int arrayLength)
+            public static ArraySplitInfo GetRemoveInfo(int vIndex, int arrayLength, int count = 1)
+            {
+                PointInfo removePoint = new(vIndex, -count);
+                PointInfo insertPoint = new(vIndex, 0);
+                return new ArraySplitInfo(removePoint, insertPoint, arrayLength);
+            }
+
+            public static ArraySplitInfo GetInsertInfo(int vIndex, int arrayLength, int count = 1)
+            {
+                PointInfo removePoint = new(vIndex, 0);
+                PointInfo insertPoint = new(vIndex, count);
+                return new ArraySplitInfo(removePoint, insertPoint, arrayLength);
+            }
+
+            public static ArraySplitInfo GetReplaceInfo(int removeVIndex, int insertVIndex, int arrayLength)
+            {
+                PointInfo removePoint = new(removeVIndex, -1);
+                PointInfo insertPoint = new(insertVIndex, 1);
+                return new ArraySplitInfo(removePoint, insertPoint, arrayLength);
+            }
+
+            ArraySplitInfo(PointInfo removePoint, PointInfo insertPoint, int arrayLength)
             {
                 // Checking arguments for compliance 1
-                Debug.Assert(removePoint.Operation != insertPoint.Operation,
+                Debug.Assert(removePoint.Count != insertPoint.Count,
                     "BinaryList.FloatingList.ArraySplitInfo: Invalid operation combination");
 
                 // Checking arguments for compliance 2
-                Debug.Assert(removePoint.Operation == Operation.Remove || insertPoint.Operation == Operation.Insert,
+                Debug.Assert(removePoint.Count < 0 || insertPoint.Count > 0,
                     "BinaryList.FloatingList.ArraySplitInfo: Invalid operation combination");
 
                 // If one operation is missing, its index must be equal to the another operation 1. 
-                Debug.Assert(removePoint.Operation != Operation.None || removePoint.Index == insertPoint.Index,
+                Debug.Assert(removePoint.Count != 0 || removePoint.Index == insertPoint.Index,
                     "BinaryList.FloatingList.ArraySplitInfo.removePoint: Invalid Index");
 
                 // If one operation is missing, its index must be equal to the another operation 2.
-                Debug.Assert(insertPoint.Operation != Operation.None || insertPoint.Index == removePoint.Index,
+                Debug.Assert(insertPoint.Count != 0 || insertPoint.Index == removePoint.Index,
                     "BinaryList.FloatingList.ArraySplitInfo.insertPoint: Invalid Index");
 
                 var leftPoint = removePoint;
@@ -151,7 +117,7 @@ namespace BinaryCollections.BinaryList
                 (int Index, int Length) leftPart, middlePart, rightPart;
                 int replaceAddIndexShift;
 
-                if (leftPoint.Operation == Operation.Insert || rightPoint.Operation == Operation.Remove)
+                if (leftPoint.Count > 0 || rightPoint.Count < 0)
                 {
                     leftPart.Index = 0;
                     leftPart.Length = leftPoint.Index;
@@ -164,7 +130,7 @@ namespace BinaryCollections.BinaryList
 
                     replaceAddIndexShift = 0;
                 }
-                else if (leftPoint.Operation == Operation.Remove || rightPoint.Operation == Operation.Insert)
+                else if (leftPoint.Count < 0 || rightPoint.Count > 0)
                 {
                     leftPart.Index = 0;
                     leftPart.Length = leftPoint.Index;
@@ -184,18 +150,20 @@ namespace BinaryCollections.BinaryList
                     return;
                 }
 
-                Alignment.Middle = new FloatingList<TValue>.AlignmentInfo(
+                var alignmentMiddle = new AlignmentInfo(
                         leftEdgeIndexShift: -leftPoint.Count,
                         rightEdgeIndexShift: rightPoint.Count
                         );
-                Alignment.Left = new FloatingList<TValue>.AlignmentInfo(
+                var alignmentLeft = new AlignmentInfo(
                         leftEdgeIndexShift: 0,
                         rightEdgeIndexShift: rightPoint.Count + leftPoint.Count
                         );
-                Alignment.Right = new FloatingList<TValue>.AlignmentInfo(
+                var alignmentRight = new AlignmentInfo(
                         leftEdgeIndexShift: -rightPoint.Count - leftPoint.Count,
                         rightEdgeIndexShift: 0
                         );
+
+                Alignment = new(alignmentMiddle, alignmentLeft, alignmentRight);
 
                 LeftPart = new PartInfo(leftPart.Index, leftPart.Length);
                 LeftPoint = leftPoint;
