@@ -12,10 +12,12 @@
             index = -1;
 
             var boundaries = GetBoundariesToRemove(in item);
-            var vIndex = ToVirtualIndex(boundaries.Index);
 
-            if (RemoveRangeInternal(vIndex, boundaries.Length))
-                index = vIndex;
+            if (boundaries.Length < 1)
+                return 0;
+
+            index = ToVirtualIndex(boundaries.Index);
+            RemoveRangeInternal(index, boundaries.Length);               
 
             return boundaries.Length;
         }
@@ -25,35 +27,29 @@
             if (!CheckIndex(index, length))
                 return false;
 
-            return RemoveRangeInternal(index, length);
+            RemoveRangeInternal(index, length);
+            return true;
         }
 
-        private bool RemoveRangeInternal(int vIndex, int length)
+        private void RemoveRangeInternal(int vIndex, int length)
         {
-            if (length > 0)
+            _version = unchecked(++_version);
+
+            var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
+
+            if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
             {
-                _version = unchecked(++_version);
-
-                var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
-
-                if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
-                {
-                    ShiftLeftPart(in info);
-                }
-                else
-                {
-                    ShiftRightPart(in info);
-                }
-
-                _count -= length;
-
-                if (_count < 2)
-                    ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
-
-                return true;
+                ShiftLeftPart(in info);
+            }
+            else
+            {
+                ShiftRightPart(in info);
             }
 
-            return false;
+            _count -= length;
+
+            if (_count < 2)
+                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
         }
 
         private ArrayRange GetBoundariesToRemove(ref readonly TValue item)

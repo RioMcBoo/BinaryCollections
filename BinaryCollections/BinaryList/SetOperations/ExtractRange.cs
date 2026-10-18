@@ -9,29 +9,25 @@ namespace BinaryCollections.BinaryList
             return range;
         }
 
-        public bool ExtractRange(ref readonly TValue item, out int index, out TValue[] range)
+        public void ExtractRange(ref readonly TValue item, out int index, out TValue[] range)
         {
             index = -1;
 
             var boundaries = GetBoundariesToExtract(in item);
-            if (boundaries.Length == 0)
+            if (boundaries.Length < 1)
             {
                 range = null!;
-                return false;
+                return;
             }
 
             range = new TValue[boundaries.Length];
             Array.Copy(boundaries.Source, boundaries.Index, range, 0, boundaries.Length);
 
-            if (RemoveRangeInternal(ToVirtualIndex(boundaries.Index), boundaries.Length))
-            {
-                index = ToVirtualIndex(boundaries.Index);
-            }
+            index = ToVirtualIndex(boundaries.Index);
+            RemoveRangeInternal(index, boundaries.Length);            
 
             if (_count < 2)
                 ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
-
-            return true;
         }
 
         private ArrayRange GetBoundariesToExtract(ref readonly TValue item)

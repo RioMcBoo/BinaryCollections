@@ -5,7 +5,7 @@ namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
-        protected bool RemoveAtIndex(int index)
+        protected void RemoveAtIndex(int index)
         {
             _version = unchecked(++_version);
 
@@ -24,15 +24,10 @@ namespace BinaryCollections.BinaryList
 
             if (_count < 2)
                 ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
-
-            return true;
         }
 
-        protected bool InsertAtIndex(ref readonly TValue item, ref int vIndex)
+        protected void InsertAtIndex(ref readonly TValue item, ref int vIndex)
         {
-            if (_count == Array.MaxLength)
-                return false;
-
             _version = unchecked(++_version);
 
             bool ItemExists = vIndex >= 0;
@@ -69,8 +64,6 @@ namespace BinaryCollections.BinaryList
             {
                 RemoveFlags(BinaryListFlags.UniformRange);
             }
-
-            return true;
         }
 
         protected void ResizeArray(int newCapacity)

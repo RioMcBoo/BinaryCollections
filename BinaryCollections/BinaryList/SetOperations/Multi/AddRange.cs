@@ -122,10 +122,11 @@ namespace BinaryCollections.BinaryList
 
             var example = range[0];
             FindIndex(ref example, Values, Comparer, out var vIndex);
-            return InsertUniformRange(range, ref vIndex);
+            InsertUniformRange(range, ref vIndex);
+            return true;
         }
 
-        private bool InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
+        private void InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
         {
             _version = unchecked(++_version);
 
@@ -163,8 +164,6 @@ namespace BinaryCollections.BinaryList
             {
                 RemoveFlags(BinaryListFlags.UniformRange);
             }
-
-            return true;
         }
 
         private bool ResizeAndInsertSortedRange(ReadOnlySpan<TValue> range)

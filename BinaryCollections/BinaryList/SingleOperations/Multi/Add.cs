@@ -7,7 +7,12 @@
         public bool Add(ref readonly TValue item, out int index)
         {
             FindIndex(in item, Values, Comparer, out index);
-            return InsertAtIndex(in item, ref index);
+
+            if (_count == Array.MaxLength)
+                return false;
+
+            InsertAtIndex(in item, ref index);
+            return true;
         }
     }
 }

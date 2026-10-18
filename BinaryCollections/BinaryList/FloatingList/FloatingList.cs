@@ -85,7 +85,8 @@ namespace BinaryCollections.BinaryList
             if (!CheckIndex(index))
                 return false;
 
-            return RemoveAtIndex(index);
+            RemoveAtIndex(index);
+            return true;
         }
 
         public TValue? Find(Predicate<TValue> match)

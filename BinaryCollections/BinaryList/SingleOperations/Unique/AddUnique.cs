@@ -12,7 +12,11 @@
             if (FindIndexExactly(in item, Values, Comparer, out index))
                 return false;
 
-            return InsertAtIndex(in item, ref index);
+            if (_count == Array.MaxLength)
+                return false;
+
+            InsertAtIndex(in item, ref index);
+            return true;
         }
     }
 }

@@ -22,6 +22,36 @@
             return ReplaceCore(index, out newIndex, in newItem, false);
         }
 
+        protected void ReplaceAtIndex(int oldVIndex, int newVIndex, ref readonly TValue newItem)
+        {
+            _version = unchecked(++_version);
+
+            // Do replacement
+            bool ItemExists = newVIndex >= 0;
+            newVIndex = ItemExists ? newVIndex : ~newVIndex;
+
+            var info = ArraySplitInfo.GetReplaceInfo(oldVIndex, newVIndex, Count);
+
+            ReplaceItemsInArray(in info);
+            _storage[ToRealIndex(newVIndex + info.ReplaceAddIndexShift)] = newItem;
+
+            if (_count < 2)
+            {
+                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            }
+            else if (ItemExists)
+            {
+                RemoveFlags(BinaryListFlags.NoDuplicates);
+
+                if (_count == 2)
+                    AddFlags(BinaryListFlags.UniformRange);
+            }
+            else
+            {
+                RemoveFlags(BinaryListFlags.UniformRange);
+            }
+        }
+
         private void ReplaceItemsInArray(ref readonly ArraySplitInfo info)
         {
             // we take middle alignment info to see how edges will be changed
@@ -64,34 +94,8 @@
             if (IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
                 return false;
 
-            _version = unchecked(++_version);
-
-            // Do replacement
-            bool ItemExists = newVIndex >= 0;
-            newVIndex = ItemExists ? newVIndex : ~newVIndex;
-
-            var info = ArraySplitInfo.GetReplaceInfo(oldVIndex, newVIndex, Count);
-
-            ReplaceItemsInArray(in info);
-            _storage[ToRealIndex(newVIndex + info.ReplaceAddIndexShift)] = newItem;
-
-            if (_count < 2)
-            {
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
-            }
-            else if (ItemExists)
-            {
-                RemoveFlags(BinaryListFlags.NoDuplicates);
-
-                if (_count == 2)
-                    AddFlags(BinaryListFlags.UniformRange);
-            }
-            else
-            {
-                RemoveFlags(BinaryListFlags.UniformRange);
-            }
-
+            ReplaceAtIndex(oldVIndex, newVIndex, in newItem);
             return true;
-        }
+        }        
     }
 }
