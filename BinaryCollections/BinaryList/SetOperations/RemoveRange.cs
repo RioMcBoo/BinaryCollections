@@ -31,27 +31,6 @@
             return true;
         }
 
-        private void RemoveRangeInternal(int vIndex, int length)
-        {
-            _version = unchecked(++_version);
-
-            var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
-
-            if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
-            {
-                ShiftLeftPart(in info);
-            }
-            else
-            {
-                ShiftRightPart(in info);
-            }
-
-            _count -= length;
-
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
-        }
-
         private ArrayRange GetBoundariesToRemove(ref readonly TValue item)
         {
             var boundaries = FindBoundaries(in item, Values, Comparer);

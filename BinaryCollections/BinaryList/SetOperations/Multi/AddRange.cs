@@ -126,46 +126,6 @@ namespace BinaryCollections.BinaryList
             return true;
         }
 
-        private void InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
-        {
-            _version = unchecked(++_version);
-
-            bool ItemExists = vIndex >= 0;
-            vIndex = ItemExists ? vIndex : ~vIndex;
-
-            var info = ArraySplitInfo.GetInsertInfo(vIndex, _count, range.Length);
-
-            bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
-
-            if (CanMoveLeft && LeftIsPriority)
-            {
-                ShiftLeftPart(in info);
-            }
-            else if (CanMoveRight && !LeftIsPriority)
-            {
-                ShiftRightPart(in info);
-            }
-            else
-            {
-                ResizeArray(in info);
-            }
-
-            range.CopyTo(_storage.AsSpan(ToRealIndex(vIndex), range.Length));
-            _count += range.Length;
-
-            if (ItemExists)
-            {
-                RemoveFlags(BinaryListFlags.NoDuplicates);
-
-                if (_count - range.Length == 1)
-                    AddFlags(BinaryListFlags.UniformRange);
-            }
-            else
-            {
-                RemoveFlags(BinaryListFlags.UniformRange);
-            }
-        }
-
         private bool ResizeAndInsertSortedRange(ReadOnlySpan<TValue> range)
         {
             PrepareForResize(range.Length, out var destination);
