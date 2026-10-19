@@ -79,7 +79,7 @@ namespace BinaryCollections.BinaryList
             return SetEquals(range.GetEnumerator());
         }
 
-        private bool SetEqualsSorted(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool SetEqualsSorted(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             Iterator first = new(Values, Flags);
             Iterator second = new(range, flags);

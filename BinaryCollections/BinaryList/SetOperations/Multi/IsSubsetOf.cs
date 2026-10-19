@@ -79,7 +79,7 @@ namespace BinaryCollections.BinaryList
             return IsSubsetOf(range.GetEnumerator());
         }
 
-        private bool IsSubsetOfSorted(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool IsSubsetOfSorted(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             if (Count == 0 && range.Length == 0)
                 return true;

@@ -9,7 +9,7 @@ namespace BinaryList.Tests
         {
             bool MayContainDuplicates(BinaryList<TestTypeBinary> list)
             {
-                return !list.Flags.HasFlag(BinaryListFlags.NoDuplicates);
+                return list.Flags.HasTheFlag(DuplicateDensity.Possible);
             }
 
             BinaryList<TestTypeBinary> first;

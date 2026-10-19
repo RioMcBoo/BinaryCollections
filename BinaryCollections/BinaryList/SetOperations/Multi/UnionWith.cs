@@ -260,7 +260,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
 
-            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+            _flags.Modify(add : DuplicateDensity.Possible, remove: DuplicateDensity.Full);
 
             return true;
 
@@ -643,9 +643,9 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
 
-            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+			_flags.Modify(add: DuplicateDensity.Possible, remove: DuplicateDensity.Full);
 
-            return true;
+			return true;
 
             void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {

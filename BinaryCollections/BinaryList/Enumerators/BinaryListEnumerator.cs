@@ -6,7 +6,7 @@ namespace BinaryCollections.BinaryList
 {
     public struct BinaryListEnumerator<TValue> : IEnumerator<TValue>, IReadOnlyList<TValue>
     {
-        public readonly BinaryListFlags Flags
+        public readonly DuplicateDensity Flags
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _binaryListInstance.Flags | _sharedFlags;
@@ -36,9 +36,9 @@ namespace BinaryCollections.BinaryList
         private readonly int _start;
         private readonly int _count;
         private int _current;
-        private BinaryListFlags _sharedFlags;
+        private DuplicateDensity _sharedFlags;
 
-        internal BinaryListEnumerator(BinaryList<TValue> instance, TValue[] sharedData, int index, int count, BinaryListFlags sharedFlags = BinaryListFlags.None)
+        internal BinaryListEnumerator(BinaryList<TValue> instance, TValue[] sharedData, int index, int count, DuplicateDensity sharedFlags = DuplicateDensity.None)
         {
             _sharedFlags = sharedFlags;
             _binaryListInstance = instance;

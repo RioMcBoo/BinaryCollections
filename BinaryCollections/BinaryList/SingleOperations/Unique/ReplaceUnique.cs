@@ -14,12 +14,12 @@
 
         public bool ReplaceUnique(ref readonly TValue oldItem, ref readonly TValue newItem, out int newIndex)
         {
-            return ReplaceCore(in oldItem, out newIndex, in newItem, true);
+            return ReplaceCore(in oldItem, in newItem, true, out newIndex);
         }
 
         public bool ReplaceUnique(int index, ref readonly TValue newItem, out int newIndex)
         {
-            return ReplaceCore(index, out newIndex, in newItem, true);
+            return ReplaceCore(index, in newItem, true, out newIndex);
         }
     }
 }

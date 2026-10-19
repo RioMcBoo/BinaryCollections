@@ -24,10 +24,9 @@ namespace BinaryCollections.BinaryList
             Array.Copy(boundaries.Source, boundaries.Index, range, 0, boundaries.Length);
 
             index = ToVirtualIndex(boundaries.Index);
-            RemoveRangeInternal(index, boundaries.Length);            
+            RemoveRangeInternal(index, boundaries.Length);
 
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            _flags.CheckFor(_count);
         }
 
         private ArrayRange GetBoundariesToExtract(ref readonly TValue item)

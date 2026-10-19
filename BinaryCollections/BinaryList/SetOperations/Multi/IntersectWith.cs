@@ -198,8 +198,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
 
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            _flags.CheckFor(_count);
 
             return true;
 
@@ -441,8 +440,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex + zeroIndexShift;
             _count += second.Length - incomingElementsSkipped;
 
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            _flags.CheckFor(_count);
 
             return true;
 

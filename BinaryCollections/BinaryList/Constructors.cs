@@ -43,72 +43,68 @@
         ///         <c>(_comparer.Compare(a, b) == 0) == Equals(a, b)</c> for all possible elements.
         ///     </para>
         /// </remarks>
-        public BinaryList(IEnumerable<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(IEnumerable<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = 0, bool? comparerLeadsToCollisions = default)
         {
             if (initialValues is IReadOnlyCollection<TValue> collection)
             {
                 capacity = capacity > collection.Count ? capacity : collection.Count;
             }
 
-            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
+            _comparer = new(comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            SetDefaultFlags(collisionFlag);
 
             AddRange(initialValues);
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(ReadOnlySpan<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(ReadOnlySpan<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = 0, bool? comparerLeadsToCollisions = default)
         {
             capacity = capacity > initialValues.Length ? capacity : initialValues.Length;
 
-            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
+            _comparer = new(comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            SetDefaultFlags(collisionFlag);
 
-            AddRange(initialValues);
+			AddRange(initialValues);
         }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(IEnumerable<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(IEnumerable<TValue> initialValues, Comparison<TValue> comparison, int capacity = 0, bool? comparerLeadsToCollisions = default)
             : this(initialValues, comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(ReadOnlySpan<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(ReadOnlySpan<TValue> initialValues, Comparison<TValue> comparison, int capacity = 0, bool? comparerLeadsToCollisions = default)
             : this(initialValues, comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(IComparer<TValue> comparer, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(IComparer<TValue> comparer, int capacity = 0, bool? comparerLeadsToCollisions = default)
         {
-            capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
+            capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : 0;
 
-            _comparer = new(out BinaryListFlags collisionFlag, comparer, comparerLeadsToCollisions);
+            _comparer = new(comparer, comparerLeadsToCollisions);
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            SetDefaultFlags(collisionFlag);
-        }
+		}
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
+        public BinaryList(Comparison<TValue> comparison, int capacity = 0, bool? comparerLeadsToCollisions = default)
         : this(comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
-        public BinaryList(int capacity = DefaultCapacity)
+        public BinaryList(int capacity = 0)
         {
-            capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : DefaultCapacity;
+            capacity = capacity > 0 ? (capacity > Array.MaxLength ? Array.MaxLength : capacity) : 0;
 
-            _comparer = new(out BinaryListFlags collisionFlag);
+            _comparer = new();
             _storage = new TValue[capacity];
             _zeroRIndex = CalculateZeroIndex(capacity, 0);
-            SetDefaultFlags(collisionFlag);
-        }
+		}
 
         public BinaryList(BinaryList<TValue> source)
         {
-            SetFlags(source.Flags);
-            _comparer = source._comparer;
+            _flags = source._flags;
+			_comparer = source._comparer;
             _storage = new TValue[source._storage.Length];
             _zeroRIndex = source._zeroRIndex;
             _count = source._count;

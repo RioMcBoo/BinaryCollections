@@ -68,8 +68,8 @@ namespace BinaryCollections.BinaryList
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (Flags.HasFlag(BinaryListFlags.NoDuplicates) &&
-                    range.Flags.HasFlag(BinaryListFlags.NoDuplicates) &&
+                if (Flags == DuplicateDensity.None &&
+                    range.Flags == DuplicateDensity.None &&
                     Count != range.Count)
                 {
                     return false;
@@ -86,7 +86,7 @@ namespace BinaryCollections.BinaryList
             return SetEqualsUnique(range.GetEnumerator());
         }
 
-        private bool SetEqualsSortedUnique(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool SetEqualsSortedUnique(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             Iterator first = new(Values, Flags);
             Iterator second = new(range, flags);

@@ -79,7 +79,7 @@ namespace BinaryCollections.BinaryList
             return Overlaps(range.GetEnumerator());
         }
 
-        private bool OverlapsSorted(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool OverlapsSorted(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             Iterator source = new(Values, Flags);
             Iterator target = new(range, flags);

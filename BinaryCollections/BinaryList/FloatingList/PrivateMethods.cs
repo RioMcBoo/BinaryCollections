@@ -20,8 +20,7 @@ namespace BinaryCollections.BinaryList
 
             _count -= length;
 
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            _flags.CheckFor(_count);
         }
 
         protected void InsertUniformRange(ReadOnlySpan<TValue> range, ref int vIndex)
@@ -53,14 +52,14 @@ namespace BinaryCollections.BinaryList
 
             if (ItemExists)
             {
-                RemoveFlags(BinaryListFlags.NoDuplicates);
+                _flags.Add(DuplicateDensity.Possible);
 
                 if (_count - range.Length == 1)
-                    AddFlags(BinaryListFlags.UniformRange);
+                    _flags.Add(DuplicateDensity.Full);
             }
             else
             {
-                RemoveFlags(BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Full);
             }
         }
         protected void RemoveAtIndex(int index)
@@ -80,8 +79,7 @@ namespace BinaryCollections.BinaryList
 
             _count--;
 
-            if (_count < 2)
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+            _flags.CheckFor(_count);
         }
 
         protected void InsertAtIndex(ref readonly TValue item, ref int vIndex)
@@ -113,14 +111,14 @@ namespace BinaryCollections.BinaryList
 
             if (ItemExists)
             {
-                RemoveFlags(BinaryListFlags.NoDuplicates);
+                _flags.Add(DuplicateDensity.Possible);
 
                 if (_count == 2)
-                    AddFlags(BinaryListFlags.UniformRange);
+                    _flags.Add(DuplicateDensity.Full);
             }
             else
             {
-                RemoveFlags(BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Full);
             }
         }
 
@@ -139,18 +137,18 @@ namespace BinaryCollections.BinaryList
 
             if (_count < 2)
             {
-                ModifyFlags(add: BinaryListFlags.NoDuplicates, remove: BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Possible | DuplicateDensity.Full);
             }
             else if (ItemExists)
             {
-                RemoveFlags(BinaryListFlags.NoDuplicates);
+                _flags.Add(DuplicateDensity.Possible);
 
                 if (_count == 2)
-                    AddFlags(BinaryListFlags.UniformRange);
+                    _flags.Add(DuplicateDensity.Full);
             }
             else
             {
-                RemoveFlags(BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Full);
             }
         }
 

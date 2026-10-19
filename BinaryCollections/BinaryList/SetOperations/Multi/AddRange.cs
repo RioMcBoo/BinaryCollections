@@ -81,7 +81,7 @@ namespace BinaryCollections.BinaryList
                 if (!CheckCountOverload(range.Count))
                     return false;
 
-                if (range.Flags.HasFlag(BinaryListFlags.UniformRange))
+                if (range.Flags.HasFlag(DuplicateDensity.Full))
                 {
                     return AddUniformRange(range.GetSpan());
                 }
@@ -211,7 +211,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex;
             _count += second.Length;
 
-            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+            _flags.Modify(add: DuplicateDensity.Possible, remove: DuplicateDensity.Full);
 
             return true;
         }
@@ -271,7 +271,7 @@ namespace BinaryCollections.BinaryList
             _zeroRIndex = newZeroRIndex;
             _count += second.Length;
 
-            RemoveFlags(BinaryListFlags.NoDuplicates | BinaryListFlags.UniformRange);
+            _flags.Modify(add: DuplicateDensity.Possible, remove: DuplicateDensity.Full);
 
             return true;
         }

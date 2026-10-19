@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
 using ExceptionHelper;
 
 namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
     {
-        public BinaryListFlags Flags
+        public DuplicateDensity Flags
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _flags;
@@ -164,7 +163,7 @@ namespace BinaryCollections.BinaryList
             _version = unchecked(++_version);
             _count = 0;
             _zeroRIndex = CalculateZeroIndex(_storage.Length, _count);
-            SetDefaultFlags();
+            _flags.CheckFor(_count);
 
             if (clearArray.HasValue)
             {
@@ -187,7 +186,7 @@ namespace BinaryCollections.BinaryList
                 _count = 0;
                 _storage = new TValue[DefaultCapacity];
                 _zeroRIndex = CalculateZeroIndex(_storage.Length, _count);
-                SetDefaultFlags();
+                _flags.CheckFor(_count);
             }
             else
             {

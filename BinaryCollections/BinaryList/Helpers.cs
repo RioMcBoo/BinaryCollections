@@ -48,13 +48,13 @@ namespace BinaryCollections.BinaryList
             public static TValue Default = default!;
             public bool OutOfRange { get; private set; }
             public readonly ReadOnlySpan<TValue> Span;
-            public readonly BinaryListFlags Flags;
+            public readonly DuplicateDensity Flags;
             private ref readonly TValue _current;
             private int _index;
             private int _lowerLimit;
             private int _upperLimit;
 
-            public Iterator(ReadOnlySpan<TValue> span, BinaryListFlags flags)
+            public Iterator(ReadOnlySpan<TValue> span, DuplicateDensity flags)
             {
                 Span = span;
                 Flags = flags;

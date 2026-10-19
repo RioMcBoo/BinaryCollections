@@ -79,7 +79,7 @@ namespace BinaryCollections.BinaryList
             return IsProperSupersetOf(range.GetEnumerator());
         }
 
-        private bool IsProperSupersetOfSorted(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool IsProperSupersetOfSorted(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             if (Count == 0 && range.Length == 0)
                 return false;

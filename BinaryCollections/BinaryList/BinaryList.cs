@@ -7,7 +7,7 @@ namespace BinaryCollections.BinaryList
         public BinaryListComparer<TValue> Comparer => _comparer;
 
         public bool Contains(TValue item) => Contains(in item, out _);
-        public bool Contains(ref readonly TValue item, out int index) => _comparer.FindIndexExactly(in item, Values, out index);
+        public bool Contains(ref readonly TValue item, out int index) => _comparer.FindIdenticalItemIndex(in item, Values, out index);
 
         /// <summary>
         /// Searches for the specified item and returns the index of the first occurrence within the entire collection.<br/>  

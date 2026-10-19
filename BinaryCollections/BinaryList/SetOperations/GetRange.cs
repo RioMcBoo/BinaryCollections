@@ -14,11 +14,11 @@ namespace BinaryCollections.BinaryList
             if (_count == 0)
                 return GetEnumerator();
 
-            if (HasFlag(BinaryListFlags.UniformRange) && ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(0)], in item))
+            if (_flags.HasTheFlag(DuplicateDensity.Full) && ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(0)], in item))
                 return GetEnumerator();
 
             var boundaries = GetBoundariesToShare(in item);
-            return new(this, boundaries.Source, boundaries.Index, boundaries.Length, BinaryListFlags.UniformRange);
+            return new(this, boundaries.Source, boundaries.Index, boundaries.Length, DuplicateDensity.Full);
         }
 
         public BinaryListEnumerator<TValue> GetRange(int index, int length)

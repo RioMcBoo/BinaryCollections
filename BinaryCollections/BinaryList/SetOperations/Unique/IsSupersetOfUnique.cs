@@ -68,8 +68,8 @@ namespace BinaryCollections.BinaryList
         {
             if (range.Comparer.Equals(Comparer))
             {
-                if (Flags.HasFlag(BinaryListFlags.NoDuplicates) &&
-                    range.Flags.HasFlag(BinaryListFlags.NoDuplicates) &&
+                if (Flags == DuplicateDensity.None &&
+                    range.Flags == DuplicateDensity.None &&
                     range.Count > Count)
                 {
                     return false;
@@ -86,7 +86,7 @@ namespace BinaryCollections.BinaryList
             return IsSupersetOfUnique(range.GetEnumerator());
         }
 
-        private bool IsSupersetOfSortedUnique(ReadOnlySpan<TValue> range, BinaryListFlags flags = BinaryListFlags.None)
+        private bool IsSupersetOfSortedUnique(ReadOnlySpan<TValue> range, DuplicateDensity flags = DuplicateDensity.Possible)
         {
             if (Count == 0 && range.Length == 0)
                 return true;

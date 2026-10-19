@@ -81,9 +81,9 @@ namespace BinaryCollections.BinaryList
                 if (!CheckCountOverload(range.Count))
                     return false;
 
-                if (range.Flags.HasFlag(BinaryListFlags.UniformRange))
+                if (range.Flags.HasFlag(DuplicateDensity.Full))
                 {
-                    return AddUniformRangeUnique(range.GetSpan());
+                    return AddEqualRangeUnique(range.GetSpan());
                 }
 
                 return AddSortedRangeUnique(range.GetSpan());
@@ -97,7 +97,7 @@ namespace BinaryCollections.BinaryList
             return AddRangeUnique(range.GetEnumerator());
         }
 
-        private bool AddUniformRangeUnique(ReadOnlySpan<TValue> range)
+        private bool AddEqualRangeUnique(ReadOnlySpan<TValue> range)
         {
             if (range.Length <= 0)
                 return false;
@@ -278,7 +278,7 @@ namespace BinaryCollections.BinaryList
             _count += second.Length - incomingElementsSkipped;
 
             if (incomingElementsSkipped < second.Length)
-                RemoveFlags(BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Full);
 
             return true;
 
@@ -615,7 +615,7 @@ namespace BinaryCollections.BinaryList
             _count += second.Length - incomingElementsSkipped;
 
             if (incomingElementsSkipped < second.Length)
-                RemoveFlags(BinaryListFlags.UniformRange);
+                _flags.Remove(DuplicateDensity.Full);
 
             return true;
 

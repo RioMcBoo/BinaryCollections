@@ -7,7 +7,7 @@
 
         public readonly bool LeadsToCollisions;
 
-        public BinaryListComparer(out BinaryListFlags flags, IComparer<TValue> comparer = null!, bool? comparerLeadsToCollisions = null)
+        public BinaryListComparer(IComparer<TValue> comparer = null!, bool? comparerLeadsToCollisions = null)
         {
             if (comparer is BinaryListComparer<TValue> binaryListComparer)
             {
@@ -46,8 +46,6 @@
                 }
             }
 
-            flags = LeadsToCollisions ? BinaryListFlags.None : BinaryListFlags.NoCollisions;
-
             LeadsToCollisions = _leadsToCollisions && ItemType<TValue>.DefaultComparer == null;
         }
 
@@ -56,25 +54,25 @@
         ///     <list type="table">
         ///         <item>
         ///             <term>Less than zero</term>
-        ///             <description><paramref name="x" /> is smaller than <paramref name="y" />.</description>
+        ///             <description><paramref name="currentItem" /> is smaller than <paramref name="item" />.</description>
         ///         </item>
         ///         <item>
         ///             <term>Zero</term>
-        ///             <description><paramref name="x" /> equal to <paramref name="y" />.</description>
+        ///             <description><paramref name="currentItem" /> equal to <paramref name="item" />.</description>
         ///         </item>
         ///         <item>
         ///             <term>Greater than zero</term>
-        ///             <description><paramref name="x" /> is greater than <paramref name="y" />.</description>
+        ///             <description><paramref name="currentItem" /> is greater than <paramref name="item" />.</description>
         ///         </item>
         ///     </list>
         /// </returns>
-        public int Compare(TValue? x, TValue? y)
+        public int Compare(TValue? currentItem, TValue? item)
         {
             int compareResult;
 
             if (_comparer is not null)
             {
-                compareResult = _comparer.Compare(x, y);
+                compareResult = _comparer.Compare(currentItem, item);
 
                 if (compareResult != 0)
                     return compareResult;
@@ -82,25 +80,25 @@
 
             if (ItemType<TValue>.IsReference)
             {
-                if (x is null && y is null)
+                if (currentItem is null && item is null)
                 {
                     return 0;
                 }
                 else
                 {
-                    if (x is null) return -1;
-                    if (y is null) return 1;
+                    if (currentItem is null) return -1;
+                    if (item is null) return 1;
                 }
             }
 
-            compareResult = ItemType<TValue>.EqualityComparer.GetHashCode(x).CompareTo(ItemType<TValue>.EqualityComparer.GetHashCode(y));
+            compareResult = ItemType<TValue>.EqualityComparer.GetHashCode(currentItem).CompareTo(ItemType<TValue>.EqualityComparer.GetHashCode(item));
 
             if (compareResult != 0)
                 return compareResult;
 
             if (_leadsToCollisions && ItemType<TValue>.DefaultComparer != null)
             {
-                compareResult = ItemType<TValue>.DefaultComparer.Compare(x, y);
+                compareResult = ItemType<TValue>.DefaultComparer.Compare(currentItem, item);
             }
 
             return compareResult;

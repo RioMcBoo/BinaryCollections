@@ -54,42 +54,47 @@ namespace BinaryCollections.BinaryList
             return true;
         }
 
-        public bool FindIndexExactly(ref readonly TValue item, ReadOnlySpan<TValue> span, out int vIndex)
+        public bool FindIdenticalItemIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, out int index)
         {
-            if (!FindIndex(in item, span, out vIndex))
+            if (!FindIndex(in item, span, out index))
                 return false;
 
-            // Find identical in right part
-            for (int i = vIndex; i < span.Length; i++)
+            if (LeadsToCollisions)
             {
-                var result = Compare(span[i], item);
-
-                if (result != 0)
-                    break;
-
-                if (ItemType<TValue>.IsIdentical(in span[i], in item))
+                // Find identical in right part
+                for (int i = index; i < span.Length; i++)
                 {
-                    vIndex = i;
-                    return true;
+                    var result = Compare(span[i], item);
+
+                    if (result != 0)
+                        break;
+
+                    if (ItemType<TValue>.IsIdentical(in span[i], in item))
+                    {
+                        index = i;
+                        return true;
+                    }
                 }
+
+                // Find identical in left part
+                for (int i = index - 1; i >= 0; i--)
+                {
+                    var result = Compare(span[i], item);
+
+                    if (result != 0)
+                        break;
+
+                    if (ItemType<TValue>.IsIdentical(in span[i], in item))
+                    {
+                        index = i;
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
-            // Find identical in left part
-            for (int i = vIndex - 1; i >= 0; i--)
-            {
-                var result = Compare(span[i], item);
-
-                if (result != 0)
-                    break;
-
-                if (ItemType<TValue>.IsIdentical(in span[i], in item))
-                {
-                    vIndex = i;
-                    return true;
-                }
-            }
-
-            return false;
+            return true;
         }
 
         public Boundaries FindBoundaries(ref readonly TValue item, ReadOnlySpan<TValue> span)
