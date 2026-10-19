@@ -93,7 +93,7 @@ namespace BinaryCollections.BinaryList
             return SetEqualsSortedUnique(ref first, ref second, _comparer);
         }
 
-        private static bool SetEqualsSortedUnique(ref Iterator first, ref Iterator second, BinaryListComparer comparer)
+        private static bool SetEqualsSortedUnique(ref Iterator first, ref Iterator second, BinaryListComparer<TValue> comparer)
         {
             if (first.Length == 0 && second.Length == 0)
                 return true;

@@ -98,7 +98,7 @@ namespace BinaryCollections.BinaryList
             return IsSubsetOfSorted(first, second, _comparer, out bool _, out bool _);
         }
 
-        private static bool IsSubsetOfSorted(Iterator first, Iterator second, BinaryListComparer comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
+        private static bool IsSubsetOfSorted(Iterator first, Iterator second, BinaryListComparer<TValue> comparer, out bool hasExtraDuplicates, out bool hasExtraUniqueElements)
         {
             hasExtraDuplicates = false;
             hasExtraUniqueElements = false;
@@ -150,7 +150,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipSecondTo(ref readonly TValue item, ref Iterator second, ref bool hasExtraUniqueElements)
                 {
-                    if (!FindLeftIndex(in item, second.Span, comparer, out int i))
+                    if (!comparer.FindLeftBound(in item, second.Span, out int i))
                         return false;
 
                     second.LowerLimit = i;
@@ -176,7 +176,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipSecondTo(ref readonly TValue item, ref Iterator second, ref bool hasExtraUniqueElements)
                 {
-                    if (!FindRightIndex(in item, second.Span, comparer, out int i))
+                    if (!comparer.FindRightBound(in item, second.Span, out int i))
                         return false;
 
                     second.UpperLimit = i;

@@ -22,7 +22,7 @@ namespace BinaryCollections.BinaryList
                 ShiftArrayRight(srcArray, destArray, in info, delta + alignmentInfo.RightEdgeIndexShift);
             }
 
-            if (ContainsReferences && srcArray == destArray)
+            if (ItemType<TValue>.ContainsReferences && srcArray == destArray)
             {
                 int cleanLength_ShiftLeft = -delta - alignmentInfo.RightEdgeIndexShift;
                 int cleanIndex_ShiftLeft = _count + delta + alignmentInfo.RightEdgeIndexShift;
@@ -132,7 +132,7 @@ namespace BinaryCollections.BinaryList
 
             Array.Copy(_storage, partIndex, _storage, newPartIndex, partLength);
 
-            if (ContainsReferences && delta > 0)
+            if (ItemType<TValue>.ContainsReferences && delta > 0)
                 Array.Clear(_storage, _zeroRIndex, delta);
 
             _zeroRIndex += delta;
@@ -148,7 +148,7 @@ namespace BinaryCollections.BinaryList
 
             Array.Copy(_storage, partIndex, _storage, newPartIndex, partLength);
 
-            if (ContainsReferences && delta < 0)
+            if (ItemType<TValue>.ContainsReferences && delta < 0)
                 Array.Clear(_storage, newPartIndex + partLength, -delta);
         }
     }

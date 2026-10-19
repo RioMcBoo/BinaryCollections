@@ -121,7 +121,7 @@ namespace BinaryCollections.BinaryList
                 return false;
 
             var example = range[0];
-            FindIndex(ref example, Values, Comparer, out var vIndex);
+            _comparer.FindIndex(ref example, Values, out var vIndex);
             InsertUniformRange(range, ref vIndex);
             return true;
         }
@@ -184,7 +184,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue secondItem = ref second[s];
                 ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in firstItem, in secondItem))
+                switch (_comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
                         destination[d++] = secondItem; s++;
@@ -244,7 +244,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue secondItem = ref second[s];
                 ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in firstItem, in secondItem))
+                switch (_comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
                         destination[insertRIndex--] = firstItem; f--;

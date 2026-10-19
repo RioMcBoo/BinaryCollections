@@ -3,7 +3,7 @@
     public partial class BinaryList<TValue>
     {
         /// <param name="comparerLeadsToCollisions">
-        /// Manually sets the collision policy. A "collision" occurs when <c>Compare(A, B) == 0</c> but <c>Equals(A, B) == false</c>.
+        /// Manually sets the collision policy. A "collision" occurs when <c>_comparer.Compare(A, B) == 0</c> but <c>Equals(A, B) == false</c>.
         /// </param>
         /// <remarks>
         /// <para>
@@ -40,7 +40,7 @@
         /// </para>
         ///     <para>
         ///         <b>Remember:</b> A collision-free state is guaranteed only if:
-        ///         <c>(Compare(a, b) == 0) == Equals(a, b)</c> for all possible elements.
+        ///         <c>(_comparer.Compare(a, b) == 0) == Equals(a, b)</c> for all possible elements.
         ///     </para>
         /// </remarks>
         public BinaryList(IEnumerable<TValue> initialValues, IComparer<TValue> comparer = null!, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
@@ -73,11 +73,11 @@
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
         public BinaryList(IEnumerable<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
-            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, comparerLeadsToCollisions) { }
+            : this(initialValues, comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
         public BinaryList(ReadOnlySpan<TValue> initialValues, Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
-            : this(initialValues, comparison is null ? null! : new ComparsionComparer(comparison), capacity, comparerLeadsToCollisions) { }
+            : this(initialValues, comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
         public BinaryList(IComparer<TValue> comparer, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
@@ -92,7 +92,7 @@
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
         public BinaryList(Comparison<TValue> comparison, int capacity = DefaultCapacity, bool? comparerLeadsToCollisions = default)
-        : this(comparison is null ? null! : new ComparsionComparer(comparison), capacity, comparerLeadsToCollisions) { }
+        : this(comparison is null ? null! : new ComparsionComparer<TValue>(comparison), capacity, comparerLeadsToCollisions) { }
 
         /// <inheritdoc cref="BinaryList{TValue}(IEnumerable{TValue}, IComparer{TValue}, int, bool?)"/>
         public BinaryList(int capacity = DefaultCapacity)

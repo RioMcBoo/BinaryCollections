@@ -24,19 +24,19 @@
 
         private bool ReplaceCore(ref readonly TValue oldItem, out int newVIndex, ref readonly TValue newItem, bool unique)
         {
-            FindIndexExactly(in oldItem, Values, Comparer, out var oldVIndex);
+            _comparer.FindIndexExactly(in oldItem, Values, out var oldVIndex);
             return ReplaceCore(oldVIndex, out newVIndex, in newItem, unique);
         }
 
         private bool ReplaceCore(int oldVIndex, out int newVIndex, ref readonly TValue newItem, bool unique)
         {
-            if (FindIndexExactly(in newItem, Values, Comparer, out newVIndex) && unique)
+            if (_comparer.FindIndexExactly(in newItem, Values, out newVIndex) && unique)
                 return false;
 
             if (!CheckIndex(oldVIndex))
                 return false;
 
-            if (IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
+            if (ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
                 return false;
 
             ReplaceAtIndex(oldVIndex, newVIndex, in newItem);

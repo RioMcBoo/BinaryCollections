@@ -4,38 +4,10 @@ namespace BinaryCollections.BinaryList
 {
     public sealed partial class BinaryList<TValue> : FloatingList<TValue>
     {
-        public BinaryListComparer Comparer => _comparer;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private bool ContainsCollisions => _comparer.LeadsToCollisions;
-
-        internal static IComparer<TValue> DefaultComparer = Comparer<TValue>.Default;
-        private static readonly bool DefaultComparerLeadsToCollisions;
-
-        static BinaryList()
-        {
-            bool IsReferenceType = !typeof(TValue).IsValueType;
-            DefaultComparerLeadsToCollisions = !ItemType<TValue>.IsComparable || !ItemType<TValue>.IsEquatable;
-
-            if (DefaultComparerLeadsToCollisions)
-            {
-                if (IsReferenceType)
-                {
-                    DefaultComparer = new ReferenceTypeHashCodeComparer();
-                }
-                else if (!ItemType<TValue>.ContainsReferences)
-                {
-                    DefaultComparer = new ValueTypeHashCodeComparer();
-                }
-                else
-                {
-                    // we will require a comparer from user
-                }
-            }
-        }
+        public BinaryListComparer<TValue> Comparer => _comparer;
 
         public bool Contains(TValue item) => Contains(in item, out _);
-        public bool Contains(ref readonly TValue item, out int index) => FindIndexExactly(in item, Values, Comparer, out index);
+        public bool Contains(ref readonly TValue item, out int index) => _comparer.FindIndexExactly(in item, Values, out index);
 
         /// <summary>
         /// Searches for the specified item and returns the index of the first occurrence within the entire collection.<br/>  
@@ -44,7 +16,7 @@ namespace BinaryCollections.BinaryList
         /// </summary>
         public int IndexOf(TValue item)
         {
-            FindLeftIndex(in item, Values, Comparer, out int vIndex);
+            _comparer.FindLeftBound(in item, Values, out int vIndex);
             return vIndex;
         }
 
@@ -55,7 +27,7 @@ namespace BinaryCollections.BinaryList
         /// </summary>
         public int LastIndexOf(TValue item)
         {
-            FindRightIndex(in item, Values, Comparer, out int vIndex);
+            _comparer.FindRightBound(in item, Values, out int vIndex);
             return vIndex;
         }
 

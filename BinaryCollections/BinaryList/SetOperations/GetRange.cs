@@ -14,7 +14,7 @@ namespace BinaryCollections.BinaryList
             if (_count == 0)
                 return GetEnumerator();
 
-            if (HasFlag(BinaryListFlags.UniformRange) && IsIdentical(in _storage[ToRealIndex(0)], in item))
+            if (HasFlag(BinaryListFlags.UniformRange) && ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(0)], in item))
                 return GetEnumerator();
 
             var boundaries = GetBoundariesToShare(in item);
@@ -31,7 +31,7 @@ namespace BinaryCollections.BinaryList
 
         private ArrayRange GetBoundariesToShare(ref readonly TValue item)
         {
-            var boundaries = FindBoundaries(in item, Values, Comparer);
+            var boundaries = _comparer.FindBoundaries(in item, Values);
 
             if (boundaries.Left < 0 || boundaries.Right < 0)
                 return new();
@@ -45,7 +45,7 @@ namespace BinaryCollections.BinaryList
             {
                 TValue[] source;
 
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     // We cannot make changes to the current array.
                     source = new TValue[length];
@@ -54,7 +54,7 @@ namespace BinaryCollections.BinaryList
                     for (int read = rIndex; read < rIndex + length; read++)
                     {
                         ref readonly var currItem = ref _storage[read];
-                        if (IsIdentical(in currItem, in item))
+                        if (ItemType<TValue>.IsIdentical(in currItem, in item))
                         {
                             source[write] = currItem;
                             write++;

@@ -86,7 +86,7 @@ namespace BinaryCollections.BinaryList
             return SetEqualsSorted(first, second, _comparer);
         }
 
-        private static bool SetEqualsSorted(Iterator first, Iterator second, BinaryListComparer comparer)
+        private static bool SetEqualsSorted(Iterator first, Iterator second, BinaryListComparer<TValue> comparer)
         {
             if (first.Length != second.Length)
                 return false;

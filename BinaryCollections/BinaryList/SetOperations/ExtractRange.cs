@@ -32,7 +32,7 @@ namespace BinaryCollections.BinaryList
 
         private ArrayRange GetBoundariesToExtract(ref readonly TValue item)
         {
-            var boundaries = FindBoundaries(in item, Values, Comparer);
+            var boundaries = _comparer.FindBoundaries(in item, Values);
 
             if (boundaries.Left < 0 || boundaries.Right < 0)
                 return new();
@@ -44,7 +44,7 @@ namespace BinaryCollections.BinaryList
 
             ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     // We need to group duplicates within collisions together
                     TValue[] temp = ArrayPool<TValue>.Shared.Rent(length);
@@ -57,7 +57,7 @@ namespace BinaryCollections.BinaryList
                         for (int read = rIndex; read < rIndex + length; read++)
                         {
                             ref readonly var currItem = ref _storage[read];
-                            if (!IsIdentical(in currItem, in item))
+                            if (!ItemType<TValue>.IsIdentical(in currItem, in item))
                             {
                                 _storage[write] = currItem;
                                 write++;

@@ -86,7 +86,7 @@ namespace BinaryCollections.BinaryList
             return OverlapsSorted(source, target, _comparer);
         }
 
-        private static bool OverlapsSorted(Iterator first, Iterator second, BinaryListComparer comparer)
+        private static bool OverlapsSorted(Iterator first, Iterator second, BinaryListComparer<TValue> comparer)
         {
             if (first.Length == 0 || second.Length == 0)
                 return false;
@@ -139,7 +139,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipSecondTo(ref readonly TValue item, ref Iterator second)
                 {
-                    if (!FindLeftIndex(in item, second.Span, comparer, out int i))
+                    if (!comparer.FindLeftBound(in item, second.Span, out int i))
                     {
                         if (IsFoundIndexOutOfRange(i, second.Span.Length))
                             return false;
@@ -153,7 +153,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipFirstTo(ref readonly TValue item, ref Iterator first)
                 {
-                    if (!FindLeftIndex(in item, first.Span, comparer, out int i))
+                    if (!comparer.FindLeftBound(in item, first.Span, out int i))
                     {
                         if (IsFoundIndexOutOfRange(i, first.Span.Length))
                             return false;
@@ -183,7 +183,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipTargetTo(ref readonly TValue item, ref Iterator second)
                 {
-                    if (!FindRightIndex(in item, second.Span, comparer, out int i))
+                    if (!comparer.FindRightBound(in item, second.Span, out int i))
                     {
                         if (IsFoundIndexOutOfRange(i, second.Span.Length))
                             return false;
@@ -197,7 +197,7 @@ namespace BinaryCollections.BinaryList
 
                 bool SkipSourceTo(ref readonly TValue item, ref Iterator first)
                 {
-                    if (!FindRightIndex(in item, first.Span, comparer, out int i))
+                    if (!comparer.FindRightBound(in item, first.Span, out int i))
                     {
                         if (IsFoundIndexOutOfRange(i, first.Span.Length))
                             return false;

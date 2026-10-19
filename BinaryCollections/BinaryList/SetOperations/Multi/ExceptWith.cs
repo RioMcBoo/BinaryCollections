@@ -146,7 +146,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = _comparer.LeadsToCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = second.Length;
@@ -167,7 +167,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue secondItem = ref second[s];
                 ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in firstItem, in secondItem))
+                switch (_comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
                         ProcessMergingSecond(ref d, ref s, second);
@@ -190,7 +190,7 @@ namespace BinaryCollections.BinaryList
                 incomingElementsSkipped = newZeroRIndex + _count + second.Length - d;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
+                if (ItemType<TValue>.ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
                     Array.Clear(first, d, incomingElementsSkipped);
                 }
@@ -215,7 +215,7 @@ namespace BinaryCollections.BinaryList
                         Array.Copy(first, f, first, d, remainingPartLength);
 
                         // Clear formed dirty free-spots from right side
-                        if (ContainsReferences)
+                        if (ItemType<TValue>.ContainsReferences)
                         {
                             Array.Clear(first, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
                         }
@@ -227,7 +227,7 @@ namespace BinaryCollections.BinaryList
                         zeroIndexShift += incomingElementsSkipped;
 
                         // Clear formed dirty free-spots from left side
-                        if (ContainsReferences)
+                        if (ItemType<TValue>.ContainsReferences)
                         {
                             Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                         }
@@ -238,7 +238,7 @@ namespace BinaryCollections.BinaryList
             {
                 incomingElementsSkipped = newZeroRIndex + _count + second.Length - d;
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
+                if (ItemType<TValue>.ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
                     Array.Clear(first, d, incomingElementsSkipped);
                 }
@@ -254,7 +254,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingBothDefault(ref d, ref s, ref f, second);
                 }
@@ -281,7 +281,7 @@ namespace BinaryCollections.BinaryList
                     {
                         ref readonly TValue currentItem = ref first[f];
 
-                        if (Compare(in currentItem, in previousItem) != 0)
+                        if (_comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         previousItem = ref currentItem;
@@ -304,7 +304,7 @@ namespace BinaryCollections.BinaryList
                     {
                         ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in currentItem, in previousItem) != 0)
+                        if (_comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         previousItem = ref currentItem;
@@ -345,7 +345,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingSecondDefault(ref d, ref s, second);
                 }
@@ -358,7 +358,7 @@ namespace BinaryCollections.BinaryList
                 {
                     ref readonly TValue initialItem = ref second[s++];
 
-                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
+                    while (s_InRange(s) && _comparer.Compare(second[s], initialItem) == 0)
                     {
                         s++;
                     }
@@ -372,7 +372,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingFirst(ref int d, ref int f)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingFirstDefault(ref d, ref f);
                 }
@@ -411,7 +411,7 @@ namespace BinaryCollections.BinaryList
             }
 
             // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = ContainsCollisions ? new() : null!;
+            Dictionary<TValue?, HeapCounter> tempDictionary = _comparer.LeadsToCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = second.Length;
@@ -432,7 +432,7 @@ namespace BinaryCollections.BinaryList
                 ref readonly TValue secondItem = ref second[s];
                 ref readonly TValue firstItem = ref first[f];
 
-                switch (Compare(in firstItem, in secondItem))
+                switch (_comparer.Compare(firstItem, secondItem))
                 {
                     case > 0:
                         ProcessMergingFirst(ref d, ref f);
@@ -456,7 +456,7 @@ namespace BinaryCollections.BinaryList
                 zeroIndexShift += incomingElementsSkipped;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
+                if (ItemType<TValue>.ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
                     Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                 }
@@ -483,7 +483,7 @@ namespace BinaryCollections.BinaryList
                         zeroIndexShift += incomingElementsSkipped;
 
                         // Clear formed dirty free-spots from left side
-                        if (ContainsReferences)
+                        if (ItemType<TValue>.ContainsReferences)
                         {
                             Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                         }
@@ -494,7 +494,7 @@ namespace BinaryCollections.BinaryList
                         Array.Copy(first, d + 1, first, d + 1 - incomingElementsSkipped, finishedPartLength);
 
                         // Clear formed dirty free-spots from right side
-                        if (ContainsReferences)
+                        if (ItemType<TValue>.ContainsReferences)
                         {
                             Array.Clear(first, newZeroRIndex + finishedPartLength + remainingPartLength, incomingElementsSkipped);
                         }
@@ -507,7 +507,7 @@ namespace BinaryCollections.BinaryList
                 zeroIndexShift += incomingElementsSkipped;
 
                 // Clear remaining free-spots
-                if (ContainsReferences && incomingElementsSkipped > 0 && first == destination)
+                if (ItemType<TValue>.ContainsReferences && incomingElementsSkipped > 0 && first == destination)
                 {
                     Array.Clear(first, newZeroRIndex, incomingElementsSkipped);
                 }
@@ -523,7 +523,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingBothDefault(ref d, ref s, ref f, second);
                 }
@@ -550,7 +550,7 @@ namespace BinaryCollections.BinaryList
                     {
                         ref readonly TValue currentItem = ref first[f];
 
-                        if (Compare(in currentItem, in previousItem) != 0)
+                        if (_comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         previousItem = ref currentItem;
@@ -573,7 +573,7 @@ namespace BinaryCollections.BinaryList
                     {
                         ref readonly TValue currentItem = ref second[s];
 
-                        if (Compare(in currentItem, in previousItem) != 0)
+                        if (_comparer.Compare(currentItem, previousItem) != 0)
                             break; // this is the end of duplicates, we must stop
 
                         previousItem = ref currentItem;
@@ -614,7 +614,7 @@ namespace BinaryCollections.BinaryList
             
             void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingSecondDefault(ref d, ref s, second);
                 }
@@ -632,7 +632,7 @@ namespace BinaryCollections.BinaryList
                 {
                     ref readonly TValue initialItem = ref second[s--];
 
-                    while (s_InRange(s) && Compare(in second[s], in initialItem) == 0)
+                    while (s_InRange(s) && _comparer.Compare(second[s], initialItem) == 0)
                     {
                         s--;
                     }
@@ -641,7 +641,7 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingFirst(ref int d, ref int f)
             {
-                if (ContainsCollisions)
+                if (_comparer.LeadsToCollisions)
                 {
                     ProcessMergingFirstDefault(ref d, ref f);
                 }

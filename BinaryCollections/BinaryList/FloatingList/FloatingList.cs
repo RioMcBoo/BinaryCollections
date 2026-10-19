@@ -73,8 +73,6 @@ namespace BinaryCollections.BinaryList
             get => _zeroRIndex;
         }
 
-        protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
-        protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
         protected const int DefaultCapacity = 4;
 
         public TValue this[int index] => GetItemRef(index);
@@ -173,7 +171,7 @@ namespace BinaryCollections.BinaryList
                 if  (clearArray.Value)
                     Array.Clear(_storage, 0, _storage.Length);
             }
-            else if (ContainsReferences)
+            else if (ItemType<TValue>.ContainsReferences)
             {
                 Array.Clear(_storage, 0, _storage.Length);
             }

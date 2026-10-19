@@ -5,18 +5,6 @@ namespace BinaryCollections.BinaryList
 {
     public partial class BinaryList<TValue>
     {
-        public ref struct Boundaries
-        {
-            public int Left;
-            public int Right;
-
-            public Boundaries(int left, int right)
-            {
-                Left = left;
-                Right = right;
-            }
-        }
-
         private readonly ref struct ArrayRange
         {
             readonly public int Index;
@@ -227,9 +215,16 @@ namespace BinaryCollections.BinaryList
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsIdentical(ref readonly TValue currentItem, ref readonly TValue item)
+        public static bool IsFoundIndexOutOfRange(int index, int count)
         {
-            return _equalityComparer.Equals(currentItem, item);
+            if (index > 0)
+                return index >= count;
+
+            if (index < 0)
+                return ~index == 0 || ~index == count;
+
+            Throw.ArgumentException(nameof(IsFoundIndexOutOfRange), "index is wrong");
+            return false;
         }
     }
 }
