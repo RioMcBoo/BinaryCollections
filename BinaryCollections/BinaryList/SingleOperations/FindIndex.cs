@@ -110,7 +110,7 @@ namespace BinaryCollections.BinaryList
 
         private static int FindLeftBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref int lo, ref int hi, ref int i)
         {
-            int index = 0;
+            int index;
 
             do { index = i; hi = i - 1; }
             while (BinarySearchFor(in item, span, comparer, ref lo, ref hi, out i));
@@ -120,7 +120,7 @@ namespace BinaryCollections.BinaryList
 
         private static int FindRightBoundIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, BinaryListComparer comparer, ref int lo, ref int hi, ref int i)
         {
-            int index = 0;
+            int index;
 
             do { index = i; lo = i + 1; }
             while (BinarySearchFor(in item, span, comparer, ref lo, ref hi, out i));
