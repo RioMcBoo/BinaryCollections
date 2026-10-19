@@ -89,7 +89,6 @@ namespace BinaryCollections.BinaryList
                 }
             }
 
-            vIndex = ~vIndex;
             return false;
         }
 
