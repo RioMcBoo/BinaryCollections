@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.CompilerServices;
+﻿using System.Numerics;
 namespace BinaryCollections.BinaryList
 {
     public partial class FloatingList<TValue>
@@ -11,7 +9,7 @@ namespace BinaryCollections.BinaryList
 
             var info = ArraySplitInfo.GetRemoveInfo(vIndex, _count, length);
 
-            if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
+            if (info.LeftPart.Length <= info.RightPart.Length)
             {
                 ShiftLeftPart(in info);
             }
@@ -35,7 +33,7 @@ namespace BinaryCollections.BinaryList
 
             var info = ArraySplitInfo.GetInsertInfo(vIndex, _count, range.Length);
 
-            bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
+            bool LeftIsPriority = info.LeftPart.Length <= info.RightPart.Length;
 
             if (CanMoveLeft && LeftIsPriority)
             {
@@ -71,7 +69,7 @@ namespace BinaryCollections.BinaryList
 
             var info = ArraySplitInfo.GetRemoveInfo(index, _count);
 
-            if (info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length)
+            if (info.LeftPart.Length <= info.RightPart.Length)
             {
                 ShiftLeftPart(in info);
             }
@@ -95,7 +93,7 @@ namespace BinaryCollections.BinaryList
 
             var info = ArraySplitInfo.GetInsertInfo(vIndex, _count);
 
-            bool LeftIsPriority = info.LeftPart.Length * BackwardShiftPenalty <= info.RightPart.Length;
+            bool LeftIsPriority = info.LeftPart.Length <= info.RightPart.Length;
 
             if (CanMoveLeft && LeftIsPriority)
             {

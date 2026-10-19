@@ -75,7 +75,6 @@ namespace BinaryCollections.BinaryList
 
         protected static IEqualityComparer<TValue> _equalityComparer = EqualityComparer<TValue>.Default;
         protected static readonly bool ContainsReferences = RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
-        protected static double BackwardShiftPenalty = Avx512F.IsSupported ? 1.05 : 1.25;
         protected const int DefaultCapacity = 4;
 
         public TValue this[int index] => GetItemRef(index);
