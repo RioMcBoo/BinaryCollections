@@ -30,7 +30,7 @@ public static class RawCollectionAssert
         {
             if (i < actual.ZeroIndex || i >= actual.ZeroIndex + actual.Count)
             {
-                if (actualRaw[i] != null)
+                if (actualRaw[i] is not null)
                     throw new InvalidDataException("BinaryList has not properly cleared empty slots.");
             }
         }        

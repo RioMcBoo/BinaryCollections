@@ -22,7 +22,7 @@
 
         public int CompareTo(TestTypeBinary? other)
         {
-            if (other == null)
+            if (other is null)
                 return Comparer<TestTypeBinary>.Default.Compare(this, other);
 
             return Comparer<int>.Default.Compare(this.Value, other.Value);
@@ -65,7 +65,7 @@
 
         public int CompareTo(TestTypeHash? other)
         {
-            if (other == null)
+            if (other is null)
                 return Comparer<TestTypeHash>.Default.Compare(this, other);
 
             return Comparer<int>.Default.Compare(this.Value, other.Value);

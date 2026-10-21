@@ -20,10 +20,10 @@
                     _leadsToCollisions = true;
                 }
             }
-            else if (ReferenceEquals(comparer, ItemType<TValue>.DefaultComparer) || comparer == null)
+            else if (ReferenceEquals(comparer, ItemType<TValue>.DefaultComparer) || comparer is null)
             {
                 _comparer = comparer ?? ItemType<TValue>.DefaultComparer;
-                _leadsToCollisions = ItemType<TValue>.DefaultComparer == null;
+                _leadsToCollisions = ItemType<TValue>.DefaultComparer is null;
 
                 if (comparerLeadsToCollisions.HasValue && comparerLeadsToCollisions.Value == true)
                 {
@@ -46,7 +46,7 @@
                 }
             }
 
-            LeadsToCollisions = _leadsToCollisions && ItemType<TValue>.DefaultComparer == null;
+            LeadsToCollisions = _leadsToCollisions && ItemType<TValue>.DefaultComparer is null;
         }
 
         /// <returns>

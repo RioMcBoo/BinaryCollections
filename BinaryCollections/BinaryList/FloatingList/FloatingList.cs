@@ -87,7 +87,7 @@ namespace BinaryCollections.BinaryList
 
         public TValue? Find(Predicate<TValue> match)
         {
-            if (match == null)
+            if (match is null)
             {
                 Throw.ArgumentNullException(nameof(Find), match);
             }
@@ -107,7 +107,7 @@ namespace BinaryCollections.BinaryList
 
         public TValue? FindLast(Predicate<TValue> match)
         {
-            if (match == null)
+            if (match is null)
             {
                 Throw.ArgumentNullException(nameof(FindLast), match);
             }
@@ -126,7 +126,7 @@ namespace BinaryCollections.BinaryList
 
         public List<TValue> FindAll(Predicate<TValue> match)
         {
-            if (match == null)
+            if (match is null)
             {
                 Throw.ArgumentNullException(nameof(FindAll), match);
             }
