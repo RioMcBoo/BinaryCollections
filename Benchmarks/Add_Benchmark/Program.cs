@@ -1,6 +1,7 @@
 ﻿namespace ArrayTest
 {
     using BenchmarkDotNet.Attributes;
+    using BenchmarkDotNet.Diagnosers;
     using BenchmarkDotNet.Running;
     using BinaryCollections.BinaryList;
     using System.Collections.Generic;
@@ -8,8 +9,6 @@
     public enum PreSortScenario
     {
         Unsorted,
-        PartiallySortedAscending,
-        PartiallySortedDescending,
         FullyAscending,
         FullyDescending,
     }
@@ -86,7 +85,7 @@
     public class DynamicSortBenchmarks
     {
         // Parameter specifying the pre-sort scenario based on the first field:
-        [Params(PreSortScenario.Unsorted, PreSortScenario.PartiallySortedAscending, PreSortScenario.PartiallySortedDescending, PreSortScenario.FullyAscending, PreSortScenario.FullyDescending)]
+        [Params(PreSortScenario.Unsorted/*, PreSortScenario.FullyAscending, PreSortScenario.FullyDescending*/)]
         public PreSortScenario PreSortScenario;
 
         // Parameter specifying the total number of elements.
@@ -127,12 +126,6 @@
                     break;
                 case PreSortScenario.FullyDescending:
                     BaseList = original.OrderByDescending(x => x, Comparer).ToList();
-                    break;
-                case PreSortScenario.PartiallySortedAscending:
-                    BaseList = original.OrderBy(x => x.Field9).ToList();
-                    break;
-                case PreSortScenario.PartiallySortedDescending:
-                    BaseList = original.OrderByDescending(x => x.Field9).ToList();
                     break;
                 case PreSortScenario.Unsorted:
                 default:

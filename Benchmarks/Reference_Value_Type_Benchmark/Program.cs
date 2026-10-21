@@ -3,7 +3,7 @@
     using BenchmarkDotNet.Attributes;
     using BenchmarkDotNet.Running;
     using BinaryCollections.BinaryList;
-    using System.Runtime.CompilerServices;
+    using BinaryList.Tests;
 
     public enum PreSortScenario
     {
@@ -32,14 +32,8 @@
         }
     }
 
-    public class TestStructure
-    {
-        public int Field1;
-        public int Field2;
-    }
-
     // Each field is compared with a specified direction (true for ascending, false for descending).
-    public class CustomComparer : IComparer<TestStructure>
+    public class CustomComparer : IComparer<TestTypeBinary>
     {
         private readonly List<bool> directions;
         public CustomComparer(List<bool> directions)
@@ -47,15 +41,9 @@
             this.directions = directions;
         }
 
-        public int Compare(TestStructure x, TestStructure y)
+        public int Compare(TestTypeBinary x, TestTypeBinary y)
         {
-            int cmp = x.Field1.CompareTo(y.Field1);
-            if (cmp != 0) return directions[0] ? cmp : -cmp;
-
-            cmp = x.Field2.CompareTo(y.Field2);
-            if (cmp != 0) return directions[1] ? cmp : -cmp;
-
-            return 0;
+            return x.Value.CompareTo(y.Value);
         }
     }
 
@@ -63,15 +51,14 @@
     public class DynamicSortBenchmarks
     {
         // Parameter specifying the pre-sort scenario based on the first field:
-        [Params(PreSortScenario.Unsorted, PreSortScenario.FullyAscending, PreSortScenario.FullyDescending)]
+        [Params(PreSortScenario.Unsorted)]
         public PreSortScenario PreSortScenario;
 
         // Parameter specifying the total number of elements.
-        [Params(100, 500, 1000, 5000, 10000)]
+        [Params(10000)]
         public int TotalElements;
 
-        public List<TestStructure> BaseListCus;
-        public List<TestStructure> BaseListDef;
+        public List<TestTypeBinary> BaseList;
 
         // Custom comparer for dynamic insertion – uses cascading comparison across all fields.
         // For example: Field1 ascending, Field2 descending.
@@ -88,17 +75,14 @@
             switch (PreSortScenario)
             {
                 case PreSortScenario.FullyAscending:
-                    BaseListCus = originalCus.OrderBy(x => x, DynamicComparer).ToList();
-                    BaseListDef = originalDef.OrderBy(x => RuntimeHelpers.GetHashCode(x)).ToList();
+                    BaseList = originalCus.OrderBy(x => x, DynamicComparer).ToList();
                     break;
                 case PreSortScenario.FullyDescending:
-                    BaseListCus = originalCus.OrderByDescending(x => x, DynamicComparer).ToList();
-                    BaseListDef = originalDef.OrderByDescending(x => RuntimeHelpers.GetHashCode(x)).ToList();
+                    BaseList = originalCus.OrderByDescending(x => x, DynamicComparer).ToList();
                     break;
                 case PreSortScenario.Unsorted:
                 default:
-                    BaseListCus = originalCus;
-                    BaseListDef = originalDef;
+                    BaseList = originalCus;
                     break;
             }
         }
@@ -109,8 +93,11 @@
             PreSortScenario = PreSortScenario.Unsorted;
             Setup();
 
-            var defRes = Default_Comparer_Unique();
-            var cusRes = Custom_Comparer_Unique();
+            Default_Comparer();
+            Custom_Comparer();
+
+            var defRes = Default_Comparer_Unsure();
+            var cusRes = Custom_Comparer_Unsure();
 
             var defTmp = defRes.ToList();
             var cusTmp = cusRes.ToList();
@@ -142,18 +129,14 @@
 
         // Method to generate the original random data.
         // Uses a HashSet to ensure unique elements, then converts it to a List.
-        public List<TestStructure> GenerateRandomData(int count)
+        public List<TestTypeBinary> GenerateRandomData(int count)
         {
             Random rnd = new Random(42); // Fixed seed for reproducibility
-            var list = new List<TestStructure>(count);
+            var list = new List<TestTypeBinary>(count);
             int i = 0;
             for (; i < count; i++)
             {
-                var item = new TestStructure
-                {
-                    Field1 = rnd.Next(0, 100),
-                    Field2 = rnd.Next(0, 100),
-                };
+                var item = new TestTypeBinary(rnd.Next(0, 100));
 
                 list.Add(item);
             }
@@ -162,10 +145,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestStructure> Default_Comparer()
+        public BinaryList<TestTypeBinary> Default_Comparer()
         {
-            var baseline = BaseListDef;
-            var binaryList = new BinaryList<TestStructure>();
+            var baseline = BaseList;
+            var binaryList = new BinaryList<TestTypeBinary>(Comparer<TestTypeBinary>.Default, comparerCorrespondsToEquals: true);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -174,22 +157,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestStructure> Default_Comparer_Unique()
+        public BinaryList<TestTypeBinary> Default_Comparer_Unsure()
         {
-            var baseline = BaseListDef;
-            var binaryList = new BinaryList<TestStructure>();
-            foreach (var item in baseline)
-            {
-                binaryList.AddUnique(item);
-            }
-            return binaryList;
-        }
-
-        [Benchmark]
-        public BinaryList<TestStructure> Custom_Comparer()
-        {
-            var baseline = BaseListCus;
-            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerCorrespondsToEquals : true);
+            var baseline = BaseList;
+            var binaryList = new BinaryList<TestTypeBinary>(Comparer<TestTypeBinary>.Default, comparerCorrespondsToEquals: false);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -198,13 +169,25 @@
         }
 
         [Benchmark]
-        public BinaryList<TestStructure> Custom_Comparer_Unique()
+        public BinaryList<TestTypeBinary> Custom_Comparer()
         {
-            var baseline = BaseListCus;
-            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerCorrespondsToEquals: true);
+            var baseline = BaseList;
+            var binaryList = new BinaryList<TestTypeBinary>(DynamicComparer, comparerCorrespondsToEquals : true);
             foreach (var item in baseline)
             {
-                binaryList.AddUnique(item);
+                binaryList.Add(item);
+            }
+            return binaryList;
+        }
+
+        [Benchmark]
+        public BinaryList<TestTypeBinary> Custom_Comparer_Unsure()
+        {
+            var baseline = BaseList;
+            var binaryList = new BinaryList<TestTypeBinary>(DynamicComparer, comparerCorrespondsToEquals: false);
+            foreach (var item in baseline)
+            {
+                binaryList.Add(item);
             }
             return binaryList;
         }
