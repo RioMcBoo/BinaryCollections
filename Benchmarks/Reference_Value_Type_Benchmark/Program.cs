@@ -189,7 +189,7 @@
         public BinaryList<TestStructure> Custom_Comparer()
         {
             var baseline = BaseListCus;
-            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerLeadsToCollisions : false);
+            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerCorrespondsToEquals : true);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -201,7 +201,7 @@
         public BinaryList<TestStructure> Custom_Comparer_Unique()
         {
             var baseline = BaseListCus;
-            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerLeadsToCollisions: false);
+            var binaryList = new BinaryList<TestStructure>(DynamicComparer, comparerCorrespondsToEquals: true);
             foreach (var item in baseline)
             {
                 binaryList.AddUnique(item);

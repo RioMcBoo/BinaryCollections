@@ -1,6 +1,6 @@
 ﻿namespace BinaryCollections.BinaryList
 {
-    /// <summary>The range may contain duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare(TValue?, TValue?)"/>). <br/> <br/>
+    /// <summary>The range may contain duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare"/>). <br/> <br/>
     /// If <see cref="BinaryListComparer{TValue}.LeadsToCollisions"/>, they are also considered duplicates. <br/> <br/>
     /// Collisions are a sort of duplicates, but duplicates do not necessarily involve collisions. <br/> <br/>
     /// Duplicates may simply be ordinary copies.</summary>
@@ -9,10 +9,10 @@
     {
         None = 0x0,
 
-        /// <summary>The range may contain duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare(TValue?, TValue?)"/>).</summary>
+        /// <summary>The range may contain duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare"/>).</summary>
         Possible = 0x1,
 
-        /// <summary>The range contains only duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare(TValue?, TValue?)"/>).</summary>
+        /// <summary>The range contains only duplicates (from the perspective of the <see cref="BinaryListComparer{TValue}.Compare"/>).</summary>
         Full = 0x2,
         
     }
