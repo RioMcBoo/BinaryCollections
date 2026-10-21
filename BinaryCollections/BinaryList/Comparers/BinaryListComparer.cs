@@ -78,19 +78,6 @@
                     return compareResult;
             }
 
-            if (ItemType<TValue>.IsReference)
-            {
-                if (currentItem is null && item is null)
-                {
-                    return 0;
-                }
-                else
-                {
-                    if (currentItem is null) return -1;
-                    if (item is null) return 1;
-                }
-            }
-
             compareResult = ItemType<TValue>.EqualityComparer.GetHashCode(currentItem).CompareTo(ItemType<TValue>.EqualityComparer.GetHashCode(item));
 
             if (compareResult != 0)

@@ -10,12 +10,11 @@ namespace BinaryCollections.BinaryList
         internal static readonly bool ContainsReferences =
             RuntimeHelpers.IsReferenceOrContainsReferences<TValue>();
 
-        internal static readonly bool IsReference = !typeof(TValue).IsValueType;
-
         static ItemType()
         {
             Type type = typeof(TValue);
 
+            bool IsReference = !type.IsValueType;
             bool hasCustomEquals = type.GetMethod("Equals", [type])?.DeclaringType != typeof(object);
             bool hasCustomGetHashCode = type.GetMethod("GetHashCode", Type.EmptyTypes)?.DeclaringType != typeof(object);
 
