@@ -68,7 +68,7 @@
         /// </returns>
         public int Compare(TValue? currentItem, TValue? item)
         {
-            int compareResult;
+            int compareResult = 0;
 
             if (_comparer is not null)
             {
@@ -78,14 +78,17 @@
                     return compareResult;
             }
 
-            compareResult = ItemType<TValue>.EqualityComparer.GetHashCode(currentItem).CompareTo(ItemType<TValue>.EqualityComparer.GetHashCode(item));
-
-            if (compareResult != 0)
-                return compareResult;
-
-            if (_leadsToCollisions && ItemType<TValue>.DefaultComparer != null)
+            if (_leadsToCollisions || _comparer is null)
             {
-                compareResult = ItemType<TValue>.DefaultComparer.Compare(currentItem, item);
+                compareResult = ItemType<TValue>.EqualityComparer.GetHashCode(currentItem).CompareTo(ItemType<TValue>.EqualityComparer.GetHashCode(item));
+
+                if (compareResult != 0)
+                    return compareResult;
+
+                if (ItemType<TValue>.DefaultComparer is not null)
+                {
+                    compareResult = ItemType<TValue>.DefaultComparer.Compare(currentItem, item);
+                }
             }
 
             return compareResult;
