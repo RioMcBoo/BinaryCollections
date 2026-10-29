@@ -1,9 +1,9 @@
 ﻿namespace BinaryCollections.BinaryList
 {
-    public sealed class ComparsionComparer<TValue> : IComparer<TValue>
+    public sealed class ComparisonComparer<TValue> : IComparer<TValue>
     {
         private readonly Comparison<TValue> _comparison;
-        public ComparsionComparer(Comparison<TValue> comparison)
+        public ComparisonComparer(Comparison<TValue> comparison)
         {
             _comparison = comparison;
         }
@@ -26,5 +26,8 @@
         ///     </list>
         /// </returns>
         public int Compare(TValue? x, TValue? y) { return _comparison(x, y); }
+
+        public static implicit operator ComparisonComparer<TValue>(Comparison<TValue> comparison)
+            => comparison is null ? null! : new(comparison);
     }
 }

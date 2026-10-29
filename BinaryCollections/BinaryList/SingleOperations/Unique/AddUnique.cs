@@ -9,7 +9,7 @@
 
         public bool AddUnique(ref readonly TValue item, out int index)
         {
-            if (_comparer.FindIdenticalItemIndex(in item, Values, out index))
+            if (_comparer.FindIndex(in item, Values, out index))
                 return false;
 
             if (_count == Array.MaxLength)

@@ -91,9 +91,6 @@ namespace BinaryCollections.BinaryList
             if (first.Length == 0 || second.Length == 0)
                 return false;
 
-            // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = comparer.LeadsToCollisions ? new() : null!;            
-
             if (!CheckLeftBoundary(ref second, ref first))
                 return false;
 
@@ -212,58 +209,7 @@ namespace BinaryCollections.BinaryList
 
             bool ProcessBoth(ref Iterator first, ref Iterator second)
             {
-                if (comparer.LeadsToCollisions)
-                {
-                    return ProcessBothDefault(ref first, ref second);
-                }
-                else
-                {
-                    return ProcessBothComparable(ref first, ref second);
-                }
-
-                bool ProcessBothDefault(ref Iterator first, ref Iterator second)
-                {
-                    tempDictionary.Clear();
-
-                    // Add the first item to result (preparing to compare)
-                    ref readonly TValue previousItem = ref first.Current;
-
-                    GetCounter(in first.Current).FirstCount++;
-                    GetCounter(in second.Current).SecondCount++;
-
-                    while (first.Next(1) == 1)
-                    {
-                        ref readonly TValue currentItem = ref first.Current;
-
-                        if (comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        GetCounter(in currentItem).FirstCount++;
-                    }
-
-                    while (second.Next(1) == 1)
-                    {
-                        ref readonly TValue currentItem = ref second.Current;
-
-                        if (comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        GetCounter(in currentItem).SecondCount++;
-                    }
-
-                    foreach (var item in tempDictionary.Values)
-                    {
-                        if (item.SecondCount > 0 && item.FirstCount > 0)
-                            return true;
-                    }
-
-                    return false;
-                }
-
-                bool ProcessBothComparable(ref Iterator first, ref Iterator second)
-                {
-                    return true;
-                }
+                return true;
             }
 
             void ProcessSecond(ref Iterator second)
@@ -286,17 +232,6 @@ namespace BinaryCollections.BinaryList
                     if (comparer.Compare(first.Current, previousItem) != 0)
                         return;
                 }
-            }
-
-            HeapCounter GetCounter(ref readonly TValue item)
-            {
-                if (!tempDictionary.TryGetValue(item, out var counter))
-                {
-                    counter = new HeapCounter();
-                    tempDictionary[item] = counter;
-                }
-
-                return counter;
             }
         }
     }

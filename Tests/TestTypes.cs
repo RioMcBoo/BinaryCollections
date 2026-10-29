@@ -13,14 +13,14 @@
         public int HashCode { get; init; }
     }
 
-    public class TestTypeBinary : TestType, IComparable<TestTypeBinary>, IEquatable<TestTypeBinary>
+    public class TestTypeComparable : TestType, IComparable<TestTypeComparable>, IEquatable<TestTypeComparable>
     {
         public static int HashFactor = TestType.DefaultHashFactor;
         public int Value { get; init; }
         public int ValueHash { get; init; }
         public int HashCode { get; init; }
 
-        public int CompareTo(TestTypeBinary? other)
+        public int CompareTo(TestTypeComparable? other)
         {
             if (other is null)
                 return 1;
@@ -28,7 +28,7 @@
             return Comparer<int>.Default.Compare(this.Value, other.Value);
         }
 
-        public bool Equals(TestTypeBinary? other)
+        public bool Equals(TestTypeComparable? other)
         {
             if (CompareTo(other) == 0)
                 return true;
@@ -38,7 +38,7 @@
 
         public override bool Equals(object? other)
         {
-            return Equals(other as TestTypeBinary);
+            return Equals(other as TestTypeComparable);
         }
 
         public override int GetHashCode()
@@ -46,24 +46,24 @@
             return HashCode;
         }
 
-        public TestTypeBinary(int value)
+        public TestTypeComparable(int value)
         {
             Value = value;
             ValueHash = value % 3;
             HashCode = value % HashFactor;
         }
 
-        public static implicit operator TestTypeBinary(int value) => new(value);
+        public static implicit operator TestTypeComparable(int value) => new(value);
     }
 
-    public class TestTypeHash : TestType, IEquatable<TestTypeHash>
+    public class TestTypeIncomparable : TestType, IEquatable<TestTypeIncomparable>
     {
         public static int HashFactor = TestType.DefaultHashFactor;
         public int Value { get; init; }
         public int ValueHash { get; init; }
         public int HashCode { get; init; }
 
-        public int CompareTo(TestTypeHash? other)
+        public int CompareTo(TestTypeIncomparable? other)
         {
             if (other is null)
                 return 1;
@@ -71,7 +71,7 @@
             return Comparer<int>.Default.Compare(this.Value, other.Value);
         }
 
-        public bool Equals(TestTypeHash? other)
+        public bool Equals(TestTypeIncomparable? other)
         {
             if (CompareTo(other) == 0)
                 return true;
@@ -81,7 +81,7 @@
 
         public override bool Equals(object? other)
         {
-            return Equals(other as TestTypeHash);
+            return Equals(other as TestTypeIncomparable);
         }
 
         public override int GetHashCode()
@@ -89,14 +89,14 @@
             return HashCode;
         }
 
-        public TestTypeHash(int value)
+        public TestTypeIncomparable(int value)
         {
             Value = value;
             ValueHash = value % 3;
             HashCode = value % HashFactor;
         }
 
-        public static implicit operator TestTypeHash(int value) => new(value);
+        public static implicit operator TestTypeIncomparable(int value) => new(value);
     }
 
     public class TestComparer : IComparer<TestType>

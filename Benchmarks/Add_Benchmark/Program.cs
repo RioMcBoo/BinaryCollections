@@ -205,7 +205,7 @@
         public BinaryList<TestStructure> Fill_BinaryList()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestStructure>(Comparer, comparerCorrespondsToEquals : true);
+            var binaryList = new BinaryList<TestStructure>(Comparer, Comparer);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);

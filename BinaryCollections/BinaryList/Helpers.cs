@@ -19,18 +19,6 @@ namespace BinaryCollections.BinaryList
             }
         }
 
-        private class HeapCounter
-        {
-            public int SecondCount;
-            public int FirstCount;
-
-            public HeapCounter(int secondCount = 0, int firstCount = 0)
-            {
-                SecondCount = secondCount;
-                FirstCount = firstCount;
-            }
-        }
-
         private ref struct RefCounter
         {
             public int SecondCount;

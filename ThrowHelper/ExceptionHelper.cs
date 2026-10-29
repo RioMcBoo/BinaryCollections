@@ -28,9 +28,9 @@ namespace ExceptionHelper
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ArgumentNullException(string callerName, object? actualValue)
+        public static void ArgumentNullException(string callerName, string objectName)
         {
-            throw new ArgumentNullException($"{callerName} : argument = {actualValue}");
+            throw new ArgumentNullException(objectName, callerName);
         }
 
         [DoesNotReturn]

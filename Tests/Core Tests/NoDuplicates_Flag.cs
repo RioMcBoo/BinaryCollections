@@ -7,13 +7,13 @@ namespace BinaryList.Tests
         [TestMethod]
         public void Flag_NoDuplicates()
         {
-            bool MayContainDuplicates(BinaryList<TestTypeBinary> list)
+            bool MayContainDuplicates(BinaryList<TestTypeComparable> list)
             {
                 return list.Flags.HasTheFlag(DuplicateDensity.Possible);
             }
 
-            BinaryList<TestTypeBinary> first;
-            TestTypeBinary[] second;
+            BinaryList<TestTypeComparable> first;
+            TestTypeComparable[] second;
 
             // Since problems can only arise if this flag is erroneously present,
             // we will only check critical cases (mostly).
@@ -65,23 +65,23 @@ namespace BinaryList.Tests
 
             // 5. Replace(TValue oldItem, TValue newItem)
             first = [1, 2, 3]; Assert.IsFalse(MayContainDuplicates(first));
-            first.Replace(new TestTypeBinary(2), 4);
+            first.Replace(new TestTypeComparable(2), 4);
             Assert.IsFalse(MayContainDuplicates(first));
-            first.Replace(new TestTypeBinary(1), 4);
+            first.Replace(new TestTypeComparable(1), 4);
             Assert.IsTrue(MayContainDuplicates(first));
 
             first = [1, 2, 3, 3]; Assert.IsTrue(MayContainDuplicates(first));
-            first.Replace(new TestTypeBinary(2), 4); Assert.IsTrue(MayContainDuplicates(first));
-            first.Replace(new TestTypeBinary(1), 4); Assert.IsTrue(MayContainDuplicates(first));
+            first.Replace(new TestTypeComparable(2), 4); Assert.IsTrue(MayContainDuplicates(first));
+            first.Replace(new TestTypeComparable(1), 4); Assert.IsTrue(MayContainDuplicates(first));
 
             // 6. ReplaceUnique(TValue oldItem, TValue newItem)
             first = [1, 2, 3];
-            first.ReplaceUnique(new TestTypeBinary(2), 4); Assert.IsFalse(MayContainDuplicates(first));
-            first.ReplaceUnique(new TestTypeBinary(1), 4); Assert.IsFalse(MayContainDuplicates(first));
+            first.ReplaceUnique(new TestTypeComparable(2), 4); Assert.IsFalse(MayContainDuplicates(first));
+            first.ReplaceUnique(new TestTypeComparable(1), 4); Assert.IsFalse(MayContainDuplicates(first));
 
             first = [1, 2, 3, 3];
-            first.ReplaceUnique(new TestTypeBinary(2), 4); Assert.IsTrue(MayContainDuplicates(first));
-            first.ReplaceUnique(new TestTypeBinary(1), 4); Assert.IsTrue(MayContainDuplicates(first));
+            first.ReplaceUnique(new TestTypeComparable(2), 4); Assert.IsTrue(MayContainDuplicates(first));
+            first.ReplaceUnique(new TestTypeComparable(1), 4); Assert.IsTrue(MayContainDuplicates(first));
 
             // 7. Remove(TValue item)
             first = [1, 2, 3, 4, 5, 5]; Assert.IsTrue(MayContainDuplicates(first));

@@ -31,16 +31,16 @@
         [Params(100, 500, 1000, 5000, 10000, 50000, 100000)]
         public int TotalElements;
 
-        public (HashSet<TestTypeBinary> left, HashSet<TestTypeBinary> right) BaseHashSibling;
-        public (HashSet<TestTypeHash> left, HashSet<TestTypeHash> right) BaseHashCollisionableSibling;
-        public (BinaryList<TestTypeBinary> left, BinaryList<TestTypeBinary> right) BaseBinaryListSibling;
-        public (BinaryList<TestTypeHash> left, BinaryList<TestTypeHash> right) BaseBinaryListCollisionableSibling;
-        public (BinaryList<TestTypeBinary> left, BinaryList<TestTypeBinary> right) BaseBinaryListSiblingSingle;
-        public (BinaryList<TestTypeHash> left, BinaryList<TestTypeHash> right) BaseBinaryListCollisionableSiblingSingle;
-        public (BinaryList<TestTypeBinary> left, List<TestTypeBinary> right) BaseBinaryList;
-        public (BinaryList<TestTypeHash> left, List<TestTypeHash> right) BaseBinaryListCollisionable;
-        public (List<TestTypeBinary> left, List<TestTypeBinary> right) BaseList;
-        public (List<TestTypeHash> left, List<TestTypeHash> right) BaseListCollisionable;
+        public (HashSet<TestTypeComparable> left, HashSet<TestTypeComparable> right) BaseHashSibling;
+        public (HashSet<TestTypeIncomparable> left, HashSet<TestTypeIncomparable> right) BaseHashCollisionableSibling;
+        public (BinaryList<TestTypeComparable> left, BinaryList<TestTypeComparable> right) BaseBinaryListSibling;
+        public (BinaryList<TestTypeIncomparable> left, BinaryList<TestTypeIncomparable> right) BaseBinaryListCollisionableSibling;
+        public (BinaryList<TestTypeComparable> left, BinaryList<TestTypeComparable> right) BaseBinaryListSiblingSingle;
+        public (BinaryList<TestTypeIncomparable> left, BinaryList<TestTypeIncomparable> right) BaseBinaryListCollisionableSiblingSingle;
+        public (BinaryList<TestTypeComparable> left, List<TestTypeComparable> right) BaseBinaryList;
+        public (BinaryList<TestTypeIncomparable> left, List<TestTypeIncomparable> right) BaseBinaryListCollisionable;
+        public (List<TestTypeComparable> left, List<TestTypeComparable> right) BaseList;
+        public (List<TestTypeIncomparable> left, List<TestTypeIncomparable> right) BaseListCollisionable;
 
         public static int BestHashCollisionRate = int.MaxValue;
         public static int BadHashCollisionRate = 5000;
@@ -51,14 +51,14 @@
         {
             BaseHashSibling = GenerateRandomData(TotalElements);
             BaseHashCollisionableSibling = GenerateRandomDataCollisionable(BaseHashSibling);
-            BaseBinaryList = (new BinaryList<TestTypeBinary>(BaseHashSibling.left), new List<TestTypeBinary>(BaseHashSibling.right));
-            BaseBinaryListCollisionable = (new BinaryList<TestTypeHash>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new List<TestTypeHash>(BaseHashCollisionableSibling.right));
-            BaseBinaryListSibling = (new BinaryList<TestTypeBinary>(BaseHashSibling.left), new BinaryList<TestTypeBinary>(BaseHashSibling.right));
-            BaseBinaryListCollisionableSibling = (new BinaryList<TestTypeHash>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new BinaryList<TestTypeHash>(BaseHashCollisionableSibling.right, TestComparer.ByHash));
-            BaseBinaryListSiblingSingle = (new BinaryList<TestTypeBinary>(BaseHashSibling.left), new BinaryList<TestTypeBinary>(BaseHashSibling.right));
-            BaseBinaryListCollisionableSiblingSingle = (new BinaryList<TestTypeHash>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new BinaryList<TestTypeHash>(BaseHashCollisionableSibling.right, TestComparer.ByHash));
-            BaseList = (new List<TestTypeBinary>(BaseHashSibling.left), new List<TestTypeBinary>(BaseHashSibling.right));
-            BaseListCollisionable = (new List<TestTypeHash>(BaseHashCollisionableSibling.left), new List<TestTypeHash>(BaseHashCollisionableSibling.right));            
+            BaseBinaryList = (new BinaryList<TestTypeComparable>(BaseHashSibling.left), new List<TestTypeComparable>(BaseHashSibling.right));
+            BaseBinaryListCollisionable = (new BinaryList<TestTypeIncomparable>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new List<TestTypeIncomparable>(BaseHashCollisionableSibling.right));
+            BaseBinaryListSibling = (new BinaryList<TestTypeComparable>(BaseHashSibling.left), new BinaryList<TestTypeComparable>(BaseHashSibling.right));
+            BaseBinaryListCollisionableSibling = (new BinaryList<TestTypeIncomparable>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new BinaryList<TestTypeIncomparable>(BaseHashCollisionableSibling.right, TestComparer.ByHash));
+            BaseBinaryListSiblingSingle = (new BinaryList<TestTypeComparable>(BaseHashSibling.left), new BinaryList<TestTypeComparable>(BaseHashSibling.right));
+            BaseBinaryListCollisionableSiblingSingle = (new BinaryList<TestTypeIncomparable>(BaseHashCollisionableSibling.left, TestComparer.ByHash), new BinaryList<TestTypeIncomparable>(BaseHashCollisionableSibling.right, TestComparer.ByHash));
+            BaseList = (new List<TestTypeComparable>(BaseHashSibling.left), new List<TestTypeComparable>(BaseHashSibling.right));
+            BaseListCollisionable = (new List<TestTypeIncomparable>(BaseHashCollisionableSibling.left), new List<TestTypeIncomparable>(BaseHashCollisionableSibling.right));            
         }
 
         public void Validate()
@@ -80,11 +80,11 @@
             Console.WriteLine("Validation successful!");
         }
 
-        public (HashSet<TestTypeBinary> left, HashSet<TestTypeBinary> right) GenerateRandomData(int count)
+        public (HashSet<TestTypeComparable> left, HashSet<TestTypeComparable> right) GenerateRandomData(int count)
         {
             Random rnd = new Random(42); // Fixed seed for reproducibility
-            var left = new HashSet<TestTypeBinary>();
-            var right = new HashSet<TestTypeBinary>();
+            var left = new HashSet<TestTypeComparable>();
+            var right = new HashSet<TestTypeComparable>();
 
             while (left.Count <= count || right.Count <= count)
             {
@@ -105,12 +105,12 @@
             return (left, right);
         }
 
-        public (HashSet<TestTypeHash> left, HashSet<TestTypeHash> right) GenerateRandomDataCollisionable((HashSet<TestTypeBinary> left, HashSet<TestTypeBinary> right) input)
+        public (HashSet<TestTypeIncomparable> left, HashSet<TestTypeIncomparable> right) GenerateRandomDataCollisionable((HashSet<TestTypeComparable> left, HashSet<TestTypeComparable> right) input)
         {
-            var left = new HashSet<TestTypeHash>();
-            var right = new HashSet<TestTypeHash>();
+            var left = new HashSet<TestTypeIncomparable>();
+            var right = new HashSet<TestTypeIncomparable>();
 
-            TestTypeHash.HashFactor = BadHashCollisionRate;
+            TestTypeIncomparable.HashFactor = BadHashCollisionRate;
 
             foreach (var item in input.left)
             {
@@ -122,41 +122,41 @@
                 right.Add(item.Value);
             }
 
-            TestTypeHash.HashFactor = BestHashCollisionRate;
+            TestTypeIncomparable.HashFactor = BestHashCollisionRate;
 
             return (left, right);
         }
 
         [Benchmark]
-        public HashSet<TestTypeBinary> HashSet_Sibling()
+        public HashSet<TestTypeComparable> HashSet_Sibling()
         {
             BaseHashSibling.left.UnionWith(BaseHashSibling.right);
             return BaseHashSibling.left;
         }
 
         [Benchmark]
-        public HashSet<TestTypeHash> HashSetCollisionable_Sibling()
+        public HashSet<TestTypeIncomparable> HashSetCollisionable_Sibling()
         {
             BaseHashCollisionableSibling.left.UnionWith(BaseHashCollisionableSibling.right);
             return BaseHashCollisionableSibling.left;
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> BinaryList_vs_List()
+        public BinaryList<TestTypeComparable> BinaryList_vs_List()
         {
             BaseBinaryList.left.UnionWithUnique(BaseBinaryList.right);
             return BaseBinaryList.left;
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> BinaryList_vs_List_Collisionable()
+        public BinaryList<TestTypeComparable> BinaryList_vs_List_Collisionable()
         {
             BaseBinaryListCollisionable.left.UnionWithUnique(BaseBinaryListCollisionable.right);
             return BaseBinaryList.left;
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> BinaryList_Sibling()
+        public BinaryList<TestTypeComparable> BinaryList_Sibling()
         {
             BaseBinaryListSibling.left.UnionWithUnique(BaseBinaryListSibling.right);
             return BaseBinaryListSibling.left;
@@ -164,14 +164,14 @@
         }
 
         [Benchmark]
-        public BinaryList<TestTypeHash> BinaryList_Collisionable_Sibling()
+        public BinaryList<TestTypeIncomparable> BinaryList_Collisionable_Sibling()
         {
             BaseBinaryListCollisionableSibling.left.UnionWithUnique(BaseBinaryListCollisionableSibling.right);  
             return BaseBinaryListCollisionableSibling.left;
         }
 
         //[Benchmark]
-        public BinaryList<TestTypeBinary> BinaryList_Sibling_Single()
+        public BinaryList<TestTypeComparable> BinaryList_Sibling_Single()
         {
             foreach(var item in BaseBinaryListSiblingSingle.right)
             {
@@ -182,7 +182,7 @@
         }
 
         //[Benchmark]
-        public BinaryList<TestTypeHash> BinaryList_Collisionable_Sibling_Single()
+        public BinaryList<TestTypeIncomparable> BinaryList_Collisionable_Sibling_Single()
         {
             foreach (var item in BaseBinaryListCollisionableSiblingSingle.right)
             {
@@ -193,13 +193,13 @@
         }
 
         [Benchmark]
-        public List<TestTypeBinary> List()
+        public List<TestTypeComparable> List()
         {
             return BaseList.left.Union(BaseList.right).ToList();
         }
 
         [Benchmark]
-        public List<TestTypeHash> List_Collisionable()
+        public List<TestTypeIncomparable> List_Collisionable()
         {            
             return BaseListCollisionable.left.Union(BaseListCollisionable.right).ToList();
         }

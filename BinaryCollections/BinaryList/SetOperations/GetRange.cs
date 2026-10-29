@@ -9,16 +9,22 @@ namespace BinaryCollections.BinaryList
             return GetRange(ref item);
         }
 
-        public BinaryListEnumerator<TValue> GetRange(ref readonly TValue item)
+        public BinaryListEnumerator<TValue> GetRangeByOrder(TValue item)
+        {
+            return GetRange(ref item, true);
+        }
+
+        public BinaryListEnumerator<TValue> GetRange(ref readonly TValue item, bool byOrder = false)
         {
             if (_count == 0)
                 return GetEnumerator();
 
-            if (_flags.HasTheFlag(DuplicateDensity.Full) && ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(0)], in item))
+            if (_flags.HasTheFlag(DuplicateDensity.Full) && _comparer.Compare(_storage[ToRealIndex(0)], item) == 0)
                 return GetEnumerator();
 
-            var boundaries = GetBoundariesToShare(in item);
-            return new(this, boundaries.Source, boundaries.Index, boundaries.Length, DuplicateDensity.Full);
+            _comparer.FindBoundaries(in item, Values, out var boundaries, byOrder);
+
+            return new(this, _storage, ToRealIndex(boundaries.Left), boundaries.Length, DuplicateDensity.Full);
         }
 
         public BinaryListEnumerator<TValue> GetRange(int index, int length)
@@ -27,50 +33,6 @@ namespace BinaryCollections.BinaryList
                 Throw.ArgumentException(nameof(GetRange), $"{nameof(index)} or {nameof(length)} is out of range");
 
             return new(this, _storage, ToRealIndex(index), length);
-        }
-
-        private ArrayRange GetBoundariesToShare(ref readonly TValue item)
-        {
-            var boundaries = _comparer.FindBoundaries(in item, Values);
-
-            if (boundaries.Left < 0 || boundaries.Right < 0)
-                return new();
-
-            int collisionStartIndex = ToRealIndex(boundaries.Left);
-            int collisionLength = boundaries.Right - boundaries.Left + 1;
-
-            return ExtractRangeFromCollisions(in item, collisionStartIndex, collisionLength);
-
-            ArrayRange ExtractRangeFromCollisions(ref readonly TValue item, int rIndex, int length)
-            {
-                TValue[] source;
-
-                if (_comparer.LeadsToCollisions)
-                {
-                    // We cannot make changes to the current array.
-                    source = new TValue[length];
-                    int write = 0;
-
-                    for (int read = rIndex; read < rIndex + length; read++)
-                    {
-                        ref readonly var currItem = ref _storage[read];
-                        if (ItemType<TValue>.IsIdentical(in currItem, in item))
-                        {
-                            source[write] = currItem;
-                            write++;
-                        }
-                    }
-
-                    rIndex = 0;
-                    length = write;
-                }
-                else
-                {
-                    source = _storage;
-                }
-
-                return new(rIndex, length, source);
-            }
         }
     }
 }

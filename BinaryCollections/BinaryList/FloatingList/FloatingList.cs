@@ -72,6 +72,8 @@ namespace BinaryCollections.BinaryList
             get => _zeroRIndex;
         }
 
+        protected static readonly TValue[] EmptyArray = new TValue[0];
+
         protected const int DefaultCapacity = 4;
 
         public TValue this[int index] => GetItemRef(index);
@@ -89,7 +91,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match is null)
             {
-                Throw.ArgumentNullException(nameof(Find), match);
+                Throw.ArgumentNullException(nameof(Find), nameof(match));
             }
 
             // Linear search
@@ -109,7 +111,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match is null)
             {
-                Throw.ArgumentNullException(nameof(FindLast), match);
+                Throw.ArgumentNullException(nameof(FindLast), nameof(match));
             }
 
             for (int vIndex = _count - 1; vIndex >= 0; vIndex--)
@@ -128,7 +130,7 @@ namespace BinaryCollections.BinaryList
         {
             if (match is null)
             {
-                Throw.ArgumentNullException(nameof(FindAll), match);
+                Throw.ArgumentNullException(nameof(FindAll), nameof(match));
             }
 
             List<TValue> list = new List<TValue>();

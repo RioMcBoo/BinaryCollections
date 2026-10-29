@@ -24,13 +24,13 @@
 
         private bool ReplaceCore(int oldVIndex, ref readonly TValue newItem, bool unique, out int newVIndex)
         {
-            if (_comparer.FindIdenticalItemIndex(in newItem, Values, out newVIndex) && unique)
+            if (_comparer.FindIndex(in newItem, Values, out newVIndex) && unique)
                 return false;
 
             if (!CheckIndex(oldVIndex))
                 return false;
 
-            if (ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
+            if (_comparer.Compare(_storage[ToRealIndex(oldVIndex)], newItem) == 0)
                 return false;
 
             ReplaceAtIndex(oldVIndex, newVIndex, in newItem);
@@ -39,13 +39,13 @@
 
         private bool ReplaceCore(ref readonly TValue oldItem, ref readonly TValue newItem, bool unique, out int newVIndex)
         {
-            if (_comparer.FindIdenticalItemIndex(in newItem, Values, out newVIndex) && unique)
+            if (_comparer.FindIndex(in newItem, Values, out newVIndex) && unique)
                 return false;
 
-            if (!_comparer.FindIdenticalItemIndex(in oldItem, Values, out var oldVIndex))
+            if (!_comparer.FindIndex(in oldItem, Values, out var oldVIndex))
                 return false;
 
-            if (ItemType<TValue>.IsIdentical(in _storage[ToRealIndex(oldVIndex)], in newItem))
+            if (_comparer.Compare(_storage[ToRealIndex(oldVIndex)], newItem) == 0)
                 return false;
 
             ReplaceAtIndex(oldVIndex, newVIndex, in newItem);

@@ -20,24 +20,24 @@ namespace ArrayTest
         [Params(500, 1000, 5000, 10000, 50000, 100000)]
         public int N;
 
-        private BinaryList<TestTypeBinary> A;
-        private BinaryList<TestTypeBinary> B;
+        private BinaryList<TestTypeComparable> A;
+        private BinaryList<TestTypeComparable> B;
 
-        readonly BinaryList<TestTypeBinary>[] binary_A = new BinaryList<TestTypeBinary>[TotalOps];
-        readonly BinaryList<TestTypeBinary>[] binary_B = new BinaryList<TestTypeBinary>[TotalOps];
+        readonly BinaryList<TestTypeComparable>[] binary_A = new BinaryList<TestTypeComparable>[TotalOps];
+        readonly BinaryList<TestTypeComparable>[] binary_B = new BinaryList<TestTypeComparable>[TotalOps];
 
-        readonly HashSet<TestTypeBinary>[] hash_A = new HashSet<TestTypeBinary>[TotalOps];
-        readonly HashSet<TestTypeBinary>[] hash_B = new HashSet<TestTypeBinary>[TotalOps];
+        readonly HashSet<TestTypeComparable>[] hash_A = new HashSet<TestTypeComparable>[TotalOps];
+        readonly HashSet<TestTypeComparable>[] hash_B = new HashSet<TestTypeComparable>[TotalOps];
 
-        readonly List<TestTypeBinary>[] list_A = new List<TestTypeBinary>[TotalOps];
-        readonly List<TestTypeBinary>[] list_B = new List<TestTypeBinary>[TotalOps];
+        readonly List<TestTypeComparable>[] list_A = new List<TestTypeComparable>[TotalOps];
+        readonly List<TestTypeComparable>[] list_B = new List<TestTypeComparable>[TotalOps];
 
         [GlobalSetup]
         public void Setup()
         {
             var rnd = new Random(0);
-            A = new BinaryList<TestTypeBinary>();
-            B = new BinaryList<TestTypeBinary>();
+            A = new BinaryList<TestTypeComparable>();
+            B = new BinaryList<TestTypeComparable>();
 
             int domain = Math.Max(1, N * 3);
 
@@ -49,14 +49,14 @@ namespace ArrayTest
 
             for (int i = 0; i < TotalOps; i++)
             {
-                binary_A[i] = new BinaryList<TestTypeBinary>();
-                binary_B[i] = new BinaryList<TestTypeBinary>();
+                binary_A[i] = new BinaryList<TestTypeComparable>();
+                binary_B[i] = new BinaryList<TestTypeComparable>();
 
-                hash_A[i] = new HashSet<TestTypeBinary>();
-                hash_B[i] = new HashSet<TestTypeBinary>();
+                hash_A[i] = new HashSet<TestTypeComparable>();
+                hash_B[i] = new HashSet<TestTypeComparable>();
 
-                list_A[i] = new List<TestTypeBinary>();
-                list_B[i] = new List<TestTypeBinary>();
+                list_A[i] = new List<TestTypeComparable>();
+                list_B[i] = new List<TestTypeComparable>();
             }
         }
 

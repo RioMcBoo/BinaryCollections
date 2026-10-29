@@ -92,10 +92,7 @@ namespace BinaryCollections.BinaryList
                 return false;
 
             if (first.Length == 0 && second.Length == 0)
-                return true;
-
-            // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = comparer.LeadsToCollisions ? new() : null!;            
+                return true;         
 
             second.SetIndex(second.LowerLimit);
             first.SetIndex(first.LowerLimit);
@@ -118,105 +115,43 @@ namespace BinaryCollections.BinaryList
 
             bool ProcessBoth(ref Iterator first, ref Iterator second)
             {
-                if (comparer.LeadsToCollisions)
+                ref readonly TValue previous = ref first.Current;
+                RefCounter counter = new(1, 1);
+
+                while (first.Next(1) + second.Next(1) == 2)
                 {
-                    return ProcessBothDefault(ref first, ref second);
-                }
-                else
-                {
-                    return ProcessBothComparable(ref first, ref second);
-                }
+                    bool endOfDuplicates = false;
 
-                bool ProcessBothDefault(ref Iterator first, ref Iterator second)
-                {
-                    tempDictionary.Clear();
-
-                    // Add the first item to result (preparing to compare)
-                    ref readonly TValue previousItem = ref first.Current;
-
-                    GetCounter(in first.Current).FirstCount++;
-                    GetCounter(in second.Current).SecondCount++;
-
-                    while (first.Next(1) == 1)
+                    if (comparer.Compare(first.Current, previous) == 0)
                     {
-                        ref readonly TValue currentItem = ref first.Current;
-
-                        if (comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        GetCounter(in currentItem).FirstCount++;
+                        counter.FirstCount++;
+                    }
+                    else
+                    {
+                        endOfDuplicates = true;
                     }
 
-                    while (second.Next(1) == 1)
+                    if (comparer.Compare(second.Current, previous) == 0)
                     {
-                        ref readonly TValue currentItem = ref second.Current;
-
-                        if (comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        GetCounter(in currentItem).SecondCount++;
+                        counter.SecondCount++;
+                    }
+                    else
+                    {
+                        endOfDuplicates = true;
                     }
 
-                    foreach (var item in tempDictionary.Values)
+                    if (counter.SecondCount != counter.FirstCount)
                     {
-                        if (item.SecondCount != item.FirstCount)
-                            return false;
+                        return false;
                     }
 
-                    return true;
-                }
-
-                bool ProcessBothComparable(ref Iterator first, ref Iterator second)
-                {
-                    ref readonly TValue previous = ref first.Current;
-                    RefCounter counter = new(1, 1);
-
-                    while (first.Next(1) + second.Next(1) == 2)
+                    if (endOfDuplicates)
                     {
-                        bool endOfDuplicates = false;
-
-                        if (comparer.Compare(first.Current, previous) == 0)
-                        {
-                            counter.FirstCount++;
-                        }
-                        else
-                        {
-                            endOfDuplicates = true;
-                        }
-
-                        if (comparer.Compare(second.Current, previous) == 0)
-                        {
-                            counter.SecondCount++;
-                        }
-                        else
-                        {
-                            endOfDuplicates = true;
-                        }
-
-                        if (counter.SecondCount != counter.FirstCount)
-                        {
-                            return false;
-                        }
-
-                        if (endOfDuplicates)
-                        {
-                            break;
-                        }
+                        break;
                     }
-
-                    return first.OutOfRange == second.OutOfRange;
-                }
-            }
-
-            HeapCounter GetCounter(ref readonly TValue item)
-            {
-                if (!tempDictionary.TryGetValue(item, out var counter))
-                {
-                    counter = new HeapCounter();
-                    tempDictionary[item] = counter;
                 }
 
-                return counter;
+                return first.OutOfRange == second.OutOfRange;
             }
         }
     }

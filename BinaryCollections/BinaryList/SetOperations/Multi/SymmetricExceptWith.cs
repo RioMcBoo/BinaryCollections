@@ -160,9 +160,6 @@ namespace BinaryCollections.BinaryList
                 Debug.Assert(_zeroRIndex - newZeroRIndex == second.Length, "In-place merge requires place for the new range.");
             }
 
-            // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = _comparer.LeadsToCollisions ? new() : null!;
-
             int incomingElementsSkipped = 0;
             int rangeLength = second.Length;
             int d = newZeroRIndex;
@@ -269,135 +266,17 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingBothDefault(ref d, ref s, ref f, second);
-                }
-                else
-                {
-                    ProcessMergingBothComparable(ref d, ref s, ref f, second);
-                }
-
-                void ProcessMergingBothDefault(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
-                {
-                    tempDictionary.Clear();
-
-                    (int start, int length) resultedRangeFirst = default;
-                    resultedRangeFirst.start = f;
-
-                    // Add the first item to result (preparing to compare)
-                    ref readonly TValue previousItem = ref first[f++];
-
-                    tempDictionary.Add(previousItem, new HeapCounter(firstCount: 1));
-                    resultedRangeFirst.length++;
-
-                    // Add all currently existing items in collision to result, and count them.
-                    while (f_InRange(f))
-                    {
-                        ref readonly TValue currentItem = ref first[f];
-
-                        if (_comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        previousItem = ref currentItem;
-
-                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
-                        {
-                            counter = new HeapCounter();
-                            tempDictionary[currentItem] = counter;
-                        }
-
-                        counter.FirstCount++;
-                        resultedRangeFirst.length++;
-                        f++;
-                    }
-
-                    // Add all incoming items in collision to result, and count them.
-                    (int start, int length) resultedRangeSecond = default;
-                    resultedRangeSecond.start = s;
-                    do
-                    {
-                        ref readonly TValue currentItem = ref second[s];
-
-                        if (_comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        previousItem = ref currentItem;
-
-                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
-                        {
-                            counter = new HeapCounter();
-                            tempDictionary[currentItem] = counter;
-                        }
-
-                        counter.SecondCount++;
-                        resultedRangeSecond.length++;
-                        s++;
-                    }
-                    while (s_InRange(s));
-
-                    int addedCount = 0;
-                    foreach (var item in tempDictionary)
-                    {
-                        int countToAdd = Math.Abs(item.Value.FirstCount - item.Value.SecondCount);
-
-                        for (int j = 0; j < countToAdd; j++)
-                        {
-                            destination[d++] = item.Key;
-                        }
-
-                        addedCount += countToAdd;
-                    }
-                }
-
-                void ProcessMergingBothComparable(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
-                {
-                    f++; s++; // they are equal here, so we can move both indexes
-                }
+                f++; s++; // they are equal here, so we can move both indexes
             }
 
             void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingSecondDefault(ref d, ref s, second);
-                }
-                else
-                {
-                    ProcessMergingSecondComparable(ref d, ref s, second);
-                }
-
-                void ProcessMergingSecondDefault(ref int d, ref int s, ReadOnlySpan<TValue> second)
-                {
-                    destination[d++] = second[s++];
-                }
-
-                void ProcessMergingSecondComparable(ref int d, ref int s, ReadOnlySpan<TValue> second)
-                {
-                    ProcessMergingSecondDefault(ref d, ref s, second);
-                }
+                destination[d++] = second[s++];
             }
 
             void ProcessMergingFirst(ref int d, ref int f)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingFirstDefault(ref d, ref f);
-                }
-                else
-                {
-                    ProcessMergingFirstComparable(ref d, ref f);
-                }
-
-                void ProcessMergingFirstDefault(ref int d, ref int s)
-                {
-                    destination[d++] = first[s++];
-                }
-
-                void ProcessMergingFirstComparable(ref int d, ref int f)
-                {
-                    ProcessMergingFirstDefault(ref d, ref f);
-                }
+                destination[d++] = first[f++];
             }
         }
 
@@ -417,9 +296,6 @@ namespace BinaryCollections.BinaryList
             {
                 Debug.Assert(newZeroRIndex == _zeroRIndex, "In-place merge requires place for the new range.");
             }
-
-            // for local function usage (for optimizations) 
-            Dictionary<TValue?, HeapCounter> tempDictionary = _comparer.LeadsToCollisions ? new() : null!;
 
             int incomingElementsSkipped = 0;
             int rangeLength = second.Length;
@@ -530,135 +406,17 @@ namespace BinaryCollections.BinaryList
 
             void ProcessMergingBoth(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingBothDefault(ref d, ref s, ref f, second);
-                }
-                else
-                {
-                    ProcessMergingBothComparable(ref d, ref s, ref f, second);
-                }
-
-                void ProcessMergingBothDefault(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
-                {
-                    tempDictionary.Clear();
-
-                    (int start, int length) resultedRangeFirst = default;
-                    resultedRangeFirst.start = f;
-
-                    // Add the first item to result (preparing to compare)
-                    ref readonly TValue previousItem = ref first[f--];
-
-                    tempDictionary.Add(previousItem, new HeapCounter(firstCount: 1));
-                    resultedRangeFirst.length++;
-
-                    // Add all currently existing items in collision to result, and count them.
-                    while (f_InRange(f))
-                    {
-                        ref readonly TValue currentItem = ref first[f];
-
-                        if (_comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        previousItem = ref currentItem;
-
-                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
-                        {
-                            counter = new HeapCounter();
-                            tempDictionary[currentItem] = counter;
-                        }
-
-                        counter.FirstCount++;
-                        resultedRangeFirst.length++;
-                        f--;
-                    }
-
-                    // Add all incoming items in collision to result, and count them.
-                    (int start, int length) resultedRangeSecond = default;
-                    resultedRangeSecond.start = s;
-                    do
-                    {
-                        ref readonly TValue currentItem = ref second[s];
-
-                        if (_comparer.Compare(currentItem, previousItem) != 0)
-                            break; // this is the end of duplicates, we must stop
-
-                        previousItem = ref currentItem;
-
-                        if (!tempDictionary.TryGetValue(currentItem, out var counter))
-                        {
-                            counter = new HeapCounter();
-                            tempDictionary[currentItem] = counter;
-                        }
-
-                        counter.SecondCount++;
-                        resultedRangeSecond.length++;
-                        s--;
-                    }
-                    while (s_InRange(s));
-
-                    int addedCount = 0;
-                    foreach (var item in tempDictionary)
-                    {
-                        int countToAdd = Math.Abs(item.Value.FirstCount - item.Value.SecondCount);
-
-                        for (int j = 0; j < countToAdd; j++)
-                        {
-                            destination[d--] = item.Key;
-                        }
-
-                        addedCount += countToAdd;
-                    }
-                }
-
-                void ProcessMergingBothComparable(ref int d, ref int s, ref int f, ReadOnlySpan<TValue> second)
-                {
-                    f--; s--; // they are equal here, so we can move both indexes
-                }
+                f--; s--; // they are equal here, so we can move both indexes
             }
             
             void ProcessMergingSecond(ref int d, ref int s, ReadOnlySpan<TValue> second)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingSecondDefault(ref d, ref s, second);
-                }
-                else
-                {
-                    ProcessMergingSecondComparable(ref d, ref s, second);
-                }
-
-                void ProcessMergingSecondDefault(ref int d, ref int s, ReadOnlySpan<TValue> second)
-                {
-                    ProcessMergingSecondComparable(ref d, ref s, second);
-                }
-
-                void ProcessMergingSecondComparable(ref int d, ref int s, ReadOnlySpan<TValue> second)
-                {
-                    destination[d--] = second[s--];
-                }
+                destination[d--] = second[s--];
             }
 
             void ProcessMergingFirst(ref int d, ref int f)
             {
-                if (_comparer.LeadsToCollisions)
-                {
-                    ProcessMergingFirstDefault(ref d, ref f);
-                }
-                else
-                {
-                    ProcessMergingFirstComparable(ref d, ref f);
-                }
-
-                void ProcessMergingFirstDefault(ref int d, ref int f)
-                {
-                    ProcessMergingFirstComparable(ref d, ref f);
-                }
-
-                void ProcessMergingFirstComparable(ref int d, ref int f)
-                {
-                    destination[d--] = first[f--];
-                }
+                destination[d--] = first[f--];
             }
         }
     }

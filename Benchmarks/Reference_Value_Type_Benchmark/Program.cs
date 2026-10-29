@@ -33,7 +33,7 @@
     }
 
     // Each field is compared with a specified direction (true for ascending, false for descending).
-    public class CustomComparer : IComparer<TestTypeBinary>
+    public class CustomComparer : IComparer<TestTypeComparable>
     {
         private readonly List<bool> directions;
         public CustomComparer(List<bool> directions)
@@ -41,7 +41,7 @@
             this.directions = directions;
         }
 
-        public int Compare(TestTypeBinary x, TestTypeBinary y)
+        public int Compare(TestTypeComparable x, TestTypeComparable y)
         {
             return x.Value.CompareTo(y.Value);
         }
@@ -58,7 +58,7 @@
         [Params(10000)]
         public int TotalElements;
 
-        public List<TestTypeBinary> BaseList;
+        public List<TestTypeComparable> BaseList;
 
         // Custom comparer for dynamic insertion – uses cascading comparison across all fields.
         // For example: Field1 ascending, Field2 descending.
@@ -129,14 +129,14 @@
 
         // Method to generate the original random data.
         // Uses a HashSet to ensure unique elements, then converts it to a List.
-        public List<TestTypeBinary> GenerateRandomData(int count)
+        public List<TestTypeComparable> GenerateRandomData(int count)
         {
             Random rnd = new Random(42); // Fixed seed for reproducibility
-            var list = new List<TestTypeBinary>(count);
+            var list = new List<TestTypeComparable>(count);
             int i = 0;
             for (; i < count; i++)
             {
-                var item = new TestTypeBinary(rnd.Next(0, 100));
+                var item = new TestTypeComparable(rnd.Next(0, 100));
 
                 list.Add(item);
             }
@@ -145,10 +145,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> Default_Comparer()
+        public BinaryList<TestTypeComparable> Default_Comparer()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestTypeBinary>(Comparer<TestTypeBinary>.Default, comparerCorrespondsToEquals: true);
+            var binaryList = new BinaryList<TestTypeComparable>(Comparer<TestTypeComparable>.Default, Comparer<TestTypeComparable>.Default);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -157,10 +157,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> Default_Comparer_Unsure()
+        public BinaryList<TestTypeComparable> Default_Comparer_Unsure()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestTypeBinary>(Comparer<TestTypeBinary>.Default, comparerCorrespondsToEquals: false);
+            var binaryList = new BinaryList<TestTypeComparable>(Comparer<TestTypeComparable>.Default);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -169,10 +169,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> Custom_Comparer()
+        public BinaryList<TestTypeComparable> Custom_Comparer()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestTypeBinary>(DynamicComparer, comparerCorrespondsToEquals : true);
+            var binaryList = new BinaryList<TestTypeComparable>(DynamicComparer, DynamicComparer);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);
@@ -181,10 +181,10 @@
         }
 
         [Benchmark]
-        public BinaryList<TestTypeBinary> Custom_Comparer_Unsure()
+        public BinaryList<TestTypeComparable> Custom_Comparer_Unsure()
         {
             var baseline = BaseList;
-            var binaryList = new BinaryList<TestTypeBinary>(DynamicComparer, comparerCorrespondsToEquals: false);
+            var binaryList = new BinaryList<TestTypeComparable>(DynamicComparer);
             foreach (var item in baseline)
             {
                 binaryList.Add(item);

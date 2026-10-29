@@ -4,7 +4,6 @@ namespace BinaryCollections.BinaryList
 {
     internal static class ItemType<TValue>
     {
-        internal static readonly EqualityComparer<TValue> EqualityComparer = null!;
         internal static readonly Comparer<TValue> DefaultComparer = null!;
 
         internal static readonly bool ContainsReferences =
@@ -14,34 +13,27 @@ namespace BinaryCollections.BinaryList
         {
             Type type = typeof(TValue);
 
-            bool IsReference = !type.IsValueType;
-            bool hasCustomEquals = type.GetMethod("Equals", [type])?.DeclaringType != typeof(object);
-            bool hasCustomGetHashCode = type.GetMethod("GetHashCode", Type.EmptyTypes)?.DeclaringType != typeof(object);
-
-            bool IsComparable =
-                typeof(IComparable<TValue>).IsAssignableFrom(type) ||
-                typeof(IComparable).IsAssignableFrom(type);
-
-            bool IsEquatable =
-                typeof(IEquatable<TValue>).IsAssignableFrom(type) ||
-                (hasCustomEquals && hasCustomGetHashCode) ||
-                (!hasCustomEquals && !hasCustomGetHashCode && (IsReference || !ContainsReferences));
-
-            if (IsComparable)
+            bool IsComparable(Type type)
             {
-                DefaultComparer = Comparer<TValue>.Default;
+                return typeof(IComparable<TValue>).IsAssignableFrom(type) ||
+                       typeof(IComparable).IsAssignableFrom(type) ||
+                       (Nullable.GetUnderlyingType(type) is { } u &&
+                           (typeof(IComparable<>).MakeGenericType(u).IsAssignableFrom(u) ||
+                            typeof(IComparable).IsAssignableFrom(u)));
             }
 
-            if (IsEquatable)
+            if (IsComparable(type))
             {
-                EqualityComparer = EqualityComparer<TValue>.Default;
+                if (typeof(TValue) == typeof(string))
+                {
+                    // The default comparer if "string" violates the `IComparable` contract.
+                    DefaultComparer = (Comparer<TValue>)(object)new OrdinalStringComparer();
+                }
+                else
+                {
+                    DefaultComparer = Comparer<TValue>.Default;
+                }
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsIdentical(ref readonly TValue currentItem, ref readonly TValue item)
-        {
-            return EqualityComparer.Equals(currentItem, item);
         }
     }
 }
