@@ -85,7 +85,7 @@
     public class DynamicSortBenchmarks
     {
         // Parameter specifying the pre-sort scenario based on the first field:
-        [Params(PreSortScenario.Unsorted/*, PreSortScenario.FullyAscending, PreSortScenario.FullyDescending*/)]
+        [Params(PreSortScenario.Unsorted, PreSortScenario.FullyAscending, PreSortScenario.FullyDescending)]
         public PreSortScenario PreSortScenario;
 
         // Parameter specifying the total number of elements.
@@ -210,6 +210,16 @@
             {
                 binaryList.Add(item);
             }
+            return binaryList;
+        }
+
+        [Benchmark]
+        public BinaryList<TestStructure> Fill_BinaryListRange()
+        {
+            var baseline = BaseList;
+            var binaryList = new BinaryList<TestStructure>(Comparer, Comparer);
+
+            binaryList.AddRange(baseline);
             return binaryList;
         }
     }

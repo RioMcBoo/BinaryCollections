@@ -39,29 +39,29 @@ namespace BinaryCollections.BinaryList
         ///     <list type="table">
         ///         <item>
         ///             <term>Less than zero</term>
-        ///             <description><paramref name="currentItem" /> is smaller than <paramref name="item" />.</description>
+        ///             <description><paramref name="x" /> is smaller than <paramref name="y" />.</description>
         ///         </item>
         ///         <item>
         ///             <term>Zero</term>
-        ///             <description><paramref name="currentItem" /> equal to <paramref name="item" />.</description>
+        ///             <description><paramref name="x" /> equal to <paramref name="y" />.</description>
         ///         </item>
         ///         <item>
         ///             <term>Greater than zero</term>
-        ///             <description><paramref name="currentItem" /> is greater than <paramref name="item" />.</description>
+        ///             <description><paramref name="x" /> is greater than <paramref name="y" />.</description>
         ///         </item>
         ///     </list>
         /// </returns>
-        public int CompareByOrder(TValue? currentItem, TValue? item) => _orderComparer.Compare(currentItem, item);
+        public int CompareByOrder(TValue? x, TValue? y) => _orderComparer.Compare(x, y);
 
         /// <inheritdoc cref="Compare(TValue?, TValue?)"/>
-        public int Compare(TValue? currentItem, TValue? item)
+        public int Compare(TValue? x, TValue? y)
         {
-            int compareResult = _orderComparer.Compare(currentItem, item);
+            int compareResult = _orderComparer.Compare(x, y);
 
             if (compareResult != 0 || _identityComparer is null)
                 return compareResult;
 
-            return _identityComparer.Compare(currentItem, item);
+            return _identityComparer.Compare(x, y);
         }
 
         public bool Equals(BinaryListComparer<TValue> obj)

@@ -19,9 +19,43 @@ namespace BinaryCollections.BinaryList
 
         public bool FindIndex(ref readonly TValue item, ReadOnlySpan<TValue> span, out int vIndex, bool byOrder = false)
         {
+            if (span.Length == 0)
+            {
+                vIndex = ~0;
+                return false;
+            }
+
             int lo = 0;
             int hi = span.Length - 1;
+            int i;
 
+            // Try find item in the very low edge
+            i = lo;
+            if (Compare(in item, in span[i], ref lo, ref hi, i, byOrder))
+            {
+                vIndex = i;
+                return true;
+            }
+            else if (lo == i)
+            {
+                vIndex = ~i;
+                return false;
+            }
+
+            // Try find item in the very high edge
+            i = hi;
+            if (Compare(in item, in span[i], ref lo, ref hi, i, byOrder))
+            {
+                vIndex = i;
+                return true;
+            }
+            else if (hi == i)
+            {
+                vIndex = ~(i + 1);
+                return false;
+            }
+
+            // Try find item in the remains
             return BinarySearchFor(in item, span, ref lo, ref hi, out vIndex, byOrder);
         }
 
@@ -123,23 +157,31 @@ namespace BinaryCollections.BinaryList
 
                 i = unchecked((hi + lo) >>> 1);
 
-                int compareResult = byOrder ? CompareByOrder(span[i], item) : Compare(span[i], item);
-
-                if (compareResult == 0)
-                {
+                if (Compare(in item, in span[i], ref lo, ref hi, i, byOrder))
                     return true;
-                }
-                else if (compareResult > 0)
-                {
-                    hi = i - 1;
-                }
-                else
-                {
-                    lo = i + 1;
-                }
             }
 
             i = ~lo;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool Compare(ref readonly TValue targetItem, ref readonly TValue currentItem, ref int lo, ref int hi, int i, bool byOrder)
+        {
+            int compareResult = byOrder ? CompareByOrder(targetItem, currentItem) : Compare(targetItem, currentItem);
+
+            switch (compareResult)
+            {
+                case 0:
+                    return true;
+                case < 0:
+                    hi = i - 1;
+                    break;
+                case > 0:
+                    lo = i + 1;
+                    break;
+            }
+
             return false;
         }
     }
